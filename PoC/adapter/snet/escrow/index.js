@@ -35,19 +35,6 @@ class SnetEscrow extends Adapter {
     }
   }
 
-  async getTxHashByEvent(contract, eventName) {
-    //We assume only one event exists, if present, so the take the 0 element
-    const events = (await contract.getPastEvents(eventName, this.FULL_SCAN_OPTIONS));
-    const event  = Array.isArray(events) && events.length > 0 && events[0];
-    const block  = event && event.blockNumber && await this.web3.eth.getBlock(event.blockNumber);
-    
-    const timestamp = block && block.timestamp;
-    
-    const result    = timestamp ? [event.transactionHash, timestamp] : [undefined, undefined];
-
-    return result;
-  }
-
   async process(Input) {
     const jobAddress = Input.job_address;
 
@@ -66,8 +53,25 @@ class SnetEscrow extends Adapter {
           AgentContract = new this.web3.eth.Contract(AgentAbi, agentAddress),
           ownerAddress  = await AgentContract.methods.owner().call();
 
-    const [depositReference, depositTimestamp]  = await this.getTxHashByEvent(JobContract, 'JobFunded');
-    const [withdrawReference, withdrawTimestamp]  = await this.getTxHashByEvent(JobContract, 'JobCompleted');
+    let deposit = {}, withdraw = {};
+    
+    const pastFundingEvents = await JobContract.getPastEvents('JobFunded', this.FULL_SCAN_OPTIONS);
+    if (Array.isArray(pastFundingEvents) && pastFundingEvents.length > 0) {
+      const event             = pastFundingEvents[0];
+      const fundingReference  = event.transactionHash;
+      const fundingBlock      = event.blockNumber;
+      deposit = { ...deposit, hash: fundingReference, block: fundingBlock };
+      
+      const pastCompletedEvents = await JobContract.getPastEvents('JobCompleted', { fromBlock: fundingBlock - 1 , toBlock: 'latest' });
+      if (Array.isArray(pastCompletedEvents) && pastCompletedEvents.length > 0) {
+        const completedReference  = pastCompletedEvents[0].transactionHash;
+        const completedBlock      = pastCompletedEvents[0].blockNumber;
+        withdraw = { ...withdraw, hash: completedReference, block: completedBlock };
+      }
+    }
+
+    //const [depositReference, depositTimestamp]  = await this.getTxHashByEvent(JobContract, 'JobFunded');
+    //const [withdrawReference, withdrawTimestamp]  = await this.getTxHashByEvent(JobContract, 'JobCompleted');
 
     const Output =  {
       value,
@@ -75,14 +79,8 @@ class SnetEscrow extends Adapter {
       agent: agentAddress,
       owner: ownerAddress,
       state: Object.keys(this.STATE)[jobState],
-      deposit: {
-        hash: depositReference,
-        timestamp: depositTimestamp
-      },
-      withdraw: {
-        hash: withdrawReference,
-        timestamp: withdrawTimestamp
-      }
+      deposit,
+      withdraw
     };
 
     return Output;

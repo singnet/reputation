@@ -4,7 +4,7 @@ package adapter.snet.escrow;
 
 message Reference {
   string hash = 1;
-  int32 timestamp = 2;
+  int32 block = 2;
 }
 
 message Input {

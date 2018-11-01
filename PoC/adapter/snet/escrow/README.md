@@ -9,7 +9,7 @@ package adapter.snet.escrow;
 
 message Reference {
   required string hash = 1;
-  required int32 timestamp = 2;
+  required int32 block = 2;
 }
 
 message Input {
@@ -34,7 +34,7 @@ message Output {
 ```
 { 
   hash: '0xb0c7f2753ce1533a1cbaffbad4ccdeb210ac579df71735d9de71047359e11a59',
-  timestamp: 1539356544 
+  block: 15344 
 }
 ```
 
@@ -57,10 +57,10 @@ message Output {
   state: 'COMPLETED',
   deposit: 
    { hash: '0xb0c7f2753ce1533a1cbaffbad4ccdeb210ac579df71735d9de71047359e11a59',
-     timestamp: 1539356544 },
+     block: 1539356544 },
   withdraw: 
    { hash: '0x9a9d9db308fd0eaa3aeb6a0ae36feb34795c9019e1963d361ec2f49f1eb85184',
-     timestamp: 1539356568 }
+     block: 1539356568 }
 }
 ```
 

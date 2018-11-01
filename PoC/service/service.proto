@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package snet.service;
+
+service Rating {
+  rpc Submit (RatingRequest) returns (RatingReply) {}
+}
+
+message RatingRequest {
+  string  job_address = 1;
+  int64   rating      = 2;
+  bytes   signature   = 3;
+}
+
+message RatingReply {
+  bool    success = 1;
+  string  message = 2;
+}
