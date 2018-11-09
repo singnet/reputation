@@ -1,5 +1,11 @@
 # Reputation
 
-This repository contains in a mono-repo experiments and PoCs about reputation R&D project.
+This repository contains early pre-alpha experiments for Reputation system of SingularityNET.
 
-In the folder `PoC` there is the first draft of a working prototype to serve the Snet marketplace needs.
+At the moment, the work is in very early stage.
+
+Any source forks and contributions make sense only in case if are made in tight collaboration with SingularityNET.
+
+Any production use and use other than for experimental purposes is not encouraged and can be done only at ones own risk.
+
+For more information, see [Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
