@@ -75,9 +75,9 @@ Bad: 2 10 100 2000
 
 #Resume
 
-1) Given parameters (default reputation, conservativity, and reduction of ranks range to zero level) don't have impact on ability to make "fair" agents distinguishable from "unfair" ones, but can make it more reliable, if possible at all.
+1) Given parameters (default reputation, conservativity, and reduction of ranks range to zero level) don't have impact on distinguishability (ability to make "fair" agents distinguishable from "unfair" ones), but can make it more reliable, if the one is possible.
 2) Best parameters are medium (0.5) default reputation, low (0.1-0.5) conservativity and use of reduction of the reputation range to zero.
-3) Use of explicitly ratings improve distinguishability sunstantially, compare only to implicit financial ratings.
+3) Use of explicitly ratings improve distinguishability substantially, compare to use of implicit financial ratings only.
 
 TODO:
 1) Confirm that explicit weighted/unweighted ratings have different distingushability/reliability.
