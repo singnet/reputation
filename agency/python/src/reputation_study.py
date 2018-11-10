@@ -48,7 +48,7 @@ reputations_file = sys.argv[4]
 since_date = sys.argv[5]
 until_date = sys.argv[6]
 period = int(float(sys.argv[7]))
-out_dir = data_dir + '' + sim_name
+out_dir = data_dir + '/' + sim_name + '_out'
 control_id = 0 # id of user to be controlled
 
 print('')
@@ -56,6 +56,7 @@ print('')
 print('Binary directory:', bin_dir)
 print('Simulation name:', sim_name)
 print('Data directory:', data_dir)
+print('Output directory:', out_dir)
 print('User reputations file:', reputations_file)
 print('Since date:', since_date)
 print('Until date:', until_date)
@@ -76,9 +77,18 @@ def ai_command(command):
 	os_command(aigents_command)
 
 print('')
+
+if not os.path.exists(data_dir):
+	print('Creating data directory: ' + data_dir)
+	os.makedirs(data_dir)
+        
+if not os.path.exists(out_dir):
+	print('Creating output directory: ' + out_dir)
+	os.makedirs(out_dir)
+        
 print('Cleaning ranks data.')
 ai_command('clear')
-    
+
 print('Updating reputation ranks.')
 ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservativity 0.5')
 
