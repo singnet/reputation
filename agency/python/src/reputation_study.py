@@ -93,7 +93,7 @@ print('Updating reputation ranks.')
 ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservativity 0.5')
 
 print('Getting average ranks.')
-ai_command('get ranks since ' + since_date + ' until ' + until_date + ' average > ' + out_dir + '/average.tsv')
+ai_command('get ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' average > ' + out_dir + '/average.tsv')
 
 print('Getting latest ranks.')
 ai_command('get ranks date ' + until_date + ' > ' + out_dir + '/latest.tsv')
