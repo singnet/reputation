@@ -86,7 +86,7 @@ print('Loading transaction ratings.')
 ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm')
 
 print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.1 conservativity 0.5')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.1')
 
 print('Checking ranks:')
 ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))

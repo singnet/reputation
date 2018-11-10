@@ -73,7 +73,7 @@ all_agents = [1,2,3,4,5,6,7,8,9,10]
 
 good_agents = [1,2,3,4,5,6,7,8]
 good_agents_costs = [100,1000]
-good_agents_transactions = 100
+good_agents_transactions = 10
 
 bad_agents = [9,10]
 bad_agents_costs = [10,100]
@@ -154,4 +154,4 @@ def simulate(ratings):
 			file.write(str(agent) + '\t' + goodness + '\n')
 
 
-simulate(False) # False - financial, True - ratings
+simulate(True) # False - financial, True - ratings
