@@ -29,7 +29,7 @@
 # 2.b. curl http://aigents.com/download/latest/Aigents.jar -o ./Aigents.jar
 # 3. Select some simulation name (to identify data set).
 # 4. Get transaction log file and expected user reputations file.
-# 5. Run this script passing 7 parameters as directory of binary Aigents.jar file, simulation name, data directory, transaction log file, user reputations file, start date and end date. 
+# 5. Run this script passing 7 parameters as directory of binary Aigents.jar file, simulation name, data directory, user reputations file, start date, end date and period for computing reputations. 
 
 import sys
 import os
@@ -38,17 +38,17 @@ import subprocess
 java_options = '-Xms128m -Xmx256m -Dsun.zip.disableMemoryMapping=true'
 
 if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.argv[3]) < 2:
-	print('Usage: python reputation_simulate.py <bin_directory> <simulation_name> <data_directory> <transaction_log_file> <user_reputations_file> <since_date> <until_date>')
+	print('Usage: python reputation_simulate.py <bin_directory> <simulation_name> <data_directory> <user_reputations_file> <since_date> <until_date> <period>')
 	sys.exit()
 
 bin_dir = sys.argv[1]
 sim_name = sys.argv[2]
 data_dir = sys.argv[3]
-transactions_file = sys.argv[4]
-reputations_file = sys.argv[5]
-since_date = sys.argv[6]
-until_date = sys.argv[7]
-out_dir = data_dir + '' + sim_name
+reputations_file = sys.argv[4]
+since_date = sys.argv[5]
+until_date = sys.argv[6]
+period = int(float(sys.argv[7]))
+out_dir = data_dir + '/' + sim_name + '_out'
 control_id = 0 # id of user to be controlled
 
 print('')
@@ -56,10 +56,11 @@ print('')
 print('Binary directory:', bin_dir)
 print('Simulation name:', sim_name)
 print('Data directory:', data_dir)
-print('Transaction log file:', transactions_file)
+print('Output directory:', out_dir)
 print('User reputations file:', reputations_file)
 print('Since date:', since_date)
 print('Until date:', until_date)
+print('Period days:', str(period))
 
 
 def os_command(command):
@@ -76,26 +77,23 @@ def ai_command(command):
 	os_command(aigents_command)
 
 print('')
-print('Cleaning data.')
-ai_command('clear')
-os.system('rm -rf ' + data_dir + '/' + sim_name + '*')
+
 if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
-    
-print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm')
+	print('Creating data directory: ' + data_dir)
+	os.makedirs(data_dir)
+        
+if not os.path.exists(out_dir):
+	print('Creating output directory: ' + out_dir)
+	os.makedirs(out_dir)
+        
+print('Cleaning ranks data.')
+ai_command('clear')
 
 print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.1 conservativity 0.5')
-
-print('Checking ranks:')
-ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))
-
-print('Getting history of ranks.')
-ai_command('get ranks since ' + since_date + ' until ' + until_date + ' > ' + out_dir + '/history.tsv')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservativity 0.5')
 
 print('Getting average ranks.')
-ai_command('get ranks since ' + since_date + ' until ' + until_date + ' average > ' + out_dir + '/average.tsv')
+ai_command('get ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' average > ' + out_dir + '/average.tsv')
 
 print('Getting latest ranks.')
 ai_command('get ranks date ' + until_date + ' > ' + out_dir + '/latest.tsv')
