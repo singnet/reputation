@@ -1,0 +1,94 @@
+{
+
+  "batch":{
+	"on": true,
+
+	"reputation_runs":
+		[
+			{
+				"run_name": "all",
+				"since_date": "29.08.2011 11:05:02",
+				"until_date": "29.10.2011 11:05:02"
+			}
+		],
+
+
+	"parameter_combinations":{
+
+		"ratings":{
+			"r": {
+				"include_ratings": true
+				},
+			"p": {
+				"include_ratings": false
+				}
+			},
+		"prices":{
+
+			"10": {
+				"prices":{	
+					"milk": [100,0.001, 0,1000]
+					}
+				},
+			"20": {
+				"prices":{
+					"milk": [200,0.001, 0,1000]
+					}
+				},
+
+			"100": {
+				"prices":{
+					"milk": [1000,0.001, 0,1000]
+					}
+				}
+			},
+		"num_transactions":{
+			"0.1": {
+				"transactions_per_day":[10,1,0,1000]
+				},
+			"0.5": {
+				"transactions_per_day":[20,1,0,1000]
+				},
+			"1": {
+				"transactions_per_day":[100,1,0,1000]
+				}
+			}		
+		}			
+  },
+  "parameters":{
+    "deterministic_mode": false,
+    "num_users":1000000,
+    "initial_date":"29.08.2011 11:05:02",
+    "final_date":"29.10.2011 11:05:02",
+    "days_per_tick": 1.0,
+    "output_path":"stochasticMillion-20110829-20111029/",
+    "seed":13,
+    "network": "singularity",
+    "types_and_units":{"payment":"AGI", "rating":"" },
+    "suppliers_are_consumers": true,
+    "criminal_agent_ring_size":[8,2,2,100],
+    "open_to_new_experiences": [0.2,0.1],
+    "fire_supplier_threshold": [0.3,0.02],
+    "forget_discount": [0.99,0.02 ],
+    "param_str":"r_0.2_10_",
+    "prices":{"milk": [2,0.5, 0,3], "honey": [10,2, 0,30]},
+    "chance_of_supplying": {"milk": 0.25, "honey": 0.01},
+    "criminal_chance_of_supplying": {"milk": 0.01, "honey": 0.25},
+    "cobb_douglas_utilities": {"milk": [0.5, 0.01], "honey": [0.5,0.01]},
+    "need_cycle": {"milk": [0,0.001], "honey": [0,0.001]},
+    "criminal_need_cycle": {"milk": [0,0.001], "honey": [0,0.001]},
+    "random_change_suppliers": 0.01,
+    "include_ratings": true,
+    "chance_of_criminal": 0.2,
+    "goodness":[0.75, 0.2],
+    "criminal_goodness":[0.0, 0.03],
+    "transactions_per_day":[100,4,0,1000],
+    "criminal_transactions_per_day":[100,1,0,1000],
+    "ratings_goodness_thresholds": {"0.25":0.25, "0.5" :0.5,"0.75" :0.75,"1.0":1.0},
+    "rating_perception" : [0,0.1,-1,1],
+    "chance_of_rating" : 0.5,
+    "criminal_chance_of_rating": 1.0,
+    "non_rating_val": "0.5"
+
+     }
+} 
