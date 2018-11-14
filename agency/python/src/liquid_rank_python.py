@@ -149,7 +149,6 @@ def update_reputation_approach_b(reputation,mys):
 def update_reputation_approach_c(first_occurance,reputation,mys,since,our_date):
     ### 3rd approach or c)     
     date_since = (our_date - since).days
-    print("Here we are")
     j = 0
 
     for k  in reputation.keys():
@@ -184,7 +183,6 @@ def run_script():
     previous_reputation = dict()
     date_zero = datetime(2015, 7, 30, 0, 0)
 
-    print("Here we are")
     filepath = os.path.join('data', 'January_2018_new.zip')
     filepath
     start1 = time.clock()
@@ -200,7 +198,6 @@ def run_script():
                 for line in lines:
                     line = line.replace("\t",",")
                     daily_data.append(line)    
-            print("read in data")
             i=0
             while i < len(daily_data):
                 daily_data[i] = daily_data[i].split(',' )
@@ -215,24 +212,19 @@ def run_script():
             daily_data['Amount'] = pd.to_numeric(daily_data['Amount'], errors='ignore')
             array1 , dates_array, to_array, first_occurance = reputation_calc_p1(daily_data,first_occurance)
             del(daily_data)
-            print("About to update reputation")
             reputation = update_reputation(reputation,array1)
 
-            print("Problem in this command")
             new_reputation = calculate_new_reputation(array1,to_array,reputation)
 
-            print("Came this far")
-            start = time.clock()
             reputation = update_reputation_approach_c(first_occurance,reputation,new_reputation,since,our_date)
-            print("reputation updated")
-            print(time.clock()-start)
             savefile = "reputation_"+str(our_date)[0:10]+".data"
             fp=gzip.open(savefile,'wb')
             pickle.dump(reputation,fp)
             fp.close()
-            #ickle.dump(reputation, open(savefile, 'wb'))
     print("Ending time is:",time.clock()-start)
-    
+    savefile = "first_occurance_all.data"
+    fp=gzip.open(savefile,'wb')
+    pickle.dump(first_occurance,fp)
 run_script()    
     
     
