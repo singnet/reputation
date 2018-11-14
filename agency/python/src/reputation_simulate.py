@@ -83,10 +83,11 @@ if not os.path.exists(data_dir):
     os.makedirs(data_dir)
     
 print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm')
+#ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm') #logarithm applies to finacial value or weight 
+ai_command('load ratings file ' + transactions_file + ' precision 0.01')
 
 print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.1')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.5')
 
 print('Checking ranks:')
 ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))
@@ -94,10 +95,8 @@ ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))
 print('Getting history of ranks.')
 ai_command('get ranks since ' + since_date + ' until ' + until_date + ' > ' + out_dir + '/history.tsv')
 
-print('Getting average ranks.')
+print('Getting average and latest ranks.')
 ai_command('get ranks since ' + since_date + ' until ' + until_date + ' average > ' + out_dir + '/average.tsv')
-
-print('Getting latest ranks.')
 ai_command('get ranks date ' + until_date + ' > ' + out_dir + '/latest.tsv')
 
 print('Checking top 5 latest ranks:')
@@ -108,8 +107,6 @@ os_command('tail -n 5 ' + out_dir + '/latest.tsv')
 
 print('Getting checking ranks.')
 
-print('Evaluating average ranks:')
+print('Evaluating average and latest ranks:')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
-
-print('Evaluating latest ranks:')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
