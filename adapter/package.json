@@ -1,8 +1,6 @@
 {
   "name": "reputation-mpe-adapter",
   "version": "1.0.0",
-  "main": "index.js",
-  "repository": "git@github.com:tiero/reputation.git",
   "author": "Stichting SingularityNET",
   "license": "MIT",
   "scripts": {
