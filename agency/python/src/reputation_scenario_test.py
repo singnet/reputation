@@ -76,7 +76,7 @@ good_agents_costs = [100,1000]
 good_agents_transactions = 10
 
 bad_agents = [9,10]
-bad_agents_costs = [10,100]
+bad_agents_costs = [1,10]
 bad_agents_transactions = 100
 
 
@@ -126,27 +126,21 @@ def simulate(ratings):
 					other = pick_agent(all_agents,agent,memories)
 					cost = random.randint(good_agents_costs[0],good_agents_costs[1])
 					if ratings:
-						type = 'rating'
 						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
-						type = 'transfer'
-						rating = None
-					#print(date,type,agent,other,cost,rating)
-					log_file(file,date,type,agent,other,cost,rating)
+						log_file(file,date,'transfer',agent,other,cost,None)
 		
 			for agent in bad_agents:
 				for t in range(0, bad_agents_transactions):
 					other = pick_agent(bad_agents,agent)
 					cost = random.randint(bad_agents_costs[0],bad_agents_costs[1])
 					if ratings:
-						type = 'rating'
 						rating = 1.0
+						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
-						type = 'transfer'
-						rating = None
-					#print(date,type,agent,other,cost,rating)
-					log_file(file,date,type,agent,other,cost,rating)
+						log_file(file,date,'transfer',agent,other,cost,None)
 					
 	with open('users.tsv', 'w') as file:
 		for agent in all_agents:

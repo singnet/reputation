@@ -16,33 +16,20 @@ Using Ratings:
 # With 1/4 of evil population, we can't identify them
 Good: 8 100 10 8000
 Bad: 2 10 100 2000 (1/4)
--0.4960783708246094	-0.3713906763541037	default 0.1 conservativity 0.5
--0.576556660197052	-0.15357377920848778	default 0.5 conservativity 0.1
--0.5018166334687887	-0.3713906763541037	default 0.5 conservativity 0.5
--0.9487429187049042	-0.9419117811328838	default 0.1 conservativity 0.5 zero
--0.9660595711494814	-0.9133640982183634	default 0.5 conservativity 0.1 zero
--0.9459100982604828	-0.9395013905237579	default 0.5 conservativity 0.5 zero
+-0.8608666064095991	-0.8068715304598786	default 0.5 conservativity 0.5	nologweight
+-0.9749420308943617	-0.9736785461808086	default 0.5 conservativity 0.5	nologweight	norm(zero)
 
 # With 1/8 of evil population, we can see them
 Good: 8 100 10 8000
 Bad: 2 5 100 1000 (1/8)
-0.7926679511533523	0.6729773775727068	default 0.1 conservativity 0.1
-0.7120551045460684	0.7735737130957594	default 0.1 conservativity 0.5
-0.4143431249397285	0.47699904600286186	default 0.1 conservativity 0.9
-0.8058791854599916	0.6729773775727068	default 0.5 conservativity 0.1	*
-0.7284884076226389	0.7735737130957594	default 0.5 conservativity 0.5	 *
-0.65578983229586	0.5570860145311555	default 0.5 conservativity 0.9
-0.7986581860446346	0.6729773775727068	default 0.9 conservativity 0.1
-0.7281434845562569	0.7735737130957594	default 0.9 conservativity 0.5
-0.5413319619607668	0.49999999999999994	default 0.9 conservativity 0.9
-0.9848487874339233	0.8777306445559103	default 0.5 conservativity 0.1 zero	*
-0.9721591561764991	0.9908979416920446	default 0.5 conservativity 0.5 zero	 *
-0.81404786969055	0.9083727292858551	default 0.5 conservativity 0.6 zero
+0.32715403967317563	0.3273268353539886	default 0.5 conservativity 0.5	nologweight
+0.8713692747116901	0.987143367504686	default 0.5 conservativity 0.5	nologweight	norm(zero)
 
 # With 1/40 of evil population, we can see them clearly
-Good: 8 100 10 8000
+Good: 8 100 10 8000	(DEFAULT)
 Bad: 2 1 100 200 (1/40)
-0.971376082621195    0.9856990633736694	default 0.1 conservativity 0.5
+0.9453022506561927	0.9544799780350296	default 0.5 conservativity 0.5	nologweight
+0.9866744712267205	0.9944481144111824	default 0.5 conservativity 0.5	nologweight	norm(zero)
 
 Not using ratings:
 
@@ -73,15 +60,19 @@ Good: 8 100 100 80000
 Bad: 2 10 100 2000
 0.9748264643589004    0.8807048459279792	default 0.1 conservativity 0.5
 
-#Resume
+#Resume (to be revised)
 
 1) Given parameters (default reputation, conservativity, and reduction of ranks range to zero level) don't have impact on distinguishability (ability to make "fair" agents distinguishable from "unfair" ones), but can make it more reliable, if the one is possible.
 2) Best parameters are medium (0.5) default reputation, low (0.1-0.5) conservativity and use of reduction of the reputation range to zero.
 3) Use of explicitly ratings improve distinguishability substantially, compare to use of implicit financial ratings only.
 
 TODO:
-1) Confirm that explicit weighted/unweighted ratings have different distingushability/reliability.
-2) Check if extension of the period improve distingushability/reliability.
-3) Search for more parameters that can improve distingushability.
+1) Change "zero" to "norm".
+2) Study space of parameters and review resume above.
+3) Confirm that explicit weighted/unweighted ratings have different distingushability/reliability.
+4) Check if extension of the period improve distingushability/reliability.
+5) Search for more parameters that can improve distingushability.
+6) Consider problem with innate infection of the system with bad agents.
+
 
  

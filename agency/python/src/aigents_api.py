@@ -31,10 +31,10 @@ import requests
 from urllib.parse import quote
 
 # Expected Aigents server version 
-version = "1.2.43"
+version = "1.3.0"
 
 # Expected Aigents copyright information
-copyright = " Copyright © 2018 Anton Kolonin, Aigents Group."
+copyright = " Copyright © 2018 Anton Kolonin, Aigents."
 
 # URL to Aigents server
 base_url = "http://localtest.com:1180/?"
