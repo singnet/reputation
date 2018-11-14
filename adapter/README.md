@@ -28,5 +28,11 @@ Install go dependencies
 
 `yarn deploy`
 
+# Run 
+
+```sh
+go run main.go
+```
+
 
 

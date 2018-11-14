@@ -1,9 +1,9 @@
 {
-  "name": "reputation",
+  "name": "reputation-mpe-adapter",
   "version": "1.0.0",
   "main": "index.js",
   "repository": "git@github.com:tiero/reputation.git",
-  "author": "Marco Argentieri <marco@vulpem.com>",
+  "author": "Stichting SingularityNET",
   "license": "MIT",
   "scripts": {
     "abigen": "sh scripts/abigen.sh",
@@ -13,10 +13,10 @@
   },
   "dependencies": {
     "singularitynet-platform-contracts": "https://github.com/tiero/platform-contracts.git",
-    "singularitynet-token-contracts": "^2.0.0"
+    "singularitynet-token-contracts": "2.0.0"
   },
   "devDependencies": {
-    "ganache-cli": "^6.1.8",
-    "underscore-cli": "^0.2.19"
+    "ganache-cli": "6.1.8",
+    "underscore-cli": "0.2.19"
   }
 }

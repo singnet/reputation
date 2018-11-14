@@ -1,7 +1,5 @@
 package main
 
-//0x8D9D080427f73e9f42bA183F0b7A4Dd770BE33A8
-
 import (
 	"context"
 	"flag"
@@ -57,15 +55,5 @@ func main() {
 	for _, vLog := range logs {
 		fmt.Println(vLog.TxHash.Hex())
 	}
-
-	/*
-
-		mpeInstance, err := mpe.NewMpe(mpeAddress, client)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			fmt.Println(mpeInstance.Token(nil))
-	*/
 
 }
