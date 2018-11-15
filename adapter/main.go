@@ -15,6 +15,44 @@ import (
 	"github.com/tiero/reputation/adapter/resources/contracts/mpe"
 )
 
+//ChannelOpenEvent event struct
+type ChannelOpenEvent struct {
+	ChannelID  *big.Int
+	Sender     common.Address
+	Recipient  common.Address
+	GroupID    [32]byte
+	Signer     common.Address
+	Amount     *big.Int
+	Expiration *big.Int
+}
+
+//ChannelClaimEvent event struct
+type ChannelClaimEvent struct {
+	ChannelID      *big.Int
+	Recipient      common.Address
+	ClaimAmount    *big.Int
+	SendBackAmount *big.Int
+	KeepAmount     *big.Int
+}
+
+//ChannelSenderClaimEvent event struct
+type ChannelSenderClaimEvent struct {
+	ChannelID   *big.Int
+	ClaimAmount *big.Int
+}
+
+//ChannelExtend event struct
+type ChannelExtend struct {
+	ChannelID     *big.Int
+	NewExpiration *big.Int
+}
+
+//ChannelAddFunds event struct
+type ChannelAddFunds struct {
+	ChannelID *big.Int
+	NewFunds  *big.Int
+}
+
 //Network config struct
 type Network struct {
 	RPCEndpoint     string
@@ -61,21 +99,13 @@ func main() {
 
 	for _, vLog := range logs {
 		fmt.Println(vLog.TxHash.Hex())
-		ChannelOpenEvent := struct {
-			ChannelID  *big.Int
-			Sender     common.Address
-			Recipient  common.Address
-			GroupID    [32]byte
-			Signer     common.Address
-			Amount     *big.Int
-			Expiration *big.Int
-		}{}
-		err := mpeAbi.Unpack(&ChannelOpenEvent, "ChannelOpen", vLog.Data)
+		channelOpenEvent := ChannelOpenEvent{}
+		err := mpeAbi.Unpack(&channelOpenEvent, "ChannelOpen", vLog.Data)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Println(ChannelOpenEvent.Amount)
+		fmt.Println(channelOpenEvent.ChannelID)
 	}
 
 }
