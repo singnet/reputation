@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/tiero/reputation/adapter/resources/contracts/mpe"
+	"github.com/singnet/reputation/adapter/resources/contracts/mpe"
 )
 
 //ChannelOpenEvent event struct
