@@ -1,5 +1,16 @@
 # WIP Reputation Adapter
 
+# Networks
+
+## Ropsten
+
+* AGI Token Address
+  * 0x05A978328B1FAfe9ec69a7139f1c4ed0035E5288
+* MultiPartyEscrow
+  * 0xAF5e3b8CF89815F24A12D45D4758D87257249778
+  
+  
+
 # Requirements
 
 * Node/NPM 8+/5+
