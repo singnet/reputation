@@ -87,7 +87,7 @@ if not os.path.exists(out_dir):
 	os.makedirs(out_dir)
         
 print('Cleaning ranks data.')
-ai_command('clear')
+ai_command('clear ranks')
 
 print('Updating reputation ranks.')
 ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservativity 0.5')
