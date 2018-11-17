@@ -48,7 +48,7 @@ transactions_file = sys.argv[4]
 reputations_file = sys.argv[5]
 since_date = sys.argv[6]
 until_date = sys.argv[7]
-out_dir = data_dir + '' + sim_name
+out_dir = data_dir + '/' + sim_name + '_out'
 control_id = 0 # id of user to be controlled
 
 print('')
@@ -77,17 +77,22 @@ def ai_command(command):
 
 print('')
 print('Cleaning data.')
-ai_command('clear')
-os.system('rm -rf ' + data_dir + '/' + sim_name + '*')
+ai_command('clear ranks')
+ai_command('clear ratings')
+
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
+
+if not os.path.exists(out_dir):
+	print('Creating output directory: ' + out_dir)
+	os.makedirs(out_dir)
     
 print('Loading transaction ratings.')
 #ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm') #logarithm applies to finacial value or weight 
 ai_command('load ratings file ' + transactions_file + ' precision 0.01')
 
 print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.5 zero')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.5 norm')
 
 print('Checking ranks:')
 ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))
@@ -110,3 +115,4 @@ print('Getting checking ranks.')
 print('Evaluating average and latest ranks:')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
+
