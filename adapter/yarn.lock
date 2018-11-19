@@ -2593,9 +2593,9 @@ sha.js@^2.4.0, sha.js@^2.4.8:
     inherits "^2.0.1"
     safe-buffer "^5.0.1"
 
-"singularitynet-platform-contracts@https://github.com/tiero/platform-contracts.git":
-  version "0.2.3"
-  resolved "https://github.com/tiero/platform-contracts.git#8a5f7220b0347e1afb23ed739ec389a43d03cb10"
+"singularitynet-platform-contracts@https://github.com/singnet/platform-contracts.git#v0.2.4":
+  version "0.2.4"
+  resolved "https://github.com/singnet/platform-contracts.git#97a6bb30fcd45e48b61583355a68c6c2c029c88e"
   dependencies:
     openzeppelin-solidity "1.11.0"
     singularitynet-token-contracts "2.0.0"

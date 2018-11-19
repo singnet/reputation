@@ -7,10 +7,11 @@
     "abigen": "sh scripts/abigen.sh",
     "prepare-go": "sh scripts/prepare.sh",
     "ganache": "node_modules/.bin/ganache-cli -p 9545",
+    "compile": "sh scripts/compile.sh",
     "deploy": "sh scripts/deploy.sh"
   },
   "dependencies": {
-    "singularitynet-platform-contracts": "https://github.com/tiero/platform-contracts.git",
+    "singularitynet-platform-contracts": "https://github.com/singnet/platform-contracts.git#v0.2.4",
     "singularitynet-token-contracts": "2.0.0"
   },
   "devDependencies": {
