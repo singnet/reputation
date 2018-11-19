@@ -35,12 +35,36 @@ import sys
 import os
 import subprocess
 
+def get_param(args, key, default):
+	for s in args:
+		if s.count('=') == 1:
+			k, v = s.split('=', 1)
+			if k == key:
+				return v if len(v) > 0 else default
+	return default
+
+def get_option(args, key):
+	value = get_param(sys.argv,key,'False')
+	return True if value == 'True' else False
+
+
 java_options = '-Xms128m -Xmx256m -Dsun.zip.disableMemoryMapping=true'
 
 if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.argv[3]) < 2:
-	print('Usage: python reputation_simulate.py <bin_directory> <simulation_name> <data_directory> <transaction_log_file> <user_reputations_file> <since_date> <until_date>')
+	print('Usage:')
+	print('	<command> := python reputation_simulate.py <ordered_parameters> <optional_parameters>')
+	print('	<ordered_parameters> := <bin_directory> <simulation_name> <data_directory> <transaction_log_file> <user_reputations_file> <since_date> <until_date>')
+	print('	<optional_parameters> := <optional_parameter> (<optional_parameter>)*')
+	print('	<optional_parameter> := <decimal_parameter>|<boolean_parameter>')
+	print('	<decimal_parameter> := (precision | default | conservativity)=<decimal_value>')
+	print('	<boolean_parameter> := (logarithm | weighting | norm | verbose)=(True | False)')
+	print('Examples:')
+	print('	python reputation_simulate.py ../ testsim ./ transactions.tsv users.tsv 2018-10-01 2018-10-10')
+	print('	python reputation_simulate.py ../ testsim ./ transactions.tsv users.tsv 2018-10-01 2018-10-10 logarithm=True weighting=True norm=True default=0.5')
 	sys.exit()
 
+
+#required ordered parameters
 bin_dir = sys.argv[1]
 sim_name = sys.argv[2]
 data_dir = sys.argv[3]
@@ -51,15 +75,29 @@ until_date = sys.argv[7]
 out_dir = data_dir + '/' + sim_name + '_out'
 control_id = 0 # id of user to be controlled
 
-print('')
-	
-print('Binary directory:', bin_dir)
-print('Simulation name:', sim_name)
-print('Data directory:', data_dir)
-print('Transaction log file:', transactions_file)
-print('User reputations file:', reputations_file)
-print('Since date:', since_date)
-print('Until date:', until_date)
+#default optional parameters
+precision = get_param(sys.argv,'precision','0.01')
+default = get_param(sys.argv,'default','0.5')
+conservativity = get_param(sys.argv,'conservativity','0.5')
+logarithm = get_option(sys.argv,'logarithm')
+weighting = get_option(sys.argv,'weighting')
+norm = get_option(sys.argv,'norm')
+verbose = get_option(sys.argv,'verbose')
+
+print('binary directory:', bin_dir)
+print('dimulation name:', sim_name)
+print('data directory:', data_dir)
+print('transaction log file:', transactions_file)
+print('user reputations file:', reputations_file)
+print('since date:', since_date)
+print('until date:', until_date)
+print('precision:', precision)
+print('default:', default)
+print('conservativity:', conservativity)
+print('logarithm:', logarithm)
+print('weighting:', weighting)
+print('norm:', norm)
+print('verbose:', verbose)
 
 
 def os_command(command):
@@ -75,8 +113,9 @@ def ai_command(command):
 	#print(aigents_command)
 	os_command(aigents_command)
 
-print('')
-print('Cleaning data.')
+if verbose:
+	print('')
+	print('Cleaning data.')
 ai_command('clear ranks')
 ai_command('clear ratings')
 
@@ -86,33 +125,37 @@ if not os.path.exists(data_dir):
 if not os.path.exists(out_dir):
 	print('Creating output directory: ' + out_dir)
 	os.makedirs(out_dir)
-    
-print('Loading transaction ratings.')
-#ai_command('load ratings file ' + transactions_file + ' precision 0.01 logarithm') #logarithm applies to finacial value or weight 
-ai_command('load ratings file ' + transactions_file + ' precision 0.01')
 
-print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default 0.5 conservativity 0.5 norm')
+if verbose:
+	print('Loading transaction ratings.')
+ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else ''))
 
-print('Checking ranks:')
+if verbose:
+	print('Updating reputation ranks.')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default ' + default + ' conservativity ' + conservativity \
+		+ (' norm' if norm else ''))
+
+if verbose:
+	print('Checking ranks:')
 ai_command('get ratings date ' + until_date + ' ids ' + str(control_id))
 
-print('Getting history of ranks.')
+if verbose:
+	print('Getting history of ranks.')
 ai_command('get ranks since ' + since_date + ' until ' + until_date + ' > ' + out_dir + '/history.tsv')
 
-print('Getting average and latest ranks.')
+if verbose:
+	print('Getting average and latest ranks.')
 ai_command('get ranks since ' + since_date + ' until ' + until_date + ' average > ' + out_dir + '/average.tsv')
 ai_command('get ranks date ' + until_date + ' > ' + out_dir + '/latest.tsv')
 
-print('Checking top 5 latest ranks:')
-os_command('head -n 5 ' + out_dir + '/latest.tsv')
+if verbose:
+	print('Checking top 5 latest ranks:')
+	os_command('head -n 5 ' + out_dir + '/latest.tsv')
 
-print('Checking bottom 10 latest ranks:')
-os_command('tail -n 5 ' + out_dir + '/latest.tsv')
+	print('Checking bottom 10 latest ranks:')
+	os_command('tail -n 5 ' + out_dir + '/latest.tsv')
 
-print('Getting checking ranks.')
-
-print('Evaluating average and latest ranks:')
+if verbose:
+	print('Evaluating average and latest ranks:')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
-
