@@ -66,21 +66,8 @@ import time
 from aigents_api import *
 
 network = 'reptest'
-since = datetime.date(2018, 10, 1)
-sim_days = 10
 
-all_agents = [1,2,3,4,5,6,7,8,9,10]
-
-good_agents = [1,2,3,4,5,6,7,8]
-good_agents_costs = [100,1000]
-good_agents_transactions = 10
-
-bad_agents = [9,10]
-bad_agents_costs = [1,10]
-bad_agents_transactions = 100
-
-
-def pick_agent(list,self,memories = None):
+def pick_agent(list,self,memories = None,bad_agents = None):
 	picked = None
 	if memories is not None:
 		if self in memories:
@@ -97,7 +84,7 @@ def pick_agent(list,self,memories = None):
 		else:
 			if blacklist is not None and picked in blacklist:
 				picked = None # skip those who already blacklisted
-	if blacklist is not None and picked in bad_agents:
+	if blacklist is not None and bad_agents is not None and picked in bad_agents:
 		blacklist.append(picked) #blacklist picked bad ones once picked so do not pick them anymore
 	return picked
 
@@ -109,22 +96,46 @@ def log_file(file,date,type,agent_from,agent_to,cost,rating):
 			+ '\t\t\t\t\t\t\t\t' + ('' if rating is None else str(rating)) + '\t\n')
 
 
-def simulate(ratings):
+def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 	
-	print('Good:',len(good_agents),good_agents_costs[0],good_agents_transactions,len(good_agents)*good_agents_costs[0]*good_agents_transactions)
-	print('Bad:',len(bad_agents),bad_agents_costs[0],bad_agents_transactions,len(bad_agents)*bad_agents_costs[0]*bad_agents_transactions)
+	print('Good:',good_agent)
+	print('Bad:',bad_agent)
 	
-	with open('transactions.tsv', 'w') as file:
+	good_agents = [i for i in range(good_agent['range'][0],good_agent['range'][1]+1)]
+	bad_agents = [i for i in range(bad_agent['range'][0],bad_agent['range'][1]+1)]
+	print('Good:',good_agents)
+	print('Bad:',bad_agents)
+	
+	all_agents = good_agents + bad_agents
+
+	print('All:',all_agents)
+	
+	good_agents_transactions = good_agent['transactions']
+	bad_agents_transactions = bad_agent['transactions']
+	good_agents_values = good_agent['values']
+	bad_agents_values = bad_agent['values']
+	good_agents_count = len(good_agents)
+	bad_agents_count = len(bad_agents)
+	good_agents_volume = good_agents_count * good_agents_transactions * good_agents_values[0]
+	bad_agents_volume = bad_agents_count * bad_agents_transactions * bad_agents_values[0]
+	code = ('r' if ratings else 'p') + '_' + str(round(good_agents_values[0]/bad_agents_values[0])) + '_' + str(good_agents_transactions/bad_agents_transactions) 
+	transactions = 'transactions_' + code + '.tsv'
+	
+	print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
+	print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
+	print('Code:',code,'Volume ratio:',str(good_agents_volume/bad_agents_volume))
+	
+	with open(transactions, 'w') as file:
 		for day in range(sim_days):
 			date = since + datetime.timedelta(days=day)
 			print(day,date,memories)
 			
 			for agent in good_agents:
 				for t in range(0, good_agents_transactions):
-					other = pick_agent(all_agents,agent,memories)
-					cost = random.randint(good_agents_costs[0],good_agents_costs[1])
+					other = pick_agent(all_agents,agent,memories,bad_agents)
+					cost = random.randint(good_agents_values[0],good_agents_values[1])
 					if ratings:
 						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
@@ -135,7 +146,7 @@ def simulate(ratings):
 			for agent in bad_agents:
 				for t in range(0, bad_agents_transactions):
 					other = pick_agent(bad_agents,agent)
-					cost = random.randint(bad_agents_costs[0],bad_agents_costs[1])
+					cost = random.randint(bad_agents_values[0],bad_agents_values[1])
 					if ratings:
 						rating = 1.0
 						log_file(file,date,'rating',agent,other,rating,cost)
@@ -148,4 +159,17 @@ def simulate(ratings):
 			file.write(str(agent) + '\t' + goodness + '\n')
 
 
-simulate(True) # False - financial, True - ratings
+#Unhealthy agent environment set 
+#good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
+#bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100}
+
+#Semi-healthy agent environment set 
+#good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
+#bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100}
+
+#Healthy agent environment set (default) 
+good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
+bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100}
+
+# False - financial, True - ratings
+simulate(good_agent,bad_agent, datetime.date(2018, 10, 1), 10, True)
