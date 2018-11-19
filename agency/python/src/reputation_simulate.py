@@ -60,7 +60,7 @@ if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.
 	print('	<boolean_parameter> := (logarithm | weighting | norm | verbose)=(True | False)')
 	print('Examples:')
 	print('	python reputation_simulate.py ../ testsim ./ transactions.tsv users.tsv 2018-10-01 2018-10-10')
-	print('	python reputation_simulate.py ../ testsim ./ transactions.tsv users.tsv 2018-10-01 2018-10-10 logarithm=True weighting=True norm=True default=0.5')
+	print('	python reputation_simulate.py ../ testsim ./ transactions.tsv users.tsv 2018-10-01 2018-10-10 logarithm=False weighting=True norm=True default=0.5')
 	sys.exit()
 
 
@@ -128,7 +128,7 @@ if not os.path.exists(out_dir):
 
 if verbose:
 	print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else ''))
+ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else '')+ (' logarithm' if logarithm else ''))
 
 if verbose:
 	print('Updating reputation ranks.')
