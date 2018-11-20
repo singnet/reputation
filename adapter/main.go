@@ -17,10 +17,10 @@ import (
 
 //ChannelOpenEvent event struct
 type ChannelOpenEvent struct {
-	ChannelID  *big.Int
+	ChannelId  *big.Int
 	Sender     common.Address
 	Recipient  common.Address
-	GroupID    [32]byte
+	GroupId    [32]byte
 	Signer     common.Address
 	Amount     *big.Int
 	Expiration *big.Int
@@ -28,7 +28,7 @@ type ChannelOpenEvent struct {
 
 //ChannelClaimEvent event struct
 type ChannelClaimEvent struct {
-	ChannelID      *big.Int
+	ChannelId      *big.Int
 	Recipient      common.Address
 	ClaimAmount    *big.Int
 	SendBackAmount *big.Int
@@ -43,13 +43,13 @@ type ChannelSenderClaimEvent struct {
 
 //ChannelExtend event struct
 type ChannelExtend struct {
-	ChannelID     *big.Int
+	ChannelId     *big.Int
 	NewExpiration *big.Int
 }
 
 //ChannelAddFunds event struct
 type ChannelAddFunds struct {
-	ChannelID *big.Int
+	ChannelId *big.Int
 	NewFunds  *big.Int
 }
 
@@ -63,8 +63,8 @@ type Network struct {
 var networks = map[string]Network{
 	"kovan": Network{
 		"https://kovan.infura.io",
-		common.HexToAddress("0x385036D6cd8Cf6A8749d5Df7f716F0341E1c13B1"),
-		0,
+		common.HexToAddress("0x05a978328b1fafe9ec69a7139f1c4ed0035e5288"),
+		9424242,
 	},
 	"ropsten": Network{
 		"https://ropsten.infura.io",
@@ -74,7 +74,7 @@ var networks = map[string]Network{
 }
 
 func main() {
-	networkKey := flag.String("network", "ropsten", "network. One of {mainnet, ropsten, kovan}")
+	networkKey := flag.String("network", "kovan", "network. One of {mainnet, ropsten, kovan}")
 	currentNetwork := networks[*networkKey]
 
 	client, err := ethclient.Dial(currentNetwork.RPCEndpoint)
@@ -98,14 +98,23 @@ func main() {
 	}
 
 	for _, vLog := range logs {
-		fmt.Println(vLog.TxHash.Hex())
-		channelOpenEvent := ChannelOpenEvent{}
+
+		/* channelOpenEvent := ChannelOpenEvent{}
 		err := mpeAbi.Unpack(&channelOpenEvent, "ChannelOpen", vLog.Data)
 		if err != nil {
-			log.Fatal(err)
+			continue
 		}
 
-		fmt.Println(channelOpenEvent.ChannelID)
+		fmt.Println(channelOpenEvent.Amount) */
+
+		channelSenderClaimEvent := ChannelSenderClaimEvent{}
+		err := mpeAbi.Unpack(&channelSenderClaimEvent, "ChannelSenderClaim", vLog.Data)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		fmt.Println(channelSenderClaimEvent)
+
 	}
 
 }
