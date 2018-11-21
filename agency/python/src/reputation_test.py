@@ -23,6 +23,7 @@
 # Reputation Service API Interation Testing
 
 import unittest
+import datetime
 
 from aigents_reputation_cli import *
 
@@ -37,13 +38,28 @@ class TestStringMethods(unittest.TestCase):
 		#clear everything
 		self.assertEqual( rs.clear_ratings(), 0 )
 		self.assertEqual( rs.clear_ranks(), 0 )
+
+		#make sure that we have neither ranks not ratings
+		#TODO
+		self.assertEqual( rs.get_ranks(), 'get_ranks' )
+		self.assertEqual( rs.get_ratings(), 'get_ratings' )
+
+		#add ranks and make sure they are added
+		self.assertEqual( rs.put_ranks(None), 'put_ranks' )
+		self.assertEqual( rs.get_ranks(), 'get_ranks' )
 		
-		#add ratings
-		self.assertEqual( rs.put_ratings(), 'put_ratings' )
+		#add ratings nd make sure they are added
+		dt = datetime.date(2018, 10, 1)
+		ratings = [\
+			{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt},\
+			{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt},\
+			{'from':2,'type':'rating','to':4,'value':100,'weight':None,'time':dt},\
+			{'from':4,'type':'rating','to':5,'value':100,'weight':None,'time':dt},\
+			]
+		self.assertEqual( rs.put_ratings(ratings), 0 )
 		self.assertEqual( rs.get_ratings(), 'get_ratings' )
 		
 		#update and get ranks
-		self.assertEqual( rs.put_ranks(), 'put_ranks' )
 		self.assertEqual( rs.update_ranks(), 'update_ranks' )
 		self.assertEqual( rs.get_ranks(), 'get_ranks' )
 
