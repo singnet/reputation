@@ -24,19 +24,19 @@
 
 import unittest
 
-from reputation_api import *
+from aigents_reputation_cli import *
 
 class TestStringMethods(unittest.TestCase):
 
 	def setUp(self):
-		self.rs = AigentsReputationService()
+		self.rs = AigentsCLIReputationService('../','./','test',True)
 
 	def test_smoke(self):
 		rs = self.rs
 		
 		#clear everything
-		self.assertEqual( rs.clear_ratings(), 'clear_ratings' )
-		self.assertEqual( rs.clear_ranks(), 'clear_ranks' )
+		self.assertEqual( rs.clear_ratings(), 0 )
+		self.assertEqual( rs.clear_ranks(), 0 )
 		
 		#add ratings
 		self.assertEqual( rs.put_ratings(), 'put_ratings' )
