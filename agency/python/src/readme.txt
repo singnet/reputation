@@ -24,17 +24,17 @@ Using Ratings:
 # With 1/4 of evil population, we can't identify them
 Good: 8 100 10 8000
 Bad: 2 10 100 2000 (1/4)
--0.9749420308943617	-0.9736785461808086	default 0.5 conservativity 0.5	nologweight	norm
+-0.9749420308943617	-0.9736785461808086	default 0.5 conservativity 0.5	logarithm=False weighting=True norm=True
 
 # With 1/8 of evil population, we can see them
 Good: 8 100 10 8000
 Bad: 2 5 100 1000 (1/8)
-0.8713692747116901	0.987143367504686	default 0.5 conservativity 0.5	nologweight	norm
+0.8713692747116901	0.987143367504686	default 0.5 conservativity 0.5	logarithm=False weighting=True norm=True
 
 # With 1/40 of evil population, we can see them clearly
 Good: 8 100 10 8000	(DEFAULT)
 Bad: 2 1 100 200 (1/40)
-0.9866744712267205	0.9944481144111824	default 0.5 conservativity 0.5	nologweight	norm
+0.9866744712267205	0.9944481144111824	default 0.5 conservativity 0.5	logarithm=False weighting=True norm=True
 
 Not using ratings:
 
@@ -46,23 +46,23 @@ Bad: 2 10 100 2000 (1/4)
 # Once the market volume of good becomes substantially grrater than the market of evil, the evil can be clearly identified
 Good: 8 100 10 8000
 Bad: 2 5 100 1000 (1/8)
-0.9758026651116892    0.9926478840691098	default 0.5 conservativity 0.5
+0.9758026651116892    0.9926478840691098	logarithm=False weighting=True norm=True
 
 Good: 8 100 10 8000
 Bad: 2 1 100 200 (1/40)
-0.990735561711275    0.9978408742994422	default 0.5 conservativity 0.5
+0.990735561711275    0.9978408742994422	logarithm=False weighting=True norm=True
 
 Good: 8 100 50 40000
 Bad: 2 1 100 200 (1/200)
-0.9995706871788017    0.998739918854333	default 0.5 conservativity 0.5
+0.9995706871788017    0.998739918854333	logarithm=False weighting=True norm=True
 
 Good: 8 100 100 80000
 Bad: 2 10 100 2000 (1/40)
-0.9997889018691665    0.999908112800532	default 0.5 conservativity 0.5
+0.9997889018691665    0.999908112800532	logarithm=False weighting=True norm=True
 
 Good: 8 100 100 80000
 Bad: 2 1 100 200 (1/200)
-0.9998472307149427    0.9999721725413688	default 0.5 conservativity 0.5
+0.9998472307149427    0.9999721725413688	logarithm=False weighting=True norm=True
 
 #Resume (to be revised or regular basis)
 
