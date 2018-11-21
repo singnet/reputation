@@ -121,19 +121,3 @@ class PythonReputationService(RatingService,RankingService):
 	def update_ranks(self):
 		return("update_ranks")
 
-
-#TODO @anton have complete test replacing this stub
-
-rs = AigentsReputationService()
-
-#clear everything
-print( rs.clear_ratings() )
-print( rs.clear_ranks() )
-
-#get ad check ratings
-print( rs.put_ratings() )
-print( rs.get_ratings() )
-
-print( rs.put_ranks() )
-print( rs.update_ranks() )
-print( rs.get_ranks() )
