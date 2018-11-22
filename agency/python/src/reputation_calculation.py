@@ -56,8 +56,6 @@ def reputation_calc_p1(new_subset,first_occurance):
     if 'level_0' in new_subset:
         del(new_subset['level_0'])
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
-    new_array = new_subset[['From','To','Amount']].values
-    dates_array = np.array(new_subset['Timestamp'])
     ### Now we will just store the first occurance of each account in a dictionary (first_occurance)
     ### The easiest (and in pandas probably the fastest) way would be to create sorted dataframe and then iterate
     ### and check if we already have certain record. If no, create, if yes, it was created before, so pass.
@@ -67,7 +65,7 @@ def reputation_calc_p1(new_subset,first_occurance):
     ### Time to do some refinements. Let's get rid of Pandas dataframe and save it to something else.
     ### Let us sort the dataset alphabetically by "To". This can fasten up the algo later on...
 
-    new_array = new_subset[['From','To','Amount']].values
+    new_array = new_subset[['From','To','Amount','Rating']].values
     dates_array = np.array(sorted_merge['Timestamp'])
     to_array = np.array(new_subset['To'].values)
 
@@ -110,7 +108,7 @@ def update_reputation(reputation,new_array,default_reputation):
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation(new_array,to_array,reputation,normalizedRanks=True):
+def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRanks=True):
     ### This is needed; first create records for each id.
     mys = {}
     i = 0
@@ -125,18 +123,32 @@ def calculate_new_reputation(new_array,to_array,reputation,normalizedRanks=True)
     unique_ids = np.unique(to_array)
     k=0
     i = 0
-    while i<len(unique_ids):
-        amounts = []
-        ### Here we get log transformation of each amount value.
-        while unique_ids[i]==to_array[k]:
-            amounts.append(np.log10(1+new_array[k][2])* reputation[new_array[k][0]])
-            if k==len(to_array)-1:
-                break
-            k+=1
-        mys[unique_ids[i]] = sum(amounts)
+    if rating:
+        
+        while i<len(unique_ids):
+            amounts = []
+            ### Here we get log transformation of each amount value.            
+            while unique_ids[i]==to_array[k]:
+                amounts.append(new_array[k][3] * np.log10(1+new_array[k][2])* reputation[new_array[k][0]])
+                if k==len(to_array)-1:
+                    break
+                k+=1
+            mys[unique_ids[i]] = sum(amounts)
 
-        i+=1
+            i+=1
+    else:
+        while i<len(unique_ids):
+            amounts = []
+            ### Here we get log transformation of each amount value.            
+            while unique_ids[i]==to_array[k]:
+                amounts.append(np.log10(1+new_array[k][2])* reputation[new_array[k][0]])
+                if k==len(to_array)-1:
+                    break
+                k+=1
+            mys[unique_ids[i]] = sum(amounts)
 
+            i+=1
+                     
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
     for k in mys.keys():
@@ -157,7 +169,7 @@ def calculate_new_reputation(new_array,to_array,reputation,normalizedRanks=True)
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation_no_log(new_array,to_array,reputation,normalizedRanks=True):
+def calculate_new_reputation_no_log(new_array,to_array,reputation,rating,normalizedRanks=True):
     ### This is needed;
     mys = {}
     i = 0
@@ -172,17 +184,28 @@ def calculate_new_reputation_no_log(new_array,to_array,reputation,normalizedRank
     unique_ids = np.unique(to_array)
     k=0
     i = 0
-    while i<len(unique_ids):
-        amounts = []
-        while unique_ids[i]==to_array[k]:
-            amounts.append(new_array[k][2]* reputation[new_array[k][0]])
-            if k==len(to_array)-1:
-                break
-            k+=1
-        mys[unique_ids[i]] = sum(amounts)
+    if rating:
+        while i<len(unique_ids):
+            amounts = []
+            while unique_ids[i]==to_array[k]:
+                amounts.append(new_array[k][3] * new_array[k][2]* reputation[new_array[k][0]])
+                if k==len(to_array)-1:
+                    break
+                k+=1
+            mys[unique_ids[i]] = sum(amounts)
 
-        i+=1
-
+            i+=1
+    else:
+        while i<len(unique_ids):
+            amounts = []
+            while unique_ids[i]==to_array[k]:
+                amounts.append(new_array[k][2]* reputation[new_array[k][0]])
+                if k==len(to_array)-1:
+                    break
+                k+=1
+            mys[unique_ids[i]] = sum(amounts)
+            
+            i+=1        
     ### nr 5.
     for k in mys.keys():
         if mys[k]<0:
@@ -242,7 +265,7 @@ def avg_rep_calculate(avg_reputation,new_reputation,multiplier):
 
 
 
-def calculate_reputations(default_rep,conservativity,multiplier):
+def calculate_reputations(default_rep,conservativity,multiplier,ratings):
     from datetime import datetime, timedelta
     ### Define empty dictionaries where we save our queries later on.
     first_occurance = dict()
@@ -258,8 +281,12 @@ def calculate_reputations(default_rep,conservativity,multiplier):
 
     data = pd.read_csv(filepath,delimiter="\t",header=None)
     ### Here we name the columns. This is important and might be changed as specifications change...
-    data.columns = ['network','Timestamp','type','From','To','Amount','unit','child','parent','title','input','tags','format',
-                     'block','parent_value','parent_unit']
+    if ratings:
+        data.columns = ['network','Timestamp','type','From','To','Rating','unit','child','parent','title','input','tags','format',
+                     'block','Amount','parent_unit']
+    else:
+        data.columns = ['network','Timestamp','type','From','To','Amount','unit','child','parent','title','input','tags','format',
+                     'block','Rating','parent_unit']
     ### Simple renaming is usually needed.
     data = data.rename(columns={"from":"From","to":"To"})
     data['Date'] = " "
@@ -280,8 +307,6 @@ def calculate_reputations(default_rep,conservativity,multiplier):
     avg_reputation = update_reputation({},get_arrays,0)
     ### We will also calculate average reputation. We had to sort the whole dataset at the beginning, so that we have
     ### enough 
-
-
     i= 0
     while i<len(np.unique(data['days_since_start'])):
         mysubset = data[data['days_since_start']==i]
@@ -299,7 +324,9 @@ def calculate_reputations(default_rep,conservativity,multiplier):
         del(daily_data)    
         reputation = update_reputation(reputation,array1,default_rep)
         ### And then update reputation.
-        new_reputation = calculate_new_reputation_no_log(array1,to_array,reputation)
+        new_reputation = calculate_new_reputation_no_log(new_array = array1,
+                                                                 to_array = to_array,reputation = reputation,
+                                                                 rating = ratings)
         ### In our case we take approach c.
         reputation = update_reputation_approach_d(first_occurance,reputation,new_reputation,since,our_date,
                                                  default_rep,conservativity)
