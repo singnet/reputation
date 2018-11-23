@@ -47,21 +47,22 @@ class TestReputationServiceMethods(unittest.TestCase):
 		dt2 = datetime.date(2018, 1, 2)
 
 		#make sure that we have neither ranks not ratings
-		#TODO
-		self.assertEqual( rs.get_ranks({"date":dt1}), 'get_ranks' )
+		result, ranks = rs.get_ranks({"date":dt1})
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ranks), 0)
 
 		filter = {"ids":[4],"since":dt2,"until":dt2} 
 		result, ratings = rs.get_ratings(filter)
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 0)
 
-		#TODO
 		#add ranks and make sure they are added
-		self.assertEqual( rs.put_ranks(dt2,[{"id":1,"rank":1},{"id":2,"rank":2},{"id":3,"rank":3}]), 0 )
-		
-		self.assertEqual( rs.get_ranks({"date":dt1}), 'get_ranks' )
-		
-		#add ratings nd make sure they are added
+		self.assertEqual( rs.put_ranks(dt1,[{"id":1,"rank":50},{"id":2,"rank":50},{"id":3,"rank":50}]), 0 )
+		result, ranks = rs.get_ranks({"date":dt1})
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ranks), 3)
+
+		#add ratings and make sure they are added
 		ratings = [\
 			{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt2},\
 			{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt2},\
@@ -80,8 +81,17 @@ class TestReputationServiceMethods(unittest.TestCase):
 		# to
 		
 		#update and get ranks
-		self.assertEqual( rs.update_ranks(), 'update_ranks' )
-		self.assertEqual( rs.get_ranks({"date":dt2}), 'get_ranks' )
+		result, ranks = rs.get_ranks({"date":dt2})
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ranks), 0)
+
+		self.assertEqual(rs.update_ranks(dt2), 0)
+
+		result, ranks = rs.get_ranks({"date":dt2})
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ranks), 5)
+
+		#TODO test reputation system parameters
 
 if __name__ == '__main__':
     unittest.main()

@@ -35,7 +35,7 @@ class PythonReputationService(RatingService,RankingService):
 	def clear_ratings(self):
 		return("clear_ratings")
 
-	def put_ratings(self):
+	def put_ratings(self,ratings):
 		return("put_ratings")
 
 	def get_ratings(self,filter):
@@ -44,13 +44,13 @@ class PythonReputationService(RatingService,RankingService):
 	def clear_ranks(self):
 		return("clear_ranks")
 
-	def put_ranks(self):
+	def put_ranks(self,date,ranks):
 		return("put_ranks")
 
-	def get_ranks(self):
+	def get_ranks(self,filter):
 		return("get_ranks")
 
-	def update_ranks(self):
+	def update_ranks(self,date):
 		return("update_ranks")
 
 	def set_parameters(self,parameters):
@@ -60,14 +60,15 @@ class PythonReputationService(RatingService,RankingService):
 		return("get_parameters")
 
 
-#todo move this out to unittest eventually
+#TODO @nejc move this out to unittest eventually
+import datetime
 rs = PythonReputationService()
 print( rs.clear_ratings() )
 print( rs.clear_ranks() )
-print( rs.put_ratings() )
-print( rs.put_ranks() )
+print( rs.put_ratings([]) )
+print( rs.put_ranks(datetime.date(2018, 1, 1),{}) )
 print( rs.get_ratings({}) )
-print( rs.get_ranks() )
-print( rs.update_ranks() )
+print( rs.get_ranks({}) )
+print( rs.update_ranks(datetime.date(2018, 1, 1)) )
 print( rs.set_parameters({"param1":"value1","param2":"value2"}) )
 print( rs.get_parameters() )

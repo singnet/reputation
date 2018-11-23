@@ -125,10 +125,28 @@ class AigentsCLIReputationService(RatingService,RankingService):
 		return 0 if len(res.strip()) == 0 else 1
 
 	def get_ranks(self,filter):
-		return("get_ranks")
+		if self.verbose:
+			print( 'get_ranks', filter )
+		if 'ids' in filter:
+			ids = ''
+			for id in filter['ids']:
+				ids += ' ' + str(id)
+		else:
+			ids = None
+		res = self.ai_command('get ranks date ' + str(filter['date']) + ('' if ids is None else ' ids' + ids))
+		ranks = []
+		for line in res.splitlines():
+			rating = line.split('\t')
+			ranks.append({"id":rating[0],"rank":rating[1]})
+		if self.verbose:
+			print( 'get_ranks', ranks )
+		return(0,ranks)
 
-	def update_ranks(self):
-		return("update_ranks")
+	def update_ranks(self,date):
+		if self.verbose:
+			print( 'update_ranks', date )
+		res = self.ai_command('update ranks date ' + str(date))
+		return 0 if len(res.strip()) == 0 else 1
 
 	def set_parameters(self,parameters):
 		return("set_parameters")
