@@ -80,11 +80,18 @@ class TestReputationServiceMethods(unittest.TestCase):
 		# from
 		# to
 		
-		#TODO
 		#update and get ranks
-		result, ranks = rs.get_ranks({"date":dt1})
+		result, ranks = rs.get_ranks({"date":dt2})
 		self.assertEqual(result, 0)
-		self.assertEqual(len(ranks), 3)
+		self.assertEqual(len(ranks), 0)
+
+		self.assertEqual(rs.update_ranks(dt2), 0)
+
+		result, ranks = rs.get_ranks({"date":dt2})
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ranks), 5)
+
+		#TODO test reputation system parameters
 
 if __name__ == '__main__':
     unittest.main()

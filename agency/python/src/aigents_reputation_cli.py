@@ -142,8 +142,11 @@ class AigentsCLIReputationService(RatingService,RankingService):
 			print( 'get_ranks', ranks )
 		return(0,ranks)
 
-	def update_ranks(self):
-		return("update_ranks")
+	def update_ranks(self,date):
+		if self.verbose:
+			print( 'update_ranks', date )
+		res = self.ai_command('update ranks date ' + str(date))
+		return 0 if len(res.strip()) == 0 else 1
 
 	def set_parameters(self,parameters):
 		return("set_parameters")
