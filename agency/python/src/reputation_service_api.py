@@ -38,7 +38,7 @@ class PythonReputationService(RatingService,RankingService):
 	def put_ratings(self):
 		return("put_ratings")
 
-	def get_ratings(self):
+	def get_ratings(self,filter):
 		return("get_ratings")
 
 	def clear_ranks(self):
@@ -66,7 +66,7 @@ print( rs.clear_ratings() )
 print( rs.clear_ranks() )
 print( rs.put_ratings() )
 print( rs.put_ranks() )
-print( rs.get_ratings() )
+print( rs.get_ratings({}) )
 print( rs.get_ranks() )
 print( rs.update_ranks() )
 print( rs.set_parameters({"param1":"value1","param2":"value2"}) )

@@ -43,30 +43,45 @@ class TestReputationServiceMethods(unittest.TestCase):
 		self.assertEqual( rs.clear_ratings(), 0 )
 		self.assertEqual( rs.clear_ranks(), 0 )
 
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+
 		#make sure that we have neither ranks not ratings
 		#TODO
-		self.assertEqual( rs.get_ranks(), 'get_ranks' )
-		self.assertEqual( rs.get_ratings(), 'get_ratings' )
+		self.assertEqual( rs.get_ranks({"date":dt1}), 'get_ranks' )
 
+		filter = {"ids":[4],"since":dt2,"until":dt2} 
+		result, ratings = rs.get_ratings(filter)
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ratings), 0)
+
+		#TODO
 		#add ranks and make sure they are added
-		self.assertEqual( rs.put_ranks(None), 'put_ranks' )
-		self.assertEqual( rs.get_ranks(), 'get_ranks' )
+		self.assertEqual( rs.put_ranks(dt2,[{"id":1,"rank":1},{"id":2,"rank":2},{"id":3,"rank":3}]), 0 )
+		
+		self.assertEqual( rs.get_ranks({"date":dt1}), 'get_ranks' )
 		
 		#add ratings nd make sure they are added
-		dt = datetime.date(2018, 10, 1)
 		ratings = [\
-			{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt},\
-			{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt},\
-			{'from':2,'type':'rating','to':4,'value':100,'weight':None,'time':dt},\
-			{'from':4,'type':'rating','to':5,'value':100,'weight':None,'time':dt},\
+			{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt2},\
+			{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt2},\
+			{'from':2,'type':'rating','to':4,'value':100,'weight':None,'time':dt2},\
+			{'from':4,'type':'rating','to':5,'value':100,'weight':None,'time':dt2},\
 			]
 		self.assertEqual( rs.put_ratings(ratings), 0 )
 		
-		self.assertEqual( rs.get_ratings(), 'get_ratings' )
+		result, ratings = rs.get_ratings(filter)
+		self.assertEqual(result, 0)
+		self.assertEqual(len(ratings), 3)
+		
+		#TODO test for filter with
+		# multiple id-s
+		# from
+		# to
 		
 		#update and get ranks
 		self.assertEqual( rs.update_ranks(), 'update_ranks' )
-		self.assertEqual( rs.get_ranks(), 'get_ranks' )
+		self.assertEqual( rs.get_ranks({"date":dt2}), 'get_ranks' )
 
 if __name__ == '__main__':
     unittest.main()
