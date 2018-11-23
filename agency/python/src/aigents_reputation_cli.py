@@ -24,7 +24,6 @@
 Reputation Service wrapper around Aigents Java-based Command Line Interface
 """        
 
-#import sys
 import os
 import subprocess
 from reputation_api import *
@@ -104,3 +103,10 @@ class AigentsCLIReputationService(RatingService,RankingService):
 
 	def update_ranks(self):
 		return("update_ranks")
+
+	def set_parameters(self,parameters):
+		return("set_parameters")
+
+	def get_parameters(self):
+		return("get_parameters")
+		
