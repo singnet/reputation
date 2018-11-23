@@ -27,13 +27,17 @@ import datetime
 
 from aigents_reputation_cli import *
 
-class TestStringMethods(unittest.TestCase):
+class TestReputationServiceMethods(unittest.TestCase):
 
 	def setUp(self):
 		self.rs = AigentsCLIReputationService('../','./','test',True)
 
 	def test_smoke(self):
 		rs = self.rs
+		
+		#TODO
+		self.assertEqual( rs.set_parameters({"key":"value"}), "set_parameters" )
+		self.assertEqual( rs.get_parameters(), "get_parameters" )
 		
 		#clear everything
 		self.assertEqual( rs.clear_ratings(), 0 )
@@ -57,6 +61,7 @@ class TestStringMethods(unittest.TestCase):
 			{'from':4,'type':'rating','to':5,'value':100,'weight':None,'time':dt},\
 			]
 		self.assertEqual( rs.put_ratings(ratings), 0 )
+		
 		self.assertEqual( rs.get_ratings(), 'get_ratings' )
 		
 		#update and get ranks

@@ -23,60 +23,51 @@
 # Reputation Service API, including Rating Service and Ranking Service
 
 import abc
+from reputation_api import *
 
-#TODO @anton provide proper parameters for the methods
-
-
-"""
-Reputation Generic Service interface definition
-"""        
-class ReputationService(abc.ABC):
-
-	@abc.abstractmethod
-	def set_parameters(self,parameters):
-		pass
-
-	@abc.abstractmethod
-	def get_parameters(self):
-		pass
-
+#TODO @neic to implement
 
 """
-Reputation Rating Service interface definition
+Reputation Service native implementation in Python
 """        
-class RatingService(ReputationService):
+class PythonReputationService(RatingService,RankingService):
 
-	"""
-	List of dicts with the key-value pairs for the attributes: "from","type","to","value","weight","time"
-	"""
-	@abc.abstractmethod
-	def put_ratings(self,ratings):
-		pass
-        
-	@abc.abstractmethod
-	def get_ratings(self):
-		pass
-
-	@abc.abstractmethod
 	def clear_ratings(self):
-		pass
-		
-"""
-Reputation Ranking Service interface definition
-"""        
-class RankingService(ReputationService):
-	@abc.abstractmethod
-	def update_ranks(self):
-		pass
+		return("clear_ratings")
 
-	@abc.abstractmethod
-	def put_ranks(self,ranks):
-		pass
+	def put_ratings(self):
+		return("put_ratings")
 
-	@abc.abstractmethod
-	def get_ranks(self):
-		pass
+	def get_ratings(self):
+		return("get_ratings")
 
-	@abc.abstractmethod
 	def clear_ranks(self):
-		pass
+		return("clear_ranks")
+
+	def put_ranks(self):
+		return("put_ranks")
+
+	def get_ranks(self):
+		return("get_ranks")
+
+	def update_ranks(self):
+		return("update_ranks")
+
+	def set_parameters(self,parameters):
+		return("set_parameters")
+
+	def get_parameters(self):
+		return("get_parameters")
+
+
+#todo move this out to unittest eventually
+rs = PythonReputationService()
+print( rs.clear_ratings() )
+print( rs.clear_ranks() )
+print( rs.put_ratings() )
+print( rs.put_ranks() )
+print( rs.get_ratings() )
+print( rs.get_ranks() )
+print( rs.update_ranks() )
+print( rs.set_parameters({"param1":"value1","param2":"value2"}) )
+print( rs.get_parameters() )
