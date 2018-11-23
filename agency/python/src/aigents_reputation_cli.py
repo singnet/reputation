@@ -24,7 +24,6 @@
 Reputation Service wrapper around Aigents Java-based Command Line Interface
 """        
 
-#import sys
 import os
 import subprocess
 from reputation_api import *
@@ -64,6 +63,8 @@ class AigentsCLIReputationService(RatingService,RankingService):
 	1 - unknown error
 	"""
 	def clear_ratings(self):
+		if self.verbose:
+			print( 'clear_ratings' )
 		res = self.ai_command('clear ratings')
 		return 0 if len(res.strip()) == 0 else 1
 
@@ -76,16 +77,32 @@ class AigentsCLIReputationService(RatingService,RankingService):
 		cmd = 'add ratings '
 		for rating in ratings:
 			if self.verbose:
-				print( rating )
+				print( 'put_ratings', rating )
 			item = ' from ' + str(rating['from']) + ' type ' + rating['type'] + ' to ' + str(rating['to']) +\
 					' value ' + str(rating['value']) + (str(rating['weight']) if rating['weight'] is not None else '') + ' time ' + str(rating['time'])
 			cmd += item
 		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
 
-	def get_ratings(self):
-		#TODO
-		return("get_ratings")
+	#TODO pass test for filter with
+	# multiple id-s
+	# multiple from-s
+	# multiple to-s
+	def get_ratings(self,filter):
+		if self.verbose:
+			print( 'get_ratings', filter )
+		#TODO multiple items
+		ids = ''
+		for id in filter['ids']:
+			ids += ' ' + str(id)
+		res = self.ai_command('get ratings since ' + str(filter['since']) + ' until ' + str(filter['until']) + ' ids' + ids)
+		ratings = []
+		for line in res.splitlines():
+			rating = line.split('\t')
+			ratings.append(rating)
+		if self.verbose:
+			print( 'get_ratings', ratings )
+		return(0,ratings)
 
 	"""
 	Clear all ranks
@@ -93,14 +110,47 @@ class AigentsCLIReputationService(RatingService,RankingService):
 	1 - unknown error
 	"""
 	def clear_ranks(self):
+		if self.verbose:
+			print( 'clear_ranks' )
 		res = self.ai_command('clear ranks')
 		return 0 if len(res.strip()) == 0 else 1
 
-	def put_ranks(self,ranks):
-		return("put_ranks")
+	def put_ranks(self,date,ranks):
+		if self.verbose:
+			print( 'put_ranks', date, ranks )
+		cmd = 'set ranks date ' + str(date) 
+		for rank in ranks:
+			cmd += ' id ' + str(rank['id']) + ' rank ' + str(rank['rank'])
+		res = self.ai_command(cmd)
+		return 0 if len(res.strip()) == 0 else 1
 
-	def get_ranks(self):
-		return("get_ranks")
+	def get_ranks(self,filter):
+		if self.verbose:
+			print( 'get_ranks', filter )
+		if 'ids' in filter:
+			ids = ''
+			for id in filter['ids']:
+				ids += ' ' + str(id)
+		else:
+			ids = None
+		res = self.ai_command('get ranks date ' + str(filter['date']) + ('' if ids is None else ' ids' + ids))
+		ranks = []
+		for line in res.splitlines():
+			rating = line.split('\t')
+			ranks.append({"id":rating[0],"rank":rating[1]})
+		if self.verbose:
+			print( 'get_ranks', ranks )
+		return(0,ranks)
 
-	def update_ranks(self):
-		return("update_ranks")
+	def update_ranks(self,date):
+		if self.verbose:
+			print( 'update_ranks', date )
+		res = self.ai_command('update ranks date ' + str(date))
+		return 0 if len(res.strip()) == 0 else 1
+
+	def set_parameters(self,parameters):
+		return("set_parameters")
+
+	def get_parameters(self):
+		return("get_parameters")
+		
