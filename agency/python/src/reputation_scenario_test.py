@@ -99,6 +99,10 @@ def log_file(file,date,type,agent_from,agent_to,cost,rating):
 def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
+
+	actual_bad_volume = 0
+	actual_good_volume = 0
+	actual_good_to_bad_volume = 0
 	
 	print('Good:',good_agent)
 	print('Bad:',bad_agent)
@@ -136,6 +140,9 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 				for t in range(0, good_agents_transactions):
 					other = pick_agent(all_agents,agent,memories,bad_agents)
 					cost = random.randint(good_agents_values[0],good_agents_values[1])
+					actual_good_volume += cost
+					if other in bad_agents:
+						actual_good_to_bad_volume += cost
 					if ratings:
 						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
@@ -147,6 +154,7 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 				for t in range(0, bad_agents_transactions):
 					other = pick_agent(bad_agents,agent)
 					cost = random.randint(bad_agents_values[0],bad_agents_values[1])
+					actual_bad_volume += cost
 					if ratings:
 						rating = 1.0
 						log_file(file,date,'rating',agent,other,rating,cost)
@@ -157,6 +165,9 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 		for agent in all_agents:
 			goodness = '0' if agent in bad_agents else '1'
 			file.write(str(agent) + '\t' + goodness + '\n')
+
+	print('Actual volumes and ratios:')
+	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
 
 
 #Unhealthy agent environment set 
@@ -172,4 +183,4 @@ good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
 bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100}
 
 # False - financial, True - ratings
-simulate(good_agent,bad_agent, datetime.date(2018, 10, 1), 10, True)
+simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True)
