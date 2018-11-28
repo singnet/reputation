@@ -189,7 +189,7 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
 
 
-#Unhealthy agent environment set 
+#Unhealthy agent environment set
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": 1, "consumers": 1}
 
