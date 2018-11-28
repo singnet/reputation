@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Reputation Service API Interation Testing
+# Reputation Service API Integration Testing
 
 import unittest
 import datetime
@@ -35,9 +35,23 @@ class TestReputationServiceMethods(unittest.TestCase):
 	def test_smoke(self):
 		rs = self.rs
 		
-		#TODO
-		self.assertEqual( rs.set_parameters({"key":"value"}), "set_parameters" )
-		self.assertEqual( rs.get_parameters(), "get_parameters" )
+		#check default parameters
+		p = rs.get_parameters()
+		self.assertEqual( p['default'], 0.5 )
+		self.assertEqual( p['concervatizm'], 0.5)
+		self.assertEqual( p['precision'], 0.01)
+		self.assertEqual( p['weighting'], True)
+		self.assertEqual( p['fullnorm'], True)
+		self.assertEqual( p['liquid'], True)
+		self.assertEqual( p['logranks'], True)
+		self.assertEqual( p['aggregation'], False)
+		
+		#check default parameters
+		self.assertEqual( rs.set_parameters({'precision':0.011,'fullnorm':False}), 0 )
+		p = rs.get_parameters()
+		self.assertEqual( p['precision'], 0.011)
+		self.assertEqual( p['fullnorm'], False)
+		self.assertEqual( rs.set_parameters({'precision':0.01,'fullnorm':True}), 0 )
 		
 		#clear everything
 		self.assertEqual( rs.clear_ratings(), 0 )
@@ -47,18 +61,18 @@ class TestReputationServiceMethods(unittest.TestCase):
 		dt2 = datetime.date(2018, 1, 2)
 
 		#make sure that we have neither ranks not ratings
-		result, ranks = rs.get_ranks({"date":dt1})
+		result, ranks = rs.get_ranks({'date':dt1})
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ranks), 0)
 
-		filter = {"ids":[4],"since":dt2,"until":dt2} 
+		filter = {'ids':[4],'since':dt2,'until':dt2} 
 		result, ratings = rs.get_ratings(filter)
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 0)
 
 		#add ranks and make sure they are added
-		self.assertEqual( rs.put_ranks(dt1,[{"id":1,"rank":50},{"id":2,"rank":50},{"id":3,"rank":50}]), 0 )
-		result, ranks = rs.get_ranks({"date":dt1})
+		self.assertEqual( rs.put_ranks(dt1,[{'id':1,'rank':50},{'id':2,'rank':50},{'id':3,'rank':50}]), 0 )
+		result, ranks = rs.get_ranks({'date':dt1})
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ranks), 3)
 
@@ -71,6 +85,8 @@ class TestReputationServiceMethods(unittest.TestCase):
 			]
 		self.assertEqual( rs.put_ratings(ratings), 0 )
 		
+		#TODO end up with output format of the get_ratings method and extend unit test to check the data after then
+		#now we are just counting number of ratings returned in free format 
 		result, ratings = rs.get_ratings(filter)
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 3)
@@ -81,17 +97,23 @@ class TestReputationServiceMethods(unittest.TestCase):
 		# to
 		
 		#update and get ranks
-		result, ranks = rs.get_ranks({"date":dt2})
+		result, ranks = rs.get_ranks({'date':dt2})
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ranks), 0)
 
 		self.assertEqual(rs.update_ranks(dt2), 0)
 
-		result, ranks = rs.get_ranks({"date":dt2})
+		result, ranks = rs.get_ranks({'date':dt2})
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ranks), 5)
+		
+		for rank in ranks:
+			if rank['id'] == '4':
+				self.assertEqual(rank['rank'], 100)
+			if rank['id'] == '1':
+				self.assertEqual(rank['rank'], 33)
+				
 
-		#TODO test reputation system parameters
 
 if __name__ == '__main__':
     unittest.main()

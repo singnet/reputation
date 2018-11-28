@@ -43,8 +43,17 @@ class AigentsCLIReputationService(RatingService,RankingService):
 	def __init__(self, bin_dir, data_dir, name, verbose=False):
 		self.bin_dir = bin_dir
 		self.data_dir = data_dir
-		self.name = name
-		self.verbose = verbose
+		self.name = name #service parameter, no impact on algorithm, name of the storage scheme
+		self.verbose = verbose #service parameter, no impact on algorithm, impact on log level 
+		self.parameters = {}
+		self.parameters['default'] = 0.5
+		self.parameters['concervatizm'] = 0.5	#AKA conservativity
+		self.parameters['precision'] = 0.01
+		self.parameters['weighting'] = True
+		self.parameters['fullnorm'] = True #AKA norm
+		self.parameters['liquid'] = True
+		self.parameters['logranks'] = True #AKA logarithm
+		self.parameters['aggregation'] = False #TODO support in Aigents
 	
 	def ai_command(self,command):
 		aigents_command = 'java ' + java_options + ' -cp '+ self.bin_dir + '/Aigents.jar' \
@@ -98,7 +107,10 @@ class AigentsCLIReputationService(RatingService,RankingService):
 		res = self.ai_command('get ratings since ' + str(filter['since']) + ' until ' + str(filter['until']) + ' ids' + ids)
 		ratings = []
 		for line in res.splitlines():
+			#[from, type, to, value], where the value is already "blended" by value and weight 
 			rating = line.split('\t')
+			#['4', 'rating-d', '1', '100']
+			rating[3] = float(rating[3])
 			ratings.append(rating)
 		if self.verbose:
 			print( 'get_ratings', ratings )
@@ -137,7 +149,7 @@ class AigentsCLIReputationService(RatingService,RankingService):
 		ranks = []
 		for line in res.splitlines():
 			rating = line.split('\t')
-			ranks.append({"id":rating[0],"rank":rating[1]})
+			ranks.append({"id":rating[0],"rank":float(rating[1])})
 		if self.verbose:
 			print( 'get_ranks', ranks )
 		return(0,ranks)
@@ -148,9 +160,10 @@ class AigentsCLIReputationService(RatingService,RankingService):
 		res = self.ai_command('update ranks date ' + str(date))
 		return 0 if len(res.strip()) == 0 else 1
 
-	def set_parameters(self,parameters):
-		return("set_parameters")
-
 	def get_parameters(self):
-		return("get_parameters")
-		
+		return self.parameters
+
+	def set_parameters(self,parameters):
+		for key in parameters:
+			self.parameters[key] = parameters[key]
+		return 0
