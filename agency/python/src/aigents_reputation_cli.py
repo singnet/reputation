@@ -88,7 +88,7 @@ class AigentsCLIReputationService(RatingService,RankingService):
 			if self.verbose:
 				print( 'put_ratings', rating )
 			item = ' from ' + str(rating['from']) + ' type ' + rating['type'] + ' to ' + str(rating['to']) +\
-					' value ' + str(rating['value']) + (str(rating['weight']) if rating['weight'] is not None else '') + ' time ' + str(rating['time'])
+					' value ' + str(rating['value']) + (' weight ' + str(rating['weight']) if rating['weight'] is not None else '') + ' time ' + str(rating['time'])
 			cmd += item
 		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
@@ -157,7 +157,7 @@ class AigentsCLIReputationService(RatingService,RankingService):
 	def update_ranks(self,date):
 		if self.verbose:
 			print( 'update_ranks', date )
-		res = self.ai_command('update ranks date ' + str(date))
+		res = self.ai_command('update ranks date ' + str(date) + (' norm' if self.parameters['fullnorm'] else ''))
 		return 0 if len(res.strip()) == 0 else 1
 
 	def get_parameters(self):

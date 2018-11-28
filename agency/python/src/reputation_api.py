@@ -121,3 +121,10 @@ class RankingService(ReputationService):
 	@abc.abstractmethod
 	def clear_ranks(self):
 		pass
+
+	def get_ranks_dict(self,filter):
+		ranks_dict = {}
+		res, ranks = self.get_ranks(filter)
+		for rank in ranks:
+			ranks_dict[rank['id']] = rank['rank']
+		return ranks_dict
