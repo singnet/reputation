@@ -55,20 +55,51 @@ import random
 import datetime
 import time
 from aigents_api import *
+from aigents_reputation_cli import AigentsCLIReputationService
 
+#bin_path = '../../bin'
+bin_path = '../'
+data_path = './'
 network = 'reptest'
+verbose = False
+threshold = 10 # percents of goodness for agent to be selected by consumer, 0 to select all, 100 or None to select top  
 
-def pick_agent(list,self,memories = None,bad_agents = None):
+def list_best_ranked(ranks,list,threshold=None):
+	if threshold is None:
+		threshold = 0
+		for key in ranks:
+			value = ranks[key]
+			if threshold < value:
+				 threshold = value
+	if threshold == 0:
+		return list
+	best = []
+	for key in ranks:
+		value = ranks[key]
+		if threshold <= value:
+			 best.append(key)
+	if len(best) == 0:
+		return list
+	return best
+
+
+def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 	picked = None
 	if memories is not None:
+		#good agents case
 		if self in memories:
 			blacklist = memories[self]
 		else:
 			blacklist = []
 			memories[self] = blacklist
+		if ranks is not None:
+			list = list_best_ranked(ranks,list,threshold)
+			print('list_best_ranked',list)
 	else:
+		#bad agents case
 		blacklist = None
 	while(picked is None):
+		#TODO pick with account to rs
 		picked = list[random.randint(0,len(list)-1)]
 		if picked == self:
 			picked = None # skip self
@@ -104,7 +135,7 @@ Simulation of market simulation
 			False - financial transactions with costs as values
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 """
-def simulate(good_agent,bad_agent,since,sim_days,ratings):
+def simulate(good_agent,bad_agent,since,sim_days,ratings,feedback):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 
@@ -150,14 +181,32 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
 	print('Code:',code,'Volume ratio:',str(good_agents_volume/bad_agents_volume))
 	
+	if feedback:
+		#TODO use any other Reputation Service here
+		rs = AigentsCLIReputationService(bin_path,data_path,network,verbose)
+		rs.clear_ratings()
+		rs.clear_ranks()
+		rs.set_parameters({'fullnorm':True})
+	else:
+		rs = None
+	
 	with open(transactions, 'w') as file:
 		for day in range(sim_days):
+			prev_date = since + datetime.timedelta(days=(day-1))
 			date = since + datetime.timedelta(days=day)
 			print(day,date,memories)
+
+			if rs is not None:
+				#update ranks for the previous day to have them handy
+				rs.update_ranks(prev_date)
+				ranks = rs.get_ranks_dict({'date':prev_date})
+				print(ranks)
+			else:
+				ranks = None
 			
 			for agent in good_consumers:
 				for t in range(0, good_agents_transactions):
-					other = pick_agent(all_suppliers,agent,memories,bad_agents)
+					other = pick_agent(ranks,all_suppliers,agent,memories,bad_agents)
 					cost = random.randint(good_agents_values[0],good_agents_values[1])
 					actual_good_volume += cost
 					if other in bad_agents:
@@ -165,17 +214,21 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 					if ratings:
 						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+						if rs is not None:
+							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':rating,'weight':cost,'time':date}])
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
 						log_file(file,date,'transfer',agent,other,cost,None)
 		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
-					other = pick_agent(bad_suppliers,agent)
+					other = pick_agent(None,bad_suppliers,agent)
 					cost = random.randint(bad_agents_values[0],bad_agents_values[1])
 					actual_bad_volume += cost
 					if ratings:
 						rating = 1.0
+						if rs is not None:
+							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':rating,'weight':cost,'time':date}])
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
 						log_file(file,date,'transfer',agent,other,cost,None)
@@ -189,23 +242,28 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
 
 
-#Unhealthy agent environment set 
+#Unhealthy agent environment set
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": 1, "consumers": 1}
 
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True)
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False)
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, False)
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, False)
 
 #Semi-healthy agent environment set 
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": 1, "consumers": 1}
 
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True)
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False)
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, False)
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, False)
 
 #Healthy agent environment set (default) 
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
 
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True)
-simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False)
+simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, False)
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, False)
+
+# Quick test for "slow" simulation with feedback
+good_agent = {"range": [1,8], "values": [100,1000], "transactions": 2, "suppliers": 1, "consumers": 1}
+bad_agent = {"range": [9,10], "values": [1,10], "transactions": 20, "suppliers": 1, "consumers": 1}
+#simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, True)
