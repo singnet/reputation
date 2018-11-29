@@ -26,72 +26,105 @@ import abc
 
 #TODO @anton provide proper parameters for the methods
 
+
+"""
+Reputation Generic Service interface definition
+"""        
+class ReputationService(abc.ABC):
+
+	"""
+	Input: dict of all parameters that needs to be set (not listed parameters are not affected)
+	Output: 0 on success, integer error code on error 
+	"""
+	@abc.abstractmethod
+	def set_parameters(self,parameters):
+		pass
+
+	@abc.abstractmethod
+	def get_parameters(self):
+		pass
+
+
 """
 Reputation Rating Service interface definition
 """        
-class RatingService(abc.ABC):
+class RatingService(ReputationService):
 
 	"""
-	List of dicts with the key-value pairs for the attributes: "from","type","to","value","weight","time"
+	Input: List of dicts with the key-value pairs for the attributes: "from","type","to","value","weight","time"
+	Output: 0 on success, integer error code on error 
 	"""
 	@abc.abstractmethod
 	def put_ratings(self,ratings):
 		pass
-        
+
+	"""
+	Input: filter as dict of the following:
+		since - starting time inclusively
+		until - ending time inclusively
+		ids - list of ids to retrieve incoming AND outgoing ratings BOTH
+		from - list of ids to retrieve outgoing ratings ONLY (TODO later)
+		to - list of ids to retrieve incoming ratings ONLY (TODO later)
+	Output: tuple of the pair:
+		0 on success, integer error code on error
+		List of dicts with the key-value pairs for the attributes: "from","type","to","value","weight","time"
+	"""
 	@abc.abstractmethod
-	def get_ratings(self):
+	def get_ratings(self,filter):
 		pass
 
+	"""
+	Input: None
+	Output: 0 on success, integer error code on error 
+	"""
 	@abc.abstractmethod
 	def clear_ratings(self):
 		pass
-
+		
 """
 Reputation Ranking Service interface definition
 """        
-class RankingService(abc.ABC):
+class RankingService(ReputationService):
+
+	"""
+	Input: Date to update the ranks for
+	Output: 0 on success, integer error code on error 
+	"""
 	@abc.abstractmethod
-	def update_ranks(self):
+	def update_ranks(self,date):
 		pass
 
+	"""
+	Input: Date and list of dicts with two key-value pairs for "id" and "rank" 
+	Output: 0 on success, integer error code on error 
+	"""
 	@abc.abstractmethod
-	def put_ranks(self,ranks):
+	def put_ranks(self,date,ranks):
 		pass
 
+	"""
+	Input: filter as dict of the following:
+		date - date to provide the ranks
+		ids - list of ids to retrieve the ranks
+	Output: tuple of the pair:
+		0 on success, integer error code on error
+		List of dicts with the two key-value pairs for "id" and "rank"
+	"""
 	@abc.abstractmethod
-	def get_ranks(self):
+	def get_ranks(self,filter):
 		pass
 
+	"""
+	Input: None
+	Output: 0 on success, integer error code on error 
+	"""
 	@abc.abstractmethod
 	def clear_ranks(self):
 		pass
 
-
-#TODO @neic take this out to separate file and implement
-
-"""
-Reputation Service native implementation in Python
-"""        
-class PythonReputationService(RatingService,RankingService):
-
-	def clear_ratings(self):
-		return("clear_ratings")
-
-	def put_ratings(self):
-		return("put_ratings")
-
-	def get_ratings(self):
-		return("get_ratings")
-
-	def clear_ranks(self):
-		return("clear_ranks")
-
-	def put_ranks(self):
-		return("put_ranks")
-
-	def get_ranks(self):
-		return("get_ranks")
-
-	def update_ranks(self):
-		return("update_ranks")
-
+	def get_ranks_dict(self,filter):
+		ranks_dict = {}
+		res, ranks = self.get_ranks(filter)
+		for rank in ranks:
+			ranks_dict[rank['id']] = rank['rank']
+		return ranks_dict
