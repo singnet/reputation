@@ -62,8 +62,28 @@ bin_path = '../'
 data_path = './'
 network = 'reptest'
 verbose = False
+threshold = 10 # percents of goodness for agent to be selected by consumer, 0 to select all, 100 or None to select top  
 
-def pick_agent(rs,list,self,memories = None,bad_agents = None):
+def list_best_ranked(ranks,list,threshold=None):
+	if threshold is None:
+		threshold = 0
+		for key in ranks:
+			value = ranks[key]
+			if threshold < value:
+				 threshold = value
+	if threshold == 0:
+		return list
+	best = []
+	for key in ranks:
+		value = ranks[key]
+		if threshold <= value:
+			 best.append(key)
+	if len(best) == 0:
+		return list
+	return best
+
+
+def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 	picked = None
 	if memories is not None:
 		#good agents case
@@ -72,6 +92,9 @@ def pick_agent(rs,list,self,memories = None,bad_agents = None):
 		else:
 			blacklist = []
 			memories[self] = blacklist
+		if ranks is not None:
+			list = list_best_ranked(ranks,list,threshold)
+			print('list_best_ranked',list)
 	else:
 		#bad agents case
 		blacklist = None
@@ -177,11 +200,13 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings,feedback):
 				#update ranks for the previous day to have them handy
 				rs.update_ranks(prev_date)
 				ranks = rs.get_ranks_dict({'date':prev_date})
-				#print(ranks)
+				print(ranks)
+			else:
+				ranks = None
 			
 			for agent in good_consumers:
 				for t in range(0, good_agents_transactions):
-					other = pick_agent(rs,all_suppliers,agent,memories,bad_agents)
+					other = pick_agent(ranks,all_suppliers,agent,memories,bad_agents)
 					cost = random.randint(good_agents_values[0],good_agents_values[1])
 					actual_good_volume += cost
 					if other in bad_agents:
@@ -197,7 +222,7 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings,feedback):
 		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
-					other = pick_agent(rs,bad_suppliers,agent)
+					other = pick_agent(None,bad_suppliers,agent)
 					cost = random.randint(bad_agents_values[0],bad_agents_values[1])
 					actual_bad_volume += cost
 					if ratings:
@@ -238,7 +263,7 @@ bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers"
 simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, False)
 #simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, False)
 
-
+# Quick test for "slow" simulation with feedback
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 2, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [1,10], "transactions": 20, "suppliers": 1, "consumers": 1}
 #simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, True)
