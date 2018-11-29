@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"strconv"
 	"strings"
 
 	ethereum "github.com/ethereum/go-ethereum"
@@ -12,6 +13,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/pkg/errors"
 
 	"github.com/tiero/reputation/adapter/database"
 	"github.com/tiero/reputation/adapter/resources/contracts/mpe"
@@ -27,11 +30,13 @@ type Network struct {
 
 //Escrow is escrow struct
 type Escrow struct {
-	ContractName    string
-	ABI             abi.ABI
-	Client          *ethclient.Client
-	startingBlock   int64
-	DeployedAddress common.Address
+	ContractName     string
+	ABI              abi.ABI
+	ethClient        *ethclient.Client
+	rawClient        *rpc.Client
+	startingBlock    int64
+	DeployedAddress  common.Address
+	ContractInstance *mpe.Mpe
 }
 
 var networks = map[string]Network{
@@ -56,9 +61,12 @@ func (e *Escrow) New(networkKey string) error {
 	// Ethereum client
 	currentNetwork := networks[networkKey]
 
-	client, err := ethclient.Dial(currentNetwork.RPCEndpoint)
-	if err != nil {
-		return err
+	// Setup ethereum client
+	if client, err := rpc.Dial(currentNetwork.RPCEndpoint); err != nil {
+		return errors.Wrap(err, "error creating RPC client")
+	} else {
+		e.rawClient = client
+		e.ethClient = ethclient.NewClient(client)
 	}
 
 	abiDefinition, err := abi.JSON(strings.NewReader(string(mpe.MpeABI)))
@@ -66,11 +74,16 @@ func (e *Escrow) New(networkKey string) error {
 		return err
 	}
 
+	contractInstance, err := mpe.NewMpe(currentNetwork.DeployedAddress, e.ethClient)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	e.ContractName = "MultiPartyEscrow"
 	e.ABI = abiDefinition
-	e.Client = client
 	e.startingBlock = currentNetwork.startingBlock
 	e.DeployedAddress = currentNetwork.DeployedAddress
+	e.ContractInstance = contractInstance
 
 	return nil
 }
@@ -79,29 +92,33 @@ func (e *Escrow) New(networkKey string) error {
 func (e *Escrow) Start() {
 	//Start db
 	channelLog.New()
-	//Fisrt get the current block
-	header, err := e.Client.BlockByNumber(context.Background(), nil)
+	//NOTICE: Will be removed if go-ethereum works with Kobvan in the future
+	//https://github.com/ethereum/go-ethereum/pull/18166
+
+	lastBlockHex, err := e.CurrentBlockNumber()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	lastBlock := header.Number
-
+	lastBlock, err := strconv.ParseUint(lastBlockHex[2:], 16, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
 	// Compare the block checkpoint in local database
-	if lastBlock.Cmp(channelLog.LastBlock) == 1 {
+	if lastBlock > channelLog.LastBlock {
 		logs := e.getPastEvents(channelLog.LastBlock)
 		e.update(logs)
 	}
 }
 
 //GetPastEvents func
-func (e *Escrow) getPastEvents(startingBlock *big.Int) []types.Log {
+func (e *Escrow) getPastEvents(startingBlock uint64) []types.Log {
 	query := ethereum.FilterQuery{
-		FromBlock: startingBlock,
+		FromBlock: big.NewInt(int64(startingBlock)),
 		Addresses: []common.Address{e.DeployedAddress},
 	}
 
-	logs, err := e.Client.FilterLogs(context.Background(), query)
+	logs, err := e.ethClient.FilterLogs(context.Background(), query)
 
 	if err != nil {
 		log.Fatal(err)
@@ -112,15 +129,14 @@ func (e *Escrow) getPastEvents(startingBlock *big.Int) []types.Log {
 
 func (e *Escrow) update(logs []types.Log) {
 	for _, vLog := range logs {
-		//fmt.Printf("Log Block Number: %d\n", vLog.BlockNumber)
-		//fmt.Printf("Log Index: %d\n", vLog.Index)
 
-		blockNumber := big.NewInt(int64(vLog.BlockNumber))
-		block, err := e.Client.BlockByNumber(context.Background(), blockNumber)
+		var numberHex strings.Builder
+		numberHex.WriteString("0x")
+		numberHex.WriteString(fmt.Sprintf("%x", vLog.BlockNumber))
+		blockTimestamp, err := e.GetTimestampByBlockNumber(numberHex.String())
 		if err != nil {
 			log.Fatal(err)
 		}
-		blockTimestamp := block.Time().Int64()
 
 		switch vLog.Topics[0].Hex() {
 		case channelClaimSigHash.Hex():
@@ -137,23 +153,22 @@ func (e *Escrow) update(logs []types.Log) {
 
 			openTime := int64(0)
 			closeTime := blockTimestamp
+			channel, _ := e.ContractInstance.Channels(nil, channelClaimEvent.ChannelId)
 
 			nextChannel := &database.Channel{
 				channelClaimEvent.ChannelId,
-				channelClaimEvent.Recipient,
+				channel.Sender,
 				channelClaimEvent.Recipient,
 				channelClaimEvent.ClaimAmount,
 				openTime,
 				closeTime,
 			}
 
-			channelLog.Append(nextChannel, blockNumber)
+			channelLog.Append(nextChannel, vLog.BlockNumber)
 			/* fmt.Printf("\n\nChannel Claim\n\n")
 			fmt.Printf("ChannelID: %s\n", channelClaimEvent.ChannelId)
 			fmt.Printf("Recipient: %s\n", channelClaimEvent.Recipient.Hex())
-			fmt.Printf("Claim Amount: %s\n", )
-
-			*/
+			fmt.Printf("Claim Amount: %s\n", channelClaimEvent.ClaimAmount) */
 
 		case channelSenderClaimSigHash.Hex():
 			//fmt.Println("Channel Sender Claim")
@@ -163,11 +178,25 @@ func (e *Escrow) update(logs []types.Log) {
 				log.Fatal(err)
 			}
 
-			fmt.Printf("\n\nChannel Sender Claim\n\n")
 			channelSenderClaimEvent.ChannelId = vLog.Topics[1].Big()
 
-			fmt.Printf("ChannelID: %s\n", channelSenderClaimEvent.ChannelId)
-			fmt.Printf("Claim Amount: %s\n", channelSenderClaimEvent.ClaimAmount)
+			openTime := int64(0)
+			closeTime := blockTimestamp
+			channel, _ := e.ContractInstance.Channels(nil, channelSenderClaimEvent.ChannelId)
+
+			nextChannel := &database.Channel{
+				channelSenderClaimEvent.ChannelId,
+				channel.Sender,
+				channel.Recipient,
+				channelSenderClaimEvent.ClaimAmount,
+				openTime,
+				closeTime,
+			}
+
+			channelLog.Append(nextChannel, vLog.BlockNumber)
+
+			//fmt.Printf("ChannelID: %s\n", channelSenderClaimEvent.ChannelId)
+			//fmt.Printf("Claim Amount: %s\n", channelSenderClaimEvent.ClaimAmount)
 		case channelExtendSigHash.Hex():
 			//fmt.Println("Channel Extend")
 		case channelAddFundsSigHash.Hex():
@@ -193,4 +222,27 @@ func (e *Escrow) update(logs []types.Log) {
 		}
 
 	}
+}
+
+// CurrentBlockNumber return current block
+func (e *Escrow) CurrentBlockNumber() (currentBlockNumberHex string, err error) {
+	// We have to do a raw call because the standard method of ethClient.HeaderByNumber(ctx, nil) errors on
+	// unmarshaling the response currently. See https://github.com/ethereum/go-ethereum/issues/3230
+	if err = e.rawClient.CallContext(context.Background(), &currentBlockNumberHex, "eth_blockNumber"); err != nil {
+		return "", fmt.Errorf("error determining current block: %v", err)
+	}
+
+	return
+}
+
+// GetTimestampByBlockNumber is a func
+func (e *Escrow) GetTimestampByBlockNumber(currentBlockNumberHex string) (timestamp int64, err error) {
+
+	var currentBlockResponse struct{ Timestamp string }
+	if err = e.rawClient.CallContext(context.Background(), &currentBlockResponse, "eth_getBlockByNumber", currentBlockNumberHex, true); err != nil {
+		return 0, fmt.Errorf("error determining current block: %v", err)
+	}
+	timestamp, _ = strconv.ParseInt(currentBlockResponse.Timestamp[2:], 16, 64)
+
+	return
 }

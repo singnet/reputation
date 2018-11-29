@@ -10,7 +10,7 @@ import (
 type ChannelLog struct {
 	Log       []*Channel
 	Index     map[*big.Int]int
-	LastBlock *big.Int
+	LastBlock uint64
 }
 
 //Channel type
@@ -27,11 +27,11 @@ type Channel struct {
 func (l *ChannelLog) New() {
 	l.Log = []*Channel{}
 	l.Index = make(map[*big.Int]int)
-	l.LastBlock = big.NewInt(0)
+	l.LastBlock = uint64(0)
 }
 
 //Append function
-func (l *ChannelLog) Append(nextChannel *Channel, blockNumber *big.Int) {
+func (l *ChannelLog) Append(nextChannel *Channel, blockNumber uint64) {
 	channelID := nextChannel.ChannelId
 	position := len(l.Log)
 	l.Log = append(l.Log, nextChannel)
