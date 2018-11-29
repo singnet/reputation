@@ -1,23 +1,26 @@
-# WIP Reputation Adapter
+# Reputation Adapter
+
+# Endpoint
 
 # Networks
 
-## Ropsten
+## Kovan 
 
 * AGI Token Address
-  * 0x05A978328B1FAfe9ec69a7139f1c4ed0035E5288
-* MultiPartyEscrow
-  * 0xAF5e3b8CF89815F24A12D45D4758D87257249778
-  
+  * 0x3b226fF6AAd7851d3263e53Cb7688d13A07f6E81
+* Multi Party Escrow
+  * 0xdd4292864063d0DA1F294AC65D74d55a44F4766C
+
+# Development
   
 
-# Requirements
+## Requirements
 
 * Node/NPM 8+/5+
 * Yarn 1.10+
 * Go 1.9+
 
-# Install
+## Install
 
 Get in the project folder and install node dependencies
 
