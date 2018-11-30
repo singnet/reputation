@@ -111,6 +111,12 @@ func (e *Escrow) Start() {
 	}
 }
 
+//GetInfo is a func
+func (e *Escrow) GetInfo() {
+	fmt.Println("Closed channels ", len(channelLog.Log))
+	fmt.Println("Last Ethereum block ", channelLog.LastBlock)
+}
+
 //GetPastEvents func
 func (e *Escrow) getPastEvents(startingBlock uint64) []types.Log {
 	query := ethereum.FilterQuery{
@@ -130,17 +136,19 @@ func (e *Escrow) getPastEvents(startingBlock uint64) []types.Log {
 func (e *Escrow) update(logs []types.Log) {
 	for _, vLog := range logs {
 
-		var numberHex strings.Builder
+		/*var numberHex strings.Builder
 		numberHex.WriteString("0x")
 		numberHex.WriteString(fmt.Sprintf("%x", vLog.BlockNumber))
 		blockTimestamp, err := e.GetTimestampByBlockNumber(numberHex.String())
 		if err != nil {
 			log.Fatal(err)
 		}
+		*/
+		openTime := int64(0)
+		closeTime := int64(vLog.BlockNumber)
 
 		switch vLog.Topics[0].Hex() {
 		case channelClaimSigHash.Hex():
-
 			var channelClaimEvent ChannelClaim
 
 			err := e.ABI.Unpack(&channelClaimEvent, "ChannelClaim", vLog.Data)
@@ -151,8 +159,6 @@ func (e *Escrow) update(logs []types.Log) {
 			channelClaimEvent.ChannelId = vLog.Topics[1].Big()
 			channelClaimEvent.Recipient = common.HexToAddress(vLog.Topics[2].Hex())
 
-			openTime := int64(0)
-			closeTime := blockTimestamp
 			channel, _ := e.ContractInstance.Channels(nil, channelClaimEvent.ChannelId)
 
 			nextChannel := &database.Channel{
@@ -165,13 +171,8 @@ func (e *Escrow) update(logs []types.Log) {
 			}
 
 			channelLog.Append(nextChannel, vLog.BlockNumber)
-			/* fmt.Printf("\n\nChannel Claim\n\n")
-			fmt.Printf("ChannelID: %s\n", channelClaimEvent.ChannelId)
-			fmt.Printf("Recipient: %s\n", channelClaimEvent.Recipient.Hex())
-			fmt.Printf("Claim Amount: %s\n", channelClaimEvent.ClaimAmount) */
 
 		case channelSenderClaimSigHash.Hex():
-			//fmt.Println("Channel Sender Claim")
 			var channelSenderClaimEvent ChannelSenderClaim
 			err := e.ABI.Unpack(&channelSenderClaimEvent, "ChannelSenderClaim", vLog.Data)
 			if err != nil {
@@ -179,10 +180,10 @@ func (e *Escrow) update(logs []types.Log) {
 			}
 
 			channelSenderClaimEvent.ChannelId = vLog.Topics[1].Big()
-
-			openTime := int64(0)
-			closeTime := blockTimestamp
-			channel, _ := e.ContractInstance.Channels(nil, channelSenderClaimEvent.ChannelId)
+			channel, err := e.ContractInstance.Channels(nil, channelSenderClaimEvent.ChannelId)
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			nextChannel := &database.Channel{
 				channelSenderClaimEvent.ChannelId,
@@ -217,8 +218,9 @@ func (e *Escrow) update(logs []types.Log) {
 				fmt.Printf("Sender: %s\n", channelOpenEvent.Sender.Hex())
 				fmt.Printf("Recipient: %s\n", channelOpenEvent.Recipient.Hex())
 				fmt.Printf("Amount: %s\n", channelOpenEvent.Amount)
-				fmt.Printf("Expiration: %s\n", channelOpenEvent.Expiration) */
+				fmt.Printf("Expiration: %s\n", channelOpenEvent.Expiration)
 
+			*/
 		}
 
 	}

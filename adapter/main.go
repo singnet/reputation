@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/tiero/reputation/adapter/controller"
+	db "github.com/tiero/reputation/adapter/database"
 )
 
 func main() {
@@ -19,5 +20,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	escrow.Start()
+	db := db.Init()
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal(err)
+	}
+	//escrow.Start()
+	//Debug-only
+	escrow.GetInfo()
+
 }

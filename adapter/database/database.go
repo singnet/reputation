@@ -1,9 +1,13 @@
 package database
 
 import (
+	"log"
 	"math/big"
 
+	"database/sql"
+
 	"github.com/ethereum/go-ethereum/common"
+	_ "github.com/lib/pq"
 )
 
 //ChannelLog type
@@ -21,6 +25,17 @@ type Channel struct {
 	ClaimAmount *big.Int
 	OpenTime    int64
 	CloseTime   int64
+}
+
+//Init func
+func Init() *sql.DB {
+	connStr := "user=postgres dbname=postgres sslmode=disable"
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return db
 }
 
 //New function
