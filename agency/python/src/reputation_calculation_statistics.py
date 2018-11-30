@@ -36,18 +36,18 @@ conservativity = 0.5
 #Semi-healthy agent environment set 
 #good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
 #bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100}
-days = 10
+days = 180
 multiplier = 1/days # Each day of reputation calculation adds this much weight to avg_reputation.
 
 #Healthy agent environment set (default) 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10}
-bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100}
-
+good_agent = {"range": [1,800],  "values": [100,1000], "transactions": 10, "suppliers": 0.5, "consumers": 0.5}
+bad_agent = {"range": [801,1000], "values": [10,100], "transactions": 100, "suppliers": 0.5, "consumers": 0.5}
+ratings = False
 # False - financial, True - ratings
-simulate(good_agent,bad_agent, datetime.date(2018, 10, 1), days, True)
+mysim = simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days,ratings)
 ### Inputs: default reputation (recommended 0.1 or 0.5), conservativity (recommended 0.5),multiplier (depends
 ### on nr of days), ratings True/False - so do we include them?
-reputation, avg_reputation = calculate_reputations(default_rep,conservativity,multiplier,True)
+reputation, avg_reputation = calculate_reputations(mysim,default_rep,conservativity,multiplier,ratings)
 
 avg_reputations = []
 for i in range(1,11):
