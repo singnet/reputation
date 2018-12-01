@@ -95,6 +95,8 @@ func (e *Escrow) Start() {
 	//NOTICE: Will be removed if go-ethereum works with Kobvan in the future
 	//https://github.com/ethereum/go-ethereum/pull/18166
 
+	channelLog.GetAll()
+
 	lastBlockHex, err := e.CurrentBlockNumber()
 	if err != nil {
 		log.Fatal(err)
@@ -170,7 +172,11 @@ func (e *Escrow) update(logs []types.Log) {
 				closeTime,
 			}
 
-			channelLog.Append(nextChannel, vLog.BlockNumber)
+			//			channelLog.Insert(nextChannel)
+			fmt.Printf("ChannelID: %s\n", nextChannel.ChannelId)
+			fmt.Printf("Claim Amount: %s\n", nextChannel.ClaimAmount)
+
+			//channelLog.Append(nextChannel, vLog.BlockNumber)
 
 		case channelSenderClaimSigHash.Hex():
 			var channelSenderClaimEvent ChannelSenderClaim
@@ -194,10 +200,9 @@ func (e *Escrow) update(logs []types.Log) {
 				closeTime,
 			}
 
-			channelLog.Append(nextChannel, vLog.BlockNumber)
-
-			//fmt.Printf("ChannelID: %s\n", channelSenderClaimEvent.ChannelId)
-			//fmt.Printf("Claim Amount: %s\n", channelSenderClaimEvent.ClaimAmount)
+			//channelLog.Insert(nextChannel)
+			fmt.Printf("ChannelID: %s\n", nextChannel.ChannelId)
+			fmt.Printf("Claim Amount: %s\n", nextChannel.ClaimAmount)
 		case channelExtendSigHash.Hex():
 			//fmt.Println("Channel Extend")
 		case channelAddFundsSigHash.Hex():
