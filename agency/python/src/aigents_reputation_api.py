@@ -98,8 +98,10 @@ class AigentsAPIReputationService(RatingService,RankingService):
 				raise RuntimeError("Aigents - no response")
 		except Exception as e:
 			logger.error('request ' + url + ' ' + str(type(e)))
-			logger.error('Specify proper url to Aigents server or run it locally, eg.')
-			logger.error('java -cp ../Aigents.jar:../lib/mail.jar:../lib/javax.json-1.0.2.jar: net.webstructor.agent.Farm store path \'./al_test.txt\', http server 1180, cookie domain localtest.com, console off &')
+			print('Specify proper url to Aigents server or run it locally, eg.')
+			print('java -cp ../../bin/mail.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path \'./al_test.txt\', cookie domain localtest.com, console off &')
+			print('or')
+			print('sh aigents_server_start.sh')
 			return 'No connection to Aigents, ' + str(type(e))
 		if self.verbose:
 			logger.info(r.text)
