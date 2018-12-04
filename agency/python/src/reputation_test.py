@@ -36,9 +36,9 @@ class TestReputationServiceMethods(unittest.TestCase):
 
 	def setUp(self):
 		# Command-line-based Aigents Reputation Service wrapper 
-		self.rs = AigentsCLIReputationService('../','./','test',True)
+		#self.rs = AigentsCLIReputationService('../../bin','./','test',True)
 		# Web-service-based Aigents Reputation Service wrapper 
-		#self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', False)
+		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 
 	def test_smoke(self):
 		rs = self.rs
