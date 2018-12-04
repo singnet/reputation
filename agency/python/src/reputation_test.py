@@ -24,13 +24,21 @@
 
 import unittest
 import datetime
+import logging
 
 from aigents_reputation_cli import *
+from aigents_reputation_api import *
+
+# Uncomment this for logging to console
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 class TestReputationServiceMethods(unittest.TestCase):
 
 	def setUp(self):
-		self.rs = AigentsCLIReputationService('../','./','test',True)
+		# Command-line-based Aigents Reputation Service wrapper 
+		#self.rs = AigentsCLIReputationService('../../bin','./','test',True)
+		# Web-service-based Aigents Reputation Service wrapper 
+		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 
 	def test_smoke(self):
 		rs = self.rs
@@ -95,7 +103,6 @@ class TestReputationServiceMethods(unittest.TestCase):
 		# multiple id-s
 		# from
 		# to
-		
 		#update and get ranks
 		result, ranks = rs.get_ranks({'date':dt2})
 		self.assertEqual(result, 0)
@@ -111,8 +118,7 @@ class TestReputationServiceMethods(unittest.TestCase):
 			if rank['id'] == '4':
 				self.assertEqual(rank['rank'], 100)
 			if rank['id'] == '1':
-				self.assertEqual(rank['rank'], 33)
-				
+				self.assertEqual(rank['rank'], 33)			
 
 
 if __name__ == '__main__':
