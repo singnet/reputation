@@ -137,15 +137,6 @@ func (e *Escrow) getPastEvents(startingBlock uint64) []types.Log {
 
 func (e *Escrow) update(logs []types.Log) {
 	for _, vLog := range logs {
-
-		/*var numberHex strings.Builder
-		numberHex.WriteString("0x")
-		numberHex.WriteString(fmt.Sprintf("%x", vLog.BlockNumber))
-		blockTimestamp, err := e.GetTimestampByBlockNumber(numberHex.String())
-		if err != nil {
-			log.Fatal(err)
-		}
-		*/
 		openTime := int64(0)
 		closeTime := int64(vLog.BlockNumber)
 
@@ -165,6 +156,7 @@ func (e *Escrow) update(logs []types.Log) {
 
 			nextChannel := &database.Channel{
 				channelClaimEvent.ChannelId,
+				channel.Nonce,
 				channel.Sender,
 				channelClaimEvent.Recipient,
 				channelClaimEvent.ClaimAmount,
@@ -173,10 +165,7 @@ func (e *Escrow) update(logs []types.Log) {
 			}
 
 			//			channelLog.Insert(nextChannel)
-			fmt.Printf("ChannelID: %s\n", nextChannel.ChannelId)
-			fmt.Printf("Claim Amount: %s\n", nextChannel.ClaimAmount)
-
-			//channelLog.Append(nextChannel, vLog.BlockNumber)
+			fmt.Printf("ChannelID: %s Nonce: %s\n", nextChannel.ChannelId, nextChannel.Nonce)
 
 		case channelSenderClaimSigHash.Hex():
 			var channelSenderClaimEvent ChannelSenderClaim
@@ -193,6 +182,7 @@ func (e *Escrow) update(logs []types.Log) {
 
 			nextChannel := &database.Channel{
 				channelSenderClaimEvent.ChannelId,
+				channel.Nonce,
 				channel.Sender,
 				channel.Recipient,
 				channelSenderClaimEvent.ClaimAmount,
@@ -201,8 +191,8 @@ func (e *Escrow) update(logs []types.Log) {
 			}
 
 			//channelLog.Insert(nextChannel)
-			fmt.Printf("ChannelID: %s\n", nextChannel.ChannelId)
-			fmt.Printf("Claim Amount: %s\n", nextChannel.ClaimAmount)
+			fmt.Printf("ChannelID: %s Nonce: %s\n", nextChannel.ChannelId, nextChannel.Nonce)
+
 		case channelExtendSigHash.Hex():
 			//fmt.Println("Channel Extend")
 		case channelAddFundsSigHash.Hex():

@@ -22,6 +22,7 @@ type ChannelLog struct {
 //Channel type
 type Channel struct {
 	ChannelId   *big.Int
+	Nonce       *big.Int
 	Sender      common.Address
 	Recipient   common.Address
 	ClaimAmount *big.Int
@@ -42,6 +43,7 @@ func (l *ChannelLog) GetAll() {
 
 	var (
 		channelId int64
+		nonce     int64
 		sender    string
 		recipient string
 		amount    int64
@@ -50,13 +52,14 @@ func (l *ChannelLog) GetAll() {
 	)
 	for rows.Next() {
 
-		err := rows.Scan(&channelId, &sender, &recipient, &amount, &openTime, &closeTime)
+		err := rows.Scan(&channelId, &nonce, &sender, &recipient, &amount, &openTime, &closeTime)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		nextChannel := &Channel{
 			big.NewInt(channelId),
+			big.NewInt(nonce),
 			common.HexToAddress(sender),
 			common.HexToAddress(recipient),
 			big.NewInt(amount),
@@ -74,7 +77,7 @@ func (l *ChannelLog) GetAll() {
 //Insert is a func
 func (l *ChannelLog) Insert(nc *Channel) error {
 
-	const qry = "INSERT INTO channel (channel_id, sender, recipient, amount, open_time, close_time) VALUES ($1,$2,$3,$4,$5,$6);"
+	const qry = "INSERT INTO channel (channel_id, nonce, sender, recipient, amount, open_time, close_time) VALUES ($1,$2,$3,$4,$5,$6);"
 
 	_, err := l.DB.Exec(qry, nc.ChannelId.Int64(), nc.Sender.String(), nc.Recipient.String(), nc.ClaimAmount.Int64(), nc.OpenTime, nc.CloseTime)
 	if err != nil {
