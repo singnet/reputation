@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/tiero/reputation/adapter/controller"
+	"github.com/tiero/reputation/adapter/crawler"
 )
 
 func main() {

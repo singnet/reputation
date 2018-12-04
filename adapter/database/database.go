@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"math/big"
 
@@ -75,15 +76,20 @@ func (l *ChannelLog) GetAll() {
 }
 
 //Insert is a func
-func (l *ChannelLog) Insert(nc *Channel) error {
+func (l *ChannelLog) Insert(nc *Channel, dryRun bool) error {
 
-	const qry = "INSERT INTO channel (channel_id, nonce, sender, recipient, amount, open_time, close_time) VALUES ($1,$2,$3,$4,$5,$6);"
+	const qry = "INSERT INTO channel (channel_id, nonce, sender, recipient, amount, open_time, close_time) VALUES ($1,$2,$3,$4,$5,$6,$7);"
 
-	_, err := l.DB.Exec(qry, nc.ChannelId.Int64(), nc.Sender.String(), nc.Recipient.String(), nc.ClaimAmount.Int64(), nc.OpenTime, nc.CloseTime)
-	if err != nil {
-		log.Fatal(err)
-		return err
+	if !dryRun {
+		_, err := l.DB.Exec(qry, nc.ChannelId.Int64(), nc.Nonce.Int64(), nc.Sender.String(), nc.Recipient.String(), nc.ClaimAmount.Int64(), nc.OpenTime, nc.CloseTime)
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
 	}
+
+	fmt.Printf("INSERT INTO channel (channel_id, nonce, sender, recipient, amount, open_time, close_time) VALUES (%s,%s,%s,%s,%s,%v,%v);\n",
+		nc.ChannelId, nc.Nonce, nc.Sender.String(), nc.Recipient.String(), nc.ClaimAmount, nc.OpenTime, nc.CloseTime)
 
 	return nil
 

@@ -44,7 +44,7 @@ var networks = map[string]Network{
 		"https://kovan.infura.io",
 		common.HexToAddress("0xdd4292864063d0DA1F294AC65D74d55a44F4766C"),
 		9424242,
-		9508189,
+		0,
 	},
 	"ropsten": Network{
 		"https://ropsten.infura.io",
@@ -97,20 +97,23 @@ func (e *Escrow) Start() {
 
 	channelLog.GetAll()
 
-	lastBlockHex, err := e.CurrentBlockNumber()
-	if err != nil {
-		log.Fatal(err)
-	}
+	/* 	lastBlockHex, err := e.CurrentBlockNumber()
+	   	if err != nil {
+	   		log.Fatal(err)
+	   	}
 
-	lastBlock, err := strconv.ParseUint(lastBlockHex[2:], 16, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
+	   	lastBlock, err := strconv.ParseUint(lastBlockHex[2:], 16, 64)
+	   	if err != nil {
+	   		log.Fatal(err)
+	   	} */
+
 	// Compare the block checkpoint in local database
-	if lastBlock > channelLog.LastBlock {
-		logs := e.getPastEvents(channelLog.LastBlock)
-		e.update(logs)
-	}
+	/* if lastBlock > channelLog.LastBlock {
+	logs := e.getPastEvents(channelLog.LastBlock)
+	} */
+	logs := e.getPastEvents(0)
+	e.update(logs)
+
 }
 
 //GetInfo is a func
@@ -137,7 +140,7 @@ func (e *Escrow) getPastEvents(startingBlock uint64) []types.Log {
 
 func (e *Escrow) update(logs []types.Log) {
 	for _, vLog := range logs {
-		openTime := int64(0)
+		openTime := e.startingBlock
 		closeTime := int64(vLog.BlockNumber)
 
 		switch vLog.Topics[0].Hex() {
@@ -152,7 +155,11 @@ func (e *Escrow) update(logs []types.Log) {
 			channelClaimEvent.ChannelId = vLog.Topics[1].Big()
 			channelClaimEvent.Recipient = common.HexToAddress(vLog.Topics[2].Hex())
 
-			channel, _ := e.ContractInstance.Channels(nil, channelClaimEvent.ChannelId)
+			channel, err := e.ContractInstance.Channels(nil, channelClaimEvent.ChannelId)
+
+			if err != nil {
+				log.Fatal(err)
+			}
 
 			nextChannel := &database.Channel{
 				channelClaimEvent.ChannelId,
@@ -164,7 +171,7 @@ func (e *Escrow) update(logs []types.Log) {
 				closeTime,
 			}
 
-			//			channelLog.Insert(nextChannel)
+			channelLog.Insert(nextChannel, true)
 			fmt.Printf("ChannelID: %s Nonce: %s\n", nextChannel.ChannelId, nextChannel.Nonce)
 
 		case channelSenderClaimSigHash.Hex():
@@ -190,7 +197,7 @@ func (e *Escrow) update(logs []types.Log) {
 				closeTime,
 			}
 
-			//channelLog.Insert(nextChannel)
+			channelLog.Insert(nextChannel, true)
 			fmt.Printf("ChannelID: %s Nonce: %s\n", nextChannel.ChannelId, nextChannel.Nonce)
 
 		case channelExtendSigHash.Hex():
