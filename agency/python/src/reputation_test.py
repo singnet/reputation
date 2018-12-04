@@ -24,21 +24,16 @@
 
 import unittest
 import datetime
+import time
 import logging
 
 from aigents_reputation_cli import *
 from aigents_reputation_api import *
 
 # Uncomment this for logging to console
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+#logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-class TestReputationServiceMethods(unittest.TestCase):
-
-	def setUp(self):
-		# Command-line-based Aigents Reputation Service wrapper 
-		#self.rs = AigentsCLIReputationService('../../bin','./','test',True)
-		# Web-service-based Aigents Reputation Service wrapper 
-		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+class TestReputationServiceBase(object):
 
 	def test_smoke(self):
 		rs = self.rs
@@ -120,6 +115,33 @@ class TestReputationServiceMethods(unittest.TestCase):
 			if rank['id'] == '1':
 				self.assertEqual(rank['rank'], 33)			
 
+
+# Test Command-line-based Aigents Reputation Service wrapper 
+class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCase):
+
+	def setUp(self):
+		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
+
+
+# Test Web-service-based Aigents Reputation Service wrapper 
+class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCase):
+
+	def setUp(self):
+		self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
+		time.sleep(5)
+		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+
+	def tearDown(self):
+		self.server_process.kill()
+
+"""
+# TODO @nejc
+# Python Native Reputation Service implmentation 
+class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCase):
+
+	def setUp(self):
+		pass
+"""
 
 if __name__ == '__main__':
     unittest.main()
