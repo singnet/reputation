@@ -72,7 +72,7 @@ def days_between(d1, d2):
     
 ###   Get starting dates and first occurances of each addresses. Also, preparation or arrays and other data
 ### to be used in the future.
-def reputation_calc_p1(new_subset,first_occurance):
+def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False):
     ### We first sort and delete level_0 column, if exists (not needed)
     new_subset = new_subset.sort_values(['To'], ascending=[True])
     new_subset = new_subset.reset_index()   
@@ -108,7 +108,65 @@ def reputation_calc_p1(new_subset,first_occurance):
             first_occurance[new_array[i][1]] = 0
         ### Just in case, we post the progress, so we have an idea when we will finish.
         i+=1
-
+    
+    if temporal_aggregation:
+        from_data = []
+        to_data = to_array
+        i = 0
+        while i<len(new_array):
+            from_data.append(int(new_array[i][0]))
+            i+=1
+            
+        ### Temporal aggregation=True;
+        ### First let's just find all the duplicates;
+        ### We merge from and to arrays and look for unique ones...
+        merged = []
+        i=0
+        while i<len(from_data):
+            newnr = str(from_data[i])+"_"+str(to_data[i])
+            merged.append(newnr)
+            i+=1
+        already_used = {}
+        for i in merged:
+            if i in already_used.keys():
+                already_used[i] = already_used[i] + 1
+            else:
+                already_used[i] = 1
+        ### Good, now we know exact nr of transactions for each pair...    
+        
+        #### merged data has the same indexing as new_array. 
+        i = 0
+        ### If exists, pass, otherwise this:
+        already_used2 = {}
+        new_array2 = []
+        to_array2 = []
+        amounts = {}
+        ratings = {}
+        while i<len(merged):
+            if merged[i] in already_used2.keys():
+                amounts[merged[i]] = amounts[merged[i]] + new_array[i][2]
+                ratings[merged[i]] = ratings[merged[i]] + new_array[i][3]
+            else:
+                already_used2[merged[i]]=1
+                amounts[merged[i]] = new_array[i][2]
+                ratings[merged[i]] = new_array[i][3]
+            i+=1
+        i=0
+        already_used2 = {}
+        while i<len(merged):
+            if merged[i] in already_used2.keys():
+                pass
+            else:
+                already_used2[merged[i]]=1
+                ### Just set some value.
+                new_array2.append(new_array[i])
+                new_array2[len(new_array2)-1][2] = amounts[merged[i]]/already_used[merged[i]]
+                new_array2[len(new_array2)-1][3] = ratings[merged[i]]/already_used[merged[i]]
+                to_array2.append(to_array[i])
+            i+=1
+               
+        new_array = new_array2
+        to_array = to_array2
     del(sorted_merge)
     return(new_array,dates_array,to_array,first_occurance)
 ### Get new reputations in case we do not yet have the old ones.
@@ -441,7 +499,9 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 
 
 
-def calculate_reputations(data,default_rep,conservativity,multiplier,ratings):
+
+
+def calculate_reputations(data,default_rep,conservativity,multiplier,ratings,temporal_aggregation=False):
     from datetime import datetime, timedelta
     ### Define empty dictionaries where we save our queries later on.
     first_occurance = dict()
@@ -481,7 +541,7 @@ def calculate_reputations(data,default_rep,conservativity,multiplier,ratings):
         since = our_date - timedelta(days=1)
 
         ### And then we iterate through functions. First we prepare arrays and basic computations.
-        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(daily_data,first_occurance)
+        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(daily_data,first_occurance,temporal_aggregation)
         del(daily_data)    
         reputation = update_reputation(reputation,array1,default_rep)
         ### And then update reputation.
@@ -494,10 +554,8 @@ def calculate_reputations(data,default_rep,conservativity,multiplier,ratings):
         avg_reputation = avg_rep_calculate(avg_reputation,reputation,multiplier)
 
         save_zipped_pickle(reputation,our_file)
-        #print("Day",i,"completed.")
+        print("Day",i,"completed.")
         i+=1
     print("Ending time is:",time.time()-start)
     return(reputation,avg_reputation)
 
-
-    
