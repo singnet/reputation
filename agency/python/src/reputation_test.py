@@ -123,16 +123,21 @@ class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCas
 		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
 
 
-# Test Web-service-based Aigents Reputation Service wrapper 
+# Test Web-service-based Aigents Reputation Service wrapper
+# TODO make port 1180 configurable!
 class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCase):
 
 	def setUp(self):
-		self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
+		cmd = 'java -cp ../../bin/mail.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path \'./al_test.txt\', http port 1180, cookie domain localtest.com, console off'
+		self.server_process = subprocess.Popen(cmd.split())
+		#self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
 		time.sleep(5)
 		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 
 	def tearDown(self):
+		del self.rs
 		self.server_process.kill()
+		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
 
 """
 # TODO @nejc
