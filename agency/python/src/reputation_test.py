@@ -139,6 +139,7 @@ class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCas
 		self.server_process.kill()
 		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
 
+
 """
 # TODO @nejc
 # Python Native Reputation Service implmentation 
@@ -178,10 +179,24 @@ class TestReputationSimulation(unittest.TestCase):
 		lines = r.decode().splitlines()
 		self.assertEqual(lines[len(lines)-4],'0.990735561711275') 
 		self.assertEqual(lines[len(lines)-2],'0.9978408742994422') 
-
+	
 	def testRatingsWithFeedback(self):
-		#TODO
 		pass
+		#TODO
+		"""
+		#Step 1 - generate simulated data without feedback
+		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
+		bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": 1, "consumers": 1}
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, None, False)
+		#Step 2 - process simulated with reputaion engine in batch mode, grab results and check them
+		cmd = 'python reputation_simulate.py ../../bin testsim ./ transactions10_r_20_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logarithm=False weighting=True norm=True default=0.5'
+		r = subprocess.check_output(cmd,shell=True)
+		#os.system(cmd)
+		lines = r.decode().splitlines()
+		self.assertEqual(lines[len(lines)-4],'0.8713692747116901') 
+		self.assertEqual(lines[len(lines)-2],'0.987143367504686') 
+		#Step 3 - generate simulated data with feedback
+		"""
 	
 
 if __name__ == '__main__':

@@ -25,13 +25,16 @@
 import datetime
 from reputation_scenario import reputation_simulate
 from aigents_reputation_cli import AigentsCLIReputationService
+from aigents_reputation_api import AigentsAPIReputationService
 
-bin_path = '../../bin'
-data_path = './'
 
 #TODO use any other Reputation Service here
-#rs = AigentsCLIReputationService(bin_path,data_path,network,verbose)
-rs = None
+#rs = AigentsCLIReputationService('../../bin','./','testsim',False)
+rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+print('parameters',str(rs.get_parameters()))
+
+#rs = None
+
 	
 #Unhealthy agent environment set
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}

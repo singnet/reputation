@@ -56,7 +56,11 @@ import datetime
 import time
 
 network = 'reptest'
-threshold = 10 # percents of goodness for agent to be selected by consumer, 0 to select all, 100 or None to select only the top  
+
+# percents of goodness for agent to be selected by consumer, 0 to select all, 100 or None to select only the top
+#threshold = 10 # for "10 agents X 10 days", that is too low - bad agents still get chance to be selected on days 2 and 3
+#threshold = 50 # for "10 agents X 10 days", that is too high - one good agent gets associated with bad agents
+threshold = 40
 
 def list_best_ranked(ranks,list,threshold=None):
 	if threshold is None:
@@ -68,16 +72,18 @@ def list_best_ranked(ranks,list,threshold=None):
 	if threshold == 0:
 		return list
 	best = []
-	for key in ranks:
-		value = ranks[key]
-		if threshold <= value:
-			 best.append(key)
+	for item in list:
+		key = str(item)
+		if key in ranks:
+			value = ranks[key]
+			if threshold <= value:
+				 best.append(item)
 	if len(best) == 0:
 		return list
 	return best
 
 
-def pick_agent(ranks,list,self,memories = None,bad_agents = None,verbose = True):
+def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 	picked = None
 	if memories is not None:
 		#good agents case
@@ -88,13 +94,10 @@ def pick_agent(ranks,list,self,memories = None,bad_agents = None,verbose = True)
 			memories[self] = blacklist
 		if ranks is not None:
 			list = list_best_ranked(ranks,list,threshold)
-			if verbose:
-				print('list_best_ranked',list)
 	else:
 		#bad agents case
 		blacklist = None
 	while(picked is None):
-		#TODO pick with account to rs
 		picked = list[random.randint(0,len(list)-1)]
 		if picked == self:
 			picked = None # skip self
@@ -197,8 +200,9 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 					print(ranks)
 			else:
 				ranks = None
-			
+
 			for agent in good_consumers:
+				hits = {}
 				for t in range(0, good_agents_transactions):
 					other = pick_agent(ranks,all_suppliers,agent,memories,bad_agents)
 					cost = random.randint(good_agents_values[0],good_agents_values[1])
@@ -213,6 +217,9 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
 						log_file(file,date,'transfer',agent,other,cost,None)
+					hits[other] = 1 + hits[other] if other in hits else 1  
+				if verbose:
+					print(str(agent) + ':' + str(hits))
 		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
