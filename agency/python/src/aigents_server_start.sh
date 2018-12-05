@@ -13,6 +13,6 @@
 rm -rf ./al_test.txt *log.txt www is-instances is-text test*.txt
 
 # Run Aigents
-java -cp ../../bin/mail.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path './al_test.txt', cookie domain localtest.com, console off &
+java -cp ../../bin/mail.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path './al_test.txt', http port 1180, cookie domain localtest.com, console off &
 sleep 5
 echo Aigents server started.

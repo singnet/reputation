@@ -142,11 +142,47 @@ class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCas
 """
 # TODO @nejc
 # Python Native Reputation Service implmentation 
-class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCase):
+class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.TestCase):
 
 	def setUp(self):
 		pass
 """
+
+# Test Reputation Batch Simulation
+
+from reputation_scenario import reputation_simulate 
+
+class TestReputationSimulation(unittest.TestCase):
+
+	def testRatingsNoFeedback(self):
+		#Step 1 - generate simulated data
+		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
+		bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, None, False)
+		#Step 2 - process simulated with reputaion engine in batch mode, grab results and check them
+		cmd = 'python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logarithm=False weighting=True norm=True default=0.5'
+		r = subprocess.check_output(cmd,shell=True)
+		lines = r.decode().splitlines()
+		self.assertEqual(lines[len(lines)-4],'0.9866744712267205') 
+		self.assertEqual(lines[len(lines)-2],'0.9944481144111824') 
+
+	def testPaymentsNoFeedback(self):
+		#Step 1 - generate simulated data
+		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
+		bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, None, False)
+		#Step 2 - process simulated with reputaion engine in batch mode, grab results and check them
+		cmd = 'python reputation_simulate.py ../../bin testsim ./ transactions10_p_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logarithm=False weighting=True norm=True default=0.5'
+		r = subprocess.check_output(cmd,shell=True)
+		#os.system(cmd)
+		lines = r.decode().splitlines()
+		self.assertEqual(lines[len(lines)-4],'0.990735561711275') 
+		self.assertEqual(lines[len(lines)-2],'0.9978408742994422') 
+
+	def testRatingsWithFeedback(self):
+		#TODO
+		pass
+	
 
 if __name__ == '__main__':
     unittest.main()
