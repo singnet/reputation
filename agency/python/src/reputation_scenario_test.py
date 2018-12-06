@@ -31,8 +31,6 @@ from aigents_reputation_api import AigentsAPIReputationService
 #TODO use any other Reputation Service here
 #rs = AigentsCLIReputationService('../../bin','./','testsim',False)
 rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-print('parameters',str(rs.get_parameters()))
-
 #rs = None
 
 	
@@ -40,7 +38,7 @@ print('parameters',str(rs.get_parameters()))
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": 1, "consumers": 1}
 
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, rs)
 
 #Semi-healthy agent environment set 
@@ -54,7 +52,7 @@ bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers"
 good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, rs)
 
 # Quick test for "slow" simulation with feedback

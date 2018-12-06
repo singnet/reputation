@@ -41,7 +41,7 @@ class TestReputationServiceBase(object):
 		#check default parameters
 		p = rs.get_parameters()
 		self.assertEqual( p['default'], 0.5 )
-		self.assertEqual( p['concervatizm'], 0.5)
+		self.assertEqual( p['conservatism'], 0.5)
 		self.assertEqual( p['precision'], 0.01)
 		self.assertEqual( p['weighting'], True)
 		self.assertEqual( p['fullnorm'], True)
