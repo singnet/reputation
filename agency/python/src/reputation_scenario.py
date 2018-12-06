@@ -82,6 +82,9 @@ def list_best_ranked(ranks,list,threshold=None):
 		return list
 	return best
 
+def intersection(lst1, lst2): 
+	lst3 = [value for value in lst1 if value in lst2] 
+	return lst3
 
 def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 	picked = None
@@ -94,9 +97,21 @@ def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 			memories[self] = blacklist
 		if ranks is not None:
 			list = list_best_ranked(ranks,list,threshold)
+		#if blacklist is not None:
+		#	list = intersection(list, blacklist)
 	else:
 		#bad agents case
 		blacklist = None
+		
+	#TODO make it working without of dead loop!!! 
+	#if self in list:
+	#	list = list.remove(self)
+	#if len(list) == 0:
+	#	print('ERROR - EMPTY LIST')
+	#if len(list) < 2:
+	#	print(len(list),list)
+	#picked = list[random.randint(0,len(list)-1)] if len(list) > 1 else list[0]
+
 	while(picked is None):
 		picked = list[random.randint(0,len(list)-1)]
 		if picked == self:
@@ -201,6 +216,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 			else:
 				ranks = None
 
+			daily_good_to_bad = 0
 			for agent in good_consumers:
 				hits = {}
 				for t in range(0, good_agents_transactions):
@@ -209,6 +225,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 					actual_good_volume += cost
 					if other in bad_agents:
 						actual_good_to_bad_volume += cost
+						daily_good_to_bad += cost
 					if ratings:
 						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
@@ -220,6 +237,9 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 					hits[other] = 1 + hits[other] if other in hits else 1  
 				if verbose:
 					print(str(agent) + ':' + str(hits))
+
+			if verbose:
+				print(daily_good_to_bad)
 		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
