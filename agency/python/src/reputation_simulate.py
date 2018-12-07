@@ -48,7 +48,7 @@ def get_option(args, key):
 	return True if value == 'True' else False
 
 
-java_options = '-Xms1280m -Xmx2560m -Dsun.zip.disableMemoryMapping=true'
+java_options = '-Xms1000m -Xmx2000m -Dsun.zip.disableMemoryMapping=true'
 
 if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.argv[3]) < 2:
 	print('Usage:')
@@ -110,7 +110,8 @@ def ai_command(command):
 	aigents_command = 'java ' + java_options + ' -cp '+ bin_dir + '/Aigents.jar' \
 		+ ' net.webstructor.peer.Reputationer' + ' path ' + data_dir + ' network ' \
 		+ sim_name + ' ' + command
-	#print(aigents_command)
+	if verbose:
+		print(aigents_command)
 	os_command(aigents_command)
 
 if verbose:
