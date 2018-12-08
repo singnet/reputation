@@ -4,8 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/tiero/reputation/adapter/crawler"
-	"github.com/tiero/reputation/adapter/server"
+	"github.com/singnet/reputation/adapter/server"
 )
 
 func main() {

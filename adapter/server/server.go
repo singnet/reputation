@@ -36,8 +36,8 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/testdata"
 
-	"github.com/tiero/reputation/adapter/database"
-	pb "github.com/tiero/reputation/adapter/resources/protos"
+	"github.com/singnet/reputation/adapter/database"
+	pb "github.com/singnet/reputation/adapter/resources/protos"
 )
 
 var (

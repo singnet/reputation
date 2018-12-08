@@ -5,7 +5,7 @@ import (
 	"log"
 	"testing"
 
-	pb "github.com/tiero/reputation/adapter/resources/protos"
+	pb "github.com/singnet/reputation/adapter/resources/protos"
 	"google.golang.org/grpc"
 )
 
