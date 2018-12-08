@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/tiero/reputation/adapter/crawler"
+	"github.com/tiero/reputation/adapter/server"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	escrow.Start()
+	//escrow.Start()
+
+	// Grpc Server
+	server.Start()
 
 }

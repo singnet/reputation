@@ -1,7 +1,5 @@
 # Reputation Adapter
 
-# Endpoint
-
 # Networks
 
 ## Kovan 
@@ -12,13 +10,13 @@
   * 0xdd4292864063d0DA1F294AC65D74d55a44F4766C
 
 # Development
-  
 
 ## Requirements
 
 * Node/NPM 8+/5+
 * Yarn 1.10+
 * Go 1.9+
+
 
 ## Install
 
