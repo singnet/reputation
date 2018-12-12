@@ -95,30 +95,15 @@ def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 		else:
 			blacklist = []
 			memories[self] = blacklist
+		if blacklist is not None:
+			list = [white for white in list if white not in blacklist and white != self]
 		if ranks is not None:
 			list = list_best_ranked(ranks,list,threshold)
-		#if blacklist is not None:
-		#	list = intersection(list, blacklist)
 	else:
 		#bad agents case
 		blacklist = None
-		
-	#TODO make it working without of dead loop!!! 
-	#if self in list:
-	#	list = list.remove(self)
-	#if len(list) == 0:
-	#	print('ERROR - EMPTY LIST')
-	#if len(list) < 2:
-	#	print(len(list),list)
-	#picked = list[random.randint(0,len(list)-1)] if len(list) > 1 else list[0]
-
-	while(picked is None):
-		picked = list[random.randint(0,len(list)-1)]
-		if picked == self:
-			picked = None # skip self
-		else:
-			if blacklist is not None and picked in blacklist:
-				picked = None # skip those who already blacklisted
+		list = [black for black in list if black != self]
+	picked = list[0] if len(list) == 1 else list[random.randint(0,len(list)-1)]
 	if blacklist is not None and bad_agents is not None and picked in bad_agents:
 		blacklist.append(picked) #blacklist picked bad ones once picked so do not pick them anymore
 	return picked
@@ -199,7 +184,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 		print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
 		print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
 		print('Code:',code,'Volume ratio:',str(good_agents_volume/bad_agents_volume))
-	
+
 	with open(transactions, 'w') as file:
 		for day in range(sim_days):
 			prev_date = since + datetime.timedelta(days=(day-1))
@@ -212,31 +197,33 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 				rs.update_ranks(prev_date)
 				ranks = rs.get_ranks_dict({'date':prev_date})
 				if verbose:
-					print(ranks)
+					print('Ranks',ranks)
 			else:
 				ranks = None
 
 			daily_good_to_bad = 0
 			for agent in good_consumers:
-				hits = {}
+				daily_selections = {}
 				for t in range(0, good_agents_transactions):
 					other = pick_agent(ranks,all_suppliers,agent,memories,bad_agents)
 					cost = random.randint(good_agents_values[0],good_agents_values[1])
 					actual_good_volume += cost
+					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
+					rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
 					if other in bad_agents:
 						actual_good_to_bad_volume += cost
 						daily_good_to_bad += cost
 					if ratings:
-						# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
-						rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
 						if rs is not None:
 							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':rating,'weight':cost,'time':date}])
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
+						if rs is not None:
+							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
-					hits[other] = 1 + hits[other] if other in hits else 1  
+					daily_selections[other] = 1 + daily_selections[other] if other in daily_selections else 1
 				if verbose:
-					print(str(agent) + ':' + str(hits))
+					print('By ' + str(agent) + ':' + str(daily_selections))
 
 			if verbose:
 				print(daily_good_to_bad)

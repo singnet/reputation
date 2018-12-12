@@ -164,8 +164,8 @@ class TestReputationSimulation(unittest.TestCase):
 		cmd = 'python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logarithm=False weighting=True norm=True default=0.5'
 		r = subprocess.check_output(cmd,shell=True)
 		lines = r.decode().splitlines()
-		self.assertEqual(lines[len(lines)-4],'0.9866744712267205') 
-		self.assertEqual(lines[len(lines)-2],'0.9944481144111824') 
+		self.assertEqual(lines[len(lines)-4],'0.9949270256319069') 
+		self.assertEqual(lines[len(lines)-2],'0.9835109653902355') 
 
 	def testPaymentsNoFeedback(self):
 		#Step 1 - generate simulated data
@@ -177,8 +177,8 @@ class TestReputationSimulation(unittest.TestCase):
 		r = subprocess.check_output(cmd,shell=True)
 		#os.system(cmd)
 		lines = r.decode().splitlines()
-		self.assertEqual(lines[len(lines)-4],'0.990735561711275') 
-		self.assertEqual(lines[len(lines)-2],'0.9978408742994422') 
+		self.assertEqual(lines[len(lines)-4],'0.9821876882506629') 
+		self.assertEqual(lines[len(lines)-2],'0.9925832646272458') 
 	
 	def testRatingsWithFeedback(self):
 		pass
