@@ -131,7 +131,7 @@ class AigentsAPIReputationService(RatingService,RankingService):
 			if self.verbose:
 				logger.info( 'put_ratings' + ' ' + str(rating) )
 			item = ' from ' + str(rating['from']) + ' type ' + rating['type'] + ' to ' + str(rating['to']) +\
-					' value ' + str(rating['value']) + (' weight ' + str(rating['weight']) if rating['weight'] is not None else '') + ' time ' + str(rating['time'])
+					' value ' + str(rating['value']) + (' weight ' + str(rating['weight']) if 'weight' in rating and rating['weight'] is not None else '') + ' time ' + str(rating['time'])
 			cmd += item
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
