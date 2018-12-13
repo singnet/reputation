@@ -29,28 +29,33 @@ from aigents_reputation_api import AigentsAPIReputationService
 
 
 #TODO use any other Reputation Service here
+rs = None
 #rs = AigentsCLIReputationService('../../bin','./','testsim',False) # this one is very slow
 #rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-rs = None
 
+verbose = True
+days = 10
+consumers = 0.5 
+suppliers = 0.5
 	
 #Unhealthy agent environment set
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
-bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": 1, "consumers": 1}
+good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, rs)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
 
 #Semi-healthy agent environment set 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
-bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": 1, "consumers": 1}
+good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, rs)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
 
 #Healthy agent environment set (default) 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
-bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
+good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, rs)
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, rs)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+
