@@ -48,7 +48,7 @@ def get_option(args, key):
 	return True if value == 'True' else False
 
 
-java_options = '-Xms128m -Xmx256m -Dsun.zip.disableMemoryMapping=true'
+java_options = '-Xms1000m -Xmx2000m -Dsun.zip.disableMemoryMapping=true'
 
 if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.argv[3]) < 2:
 	print('Usage:')
@@ -85,7 +85,7 @@ norm = get_option(sys.argv,'norm')
 verbose = get_option(sys.argv,'verbose')
 
 print('binary directory:', bin_dir)
-print('dimulation name:', sim_name)
+print('simulation name:', sim_name)
 print('data directory:', data_dir)
 print('transaction log file:', transactions_file)
 print('user reputations file:', reputations_file)
@@ -93,7 +93,7 @@ print('since date:', since_date)
 print('until date:', until_date)
 print('precision:', precision)
 print('default:', default)
-print('conservativity:', conservativity)
+print('conservatism:', conservativity)
 print('logarithm:', logarithm)
 print('weighting:', weighting)
 print('norm:', norm)
@@ -110,7 +110,8 @@ def ai_command(command):
 	aigents_command = 'java ' + java_options + ' -cp '+ bin_dir + '/Aigents.jar' \
 		+ ' net.webstructor.peer.Reputationer' + ' path ' + data_dir + ' network ' \
 		+ sim_name + ' ' + command
-	#print(aigents_command)
+	if verbose:
+		print(aigents_command)
 	os_command(aigents_command)
 
 if verbose:
