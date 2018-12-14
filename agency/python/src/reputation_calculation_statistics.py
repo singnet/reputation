@@ -21,13 +21,13 @@
 # SOFTWARE.
 
 # Reputation Service API, including Rating Service and Ranking Service
-from reputation_API import *
+from reputation_service_api import *
 
 ### First define what we want;
 ### We measure time spent:
 start = time.time()
 ## Define our reputation_system class
-reputation_system = TestReputationServiceMethods()
+reputation_system = PythonReputationService()
 ### Set parameters!
 reputation_system.set_parameters(default=0.5,conservaticism=0.5,precision=0.01,weighting=True,fullnorm= True,
                       liquid=False,logranks=False,temporal_aggregation=False,logratings=False,days_jump=1,
