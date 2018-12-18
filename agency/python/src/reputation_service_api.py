@@ -90,7 +90,32 @@ class PythonReputationService(object):
             self.first_occurance = {}
         else:
             self.first_occurance = first_occurance            
-      
+    
+    def all_dates(self):
+        self.dates = []
+        i = 1
+        while i<=self.days_jump:
+            self.dates.append(self.date + timedelta(days=i))
+            i+=1
+       
+    def create_subset(self,data):
+        self.all_dates()
+        indexes = np.where(data['Date']==self.dates[0])[0]
+        i=1
+        while i<len(self.dates):
+            ola1 = np.where(data['Date']==self.dates[i])[0]
+            indexes = np.append(indexes,ola1)
+            i+=1
+        mysubset = data.iloc[indexes]
+        if 'level_0' in mysubset:
+            del(mysubset['level_0'])        
+        mysubset = mysubset.reset_index()
+        daily_data = mysubset
+        ### Columns need to be renamed because my previous version is non-standardised.
+        daily_data = daily_data.rename(columns={"from":"From","to":"To"})
+        daily_data = daily_data.reset_index()
+        return(daily_data)
+        
     def update_ranks(self):
         ### And then we iterate through functions. First we prepare arrays and basic computations.
         start1 = time.time()
