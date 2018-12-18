@@ -152,10 +152,23 @@ class AigentsAPIReputationService(RatingService,RankingService):
 				firstline = False
 			else:
 				#[from, type, to, value], where the value is already "blended" by value and weight 
-				rating = line.split('\t')
 				#['4', 'rating-d', '1', '100']
+				rating = line.split('\t')
+				"""
+				#getting rating object as array
 				rating[3] = float(rating[3])
 				ratings.append(rating)
+				"""
+				#getting rating object as dict
+				#{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt2}
+				rating_dict = {}
+				rating_dict['from'] = rating[0]
+				rating_dict['type'] = rating[1]
+				rating_dict['to'] = rating[2]
+				rating_dict['value'] = float(rating[3])
+				#TODO properly get ratings time from Aigents implementation 
+				rating_dict['time'] = filter['since']
+				ratings.append(rating_dict)
 		if self.verbose:
 			logger.info( 'get_ratings:' + str(ratings) )
 		return(0,ratings)

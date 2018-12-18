@@ -93,6 +93,12 @@ class TestReputationServiceBase(object):
 		result, ratings = rs.get_ratings(filter)
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 3)
+		ratings = sorted(ratings, key=lambda elem: "%s %s" % (elem['from'], elem['to']))
+		self.assertEqual(ratings[0]['from'], '4')
+		self.assertEqual(ratings[0]['to'], '1')
+		self.assertEqual(ratings[1]['to'], '2')
+		self.assertEqual(ratings[1]['value'], 100.0)
+		self.assertEqual(ratings[2]['time'], dt2)
 		
 		#TODO test for filter with
 		# multiple id-s
@@ -115,13 +121,11 @@ class TestReputationServiceBase(object):
 			if rank['id'] == '1':
 				self.assertEqual(rank['rank'], 33)			
 
-
 # Test Command-line-based Aigents Reputation Service wrapper 
 class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCase):
 
 	def setUp(self):
 		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
-
 
 # Test Web-service-based Aigents Reputation Service wrapper
 # TODO make port 1180 configurable!
@@ -140,7 +144,7 @@ class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCas
 		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
 
 """
-# TODO @nejc
+# TODO @nejc - have the separate test_reputation_api.py file for this 
 # Python Native Reputation Service implmentation 
 class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.TestCase):
 
@@ -149,7 +153,6 @@ class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.Test
 """
 
 # Test Reputation Batch Simulation
-
 from reputation_scenario import reputation_simulate 
 
 class TestReputationSimulation(unittest.TestCase):
@@ -213,7 +216,6 @@ class TestReputationSimulation(unittest.TestCase):
 		assert r1['10'] < 40
 		assert r2['9'] < 40
 		assert r2['10'] < 40
-
 
 if __name__ == '__main__':
     unittest.main()
