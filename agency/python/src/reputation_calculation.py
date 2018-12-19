@@ -787,15 +787,17 @@ def days_between(d1, d2):
 def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False):
     ### We first sort and delete level_0 column, if exists (not needed)
     new_subset = new_subset.sort_values(['To'], ascending=[True])
-    new_subset = new_subset.reset_index()   
     if 'level_0' in new_subset:
-        del(new_subset['level_0'])
+        del(new_subset['level_0'])    
+    new_subset = new_subset.reset_index()   
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
     ### Now we will just store the first occurance of each account in a dictionary (first_occurance)
     ### The easiest (and in pandas probably the fastest) way would be to create sorted dataframe and then iterate
     ### and check if we already have certain record. If no, create, if yes, it was created before, so pass.
     ### When it is created we also store date of creation.
     sorted_merge = new_subset.sort_values(['Date'], ascending=[True])
+    if 'level_0' in sorted_merge:
+        del(sorted_merge['level_0'])      
     sorted_merge = sorted_merge.reset_index()
     ### Time to do some refinements. Let's get rid of Pandas dataframe and save it to something else.
     ### Let us sort the dataset alphabetically by "To". This can fasten up the algo later on...

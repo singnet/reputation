@@ -33,7 +33,7 @@ reputation_system.set_parameters(default=0.5,conservaticism=0.5,precision=0.01,w
                       liquid=False,logranks=False,temporal_aggregation=False,logratings=False,days_jump=1,
                       use_ratings = True,start_date=datetime.date(2018, 1, 1))
 ### Further setting paramters; number of days and multiplier day/nr of days.
-days = 180
+days = 90
 multiplier = 1/days # Each day of reputation calculation adds this much weight to avg_reputation.
 # Generate simulated marketplace and save it to data.
 good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppliers": 0.5, "consumers": 0.5}
@@ -62,12 +62,8 @@ reputation_system.initialize_ranks()
 i= 0
 while i<len(np.unique(data['days_since_start'])):
     ### We loop through dates and take a subset of each date.
-    mysubset = data[data['Date']==reputation_system.date]
-    mysubset = mysubset.reset_index()
-    daily_data = mysubset
-    ### Columns need to be renamed because my previous version is non-standardised.
-    daily_data = daily_data.rename(columns={"from":"From","to":"To"})
-    mydate = mysubset['Date'].loc[0]
+    daily_data = reputation_system.create_subset(data)
+    mydate = daily_data['Date'].loc[0]
     ### we change the date in our reputation system class.
     reputation_system.set_date(mydate)
     since = reputation_system.our_date - timedelta(days=reputation_system.days_jump)
@@ -84,7 +80,7 @@ while i<len(np.unique(data['days_since_start'])):
     save_zipped_pickle(reputation_system.reputation,our_file)
     reputation_system.add_time() ### Go to next day
     print("Day",i,"completed.")
-    i+=1
+    i+=reputation_system.days_jump
 print("Ending time is:",time.time()-start)
 
 ### Now reputation computation is finished and we just calculate correlations.
