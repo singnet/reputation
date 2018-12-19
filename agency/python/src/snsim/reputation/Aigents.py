@@ -18,6 +18,7 @@ class Aigents():
         self.output_path = config['parameters']['output_path']
         self.param_str = config['parameters']['param_str']
         self.java_options = '-Xms128m -Xmx256m -Dsun.zip.disableMemoryMapping=true'
+        self.bin_dir = "bin"
 
         # MIT License
         #
@@ -61,14 +62,18 @@ class Aigents():
         print(r.decode())
 
     def ai_command(self,command):
-        # aigents_command = 'java ' + self.java_options + ' -cp ' + self.home_dir + '/Aigents.jar' \
-        #                   + ' net.webstructor.peer.Reputationer' + ' path ' + self.home_dir + ' network ' \
-        #                   + self.sim_name + ' ' + command
-        aigents_command = 'java ' + self.java_options + ' -cp ' + 'Aigents.jar' \
-                          + ' net.webstructor.peer.Reputationer' + ' path ' + self.home_dir + ' network ' \
+        # aigents_command = 'java ' + java_options + ' -cp ' + bin_dir + '/Aigents.jar' \
+        #                       + ' net.webstructor.peer.Reputationer' + ' path ' + data_dir + ' network ' \
+        #                       + sim_name + ' ' + command
+
+        aigents_command = 'java ' + self.java_options + ' -cp ' + self.bin_dir + '/Aigents.jar' \
+                          + ' net.webstructor.peer.Reputationer' + ' path ' + self.data_dir + ' network ' \
                           + self.sim_name + ' ' + command
+
+
+
         print(aigents_command)
-        print (os.getcwd())
+        #print (os.getcwd())
         self.os_command(aigents_command)
 
 
@@ -76,10 +81,10 @@ class Aigents():
 
         for run in self.runs:
             self.sim_name = self.param_str + run['run_name']
-            self.home_dir = self.output_path+self.param_str + run['run_name']
+            self.data_dir = self.output_path+self.param_str + run['run_name']
             self.transactions_file = self.output_path + 'transactions_' + self.param_str[:-1] + '.tsv'
             self.reputations_file = self.output_path + 'users_' + self.param_str[:-1] + '.tsv'
-            # self.home_dir = '/home/dduong'
+            # self.data_dir = '/home/dduong'
             # self.transactions_file = 'transactions_' + self.param_str[:-1] + '.tsv'
             # self.reputations_file = 'users_' + self.param_str[:-1] + '.tsv'
             self.since_date = run['since_date']
@@ -92,7 +97,7 @@ class Aigents():
         print('')
         print('Cleaning data, but not calling rm -rf, please clear out the file area manually.')
         self.ai_command('clear')
-        # os.system('rm -rf ' + home_dir + '/' + sim_name + '*')
+        # os.system('rm -rf ' + data_dir + '/' + sim_name + '*')
 
         print('Loading transaction ratings.')
         self.ai_command('load ratings file ' + self.transactions_file + ' precision 0.01 logarithm')
@@ -104,27 +109,27 @@ class Aigents():
         self.ai_command('get ratings date ' + self.since_date + ' ids 730')
 
         print('Getting history of ranks.')
-        self.ai_command('get ranks since ' + self.since_date + ' until ' +self.until_date + ' > ' + self.home_dir + '/history.tsv')
+        self.ai_command('get ranks since ' + self.since_date + ' until ' +self.until_date + ' > ' + self.data_dir + '/history.tsv')
 
         print('Getting average ranks.')
-        self.ai_command('get ranks since ' + self.since_date + ' until ' + self.until_date + ' average > ' + self.home_dir + '/average.tsv')
+        self.ai_command('get ranks since ' + self.since_date + ' until ' + self.until_date + ' average > ' + self.data_dir + '/average.tsv')
 
         print('Getting latest ranks.')
-        self.ai_command('get ranks date ' + self.until_date + ' > ' + self.home_dir + '/latest.tsv')
+        self.ai_command('get ranks date ' + self.until_date + ' > ' + self.data_dir + '/latest.tsv')
 
         # print('Checking top 5 latest ranks:')
-        # os_command('head -n 5 ' + home_dir + '/latest.tsv')
+        # os_command('head -n 5 ' + data_dir + '/latest.tsv')
 
         # print('Checking bottom 10 latest ranks:')
-        # os_command('tail -n 5 ' + home_dir + '/latest.tsv')
+        # os_command('tail -n 5 ' + data_dir + '/latest.tsv')
 
         print('Getting checking ranks.')
 
         print('Evaluating average ranks:')
-        self.ai_command('compute pearson file ' + self.reputations_file + ' file ' + self.home_dir + '/average.tsv')
+        self.ai_command('compute pearson file ' + self.reputations_file + ' file ' + self.data_dir + '/average.tsv')
 
         print('Evaluating latest ranks:')
-        self.ai_command('compute pearson file ' + self.reputations_file + ' file ' + self.home_dir + '/latest.tsv')
+        self.ai_command('compute pearson file ' + self.reputations_file + ' file ' + self.data_dir + '/latest.tsv')
 
 
 def main():
