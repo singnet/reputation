@@ -1,0 +1,47 @@
+// Copyright 2018 SingularityNet.
+
+syntax = "proto3";
+
+package adapater;
+
+// Interface exported by the server.
+service RatingService {
+  // A simple RPC.
+  rpc GetRatings(BlockInterval) returns (RatingSummary);
+
+}
+
+// BlockInterval is represented as a open 
+// and close time as Ethereum block number  
+message BlockInterval {
+  int64 open_time = 1;
+  int64 close_time = 2;
+}
+// UnixInterval is represented as a open 
+// and close time as Unix timestamp
+message UnixInterval {
+  int64 open_time = 1;
+  int64 close_time = 2;
+}
+// A Rating is a single closed channel
+//
+// It logs channelId and nonce,
+// Consumer/Sender 
+// Provider/Recipient
+// open time (as block number)
+// close time (as block number)
+// amount spent
+message Rating {
+  int64 channelId = 1;
+  int64 nonce = 2;
+  string consumer = 3;
+  string provider = 4;
+  BlockInterval interval = 5;
+  int64 amount = 6;
+}
+
+//RatingSummary  is received in response to a GetRatings rpc.
+//
+message RatingSummary {
+  repeated Rating ratings = 1;
+}
