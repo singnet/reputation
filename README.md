@@ -27,7 +27,7 @@ $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
 
-* Install Compile [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/downloads) and generate Python stubs from proto defintiion
+* Compile [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/downloads) and generate Python stubs from proto defintiion
 ```bash
 $ ./scripts/compile-proto
 ```
