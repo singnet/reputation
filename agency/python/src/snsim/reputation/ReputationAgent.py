@@ -5,6 +5,7 @@ from mesa import Agent
 import numpy as np
 import operator
 from scipy.stats import truncnorm
+import math
 
 
 class ReputationAgent(Agent):
@@ -22,8 +23,8 @@ class ReputationAgent(Agent):
         tuplist = [(good, 0) for good, chance in self.p["chance_of_supplying"].items()]
         self.days_until_shop =   OrderedDict(tuplist)
         self.shopping_pattern = OrderedDict()
-        self.num_partners_in_crime = OrderedDict()
-        self.partners_in_crime = OrderedDict()
+        self.num_criminal_consumers = OrderedDict()
+        self.criminal_consumers = OrderedDict()
 
         cumulative = 0
         self.cobb_douglas_utilities = OrderedDict()
@@ -51,7 +52,7 @@ class ReputationAgent(Agent):
                     #price_fract = self.model.cobb_douglas_distributions[good].rvs()
                     #price = self.p['min_price']+ ((self.p['max_price'] - self.p['min_price'])*price_fract)
                     supply_list.append(good)
-                    price = self.model.price_distributions[good].rvs()
+                    price = self.model.price_distributions[good].rvs() if self.good else self.model.criminal_price_distributions[good].rvs()
                     self.supplying[good]= price
                     self.model.suppliers[good] .append(unique_id)
                     if not self.good:
@@ -60,7 +61,7 @@ class ReputationAgent(Agent):
             for good in supply_list:
                 #price_fract = self.model.cobb_douglas_distributions[good].rvs()
                 #price = self.p['min_price']+ ((self.p['max_price'] - self.p['min_price'])*price_fract)
-                price = self.model.price_distributions[good].rvs()
+                price = self.model.price_distributions[good].rvs() if self.good else self.model.criminal_price_distributions[good].rvs()
                 self.supplying[good]= price
                 self.model.suppliers[good] .append(unique_id)
 
@@ -75,25 +76,36 @@ class ReputationAgent(Agent):
                 self.shopping_pattern[good] = needrv.rvs()
         else:
             if supply_list is not None and len(supply_list) > 0:
-                self.num_partners_in_crime = {good:int(self.model.criminal_agent_ring_size_distribution.rvs()) for good in supply_list}
-                self.partners_in_crime = {good:[] for good in supply_list}
+                self.num_criminal_consumers = {good:int(self.model.criminal_agent_ring_size_distribution.rvs()) for good in supply_list}
+                self.criminal_consumers = {good:set() for good in supply_list}
             for good, needrv in self.model.criminal_need_cycle_distributions.items():
                 self.shopping_pattern[good] = needrv.rvs()
 
     def needs_criminal_consumer(self, supplier,good):
         needs = False
         supplier_agent = self.model.schedule.agents[supplier]
-        if len(supplier_agent.partners_in_crime[good]) < supplier_agent.num_partners_in_crime[good]:
+        if len(supplier_agent.criminal_consumers[good]) < supplier_agent.num_criminal_consumers[good]:
             needs = True
         return needs
 
-    def find_criminal_supplier(self, good):
+    def adopt_criminal_supplier(self, good):
         supplier = None
         possible_suppliers = [supplier for supplier in self.model.criminal_suppliers[good] if (
-            self.needs_criminal_consumer(supplier, good)) and supplier != self.unique_id]
+                supplier != self.unique_id and
+                self.needs_criminal_consumer(supplier, good)) ]
         if len(possible_suppliers) > 0:
             supplier = possible_suppliers[random.randint(0,len(possible_suppliers)-1)]
-        return supplier
+            supplier_agent = self.model.schedule.agents[supplier]
+            supplier_agent.criminal_consumers[good].add(self.unique_id)
+            self.suppliers[good].append(supplier)
+
+    def clear_supplierlist (self, good,supplierlist):
+        if not self.good:
+            for supplier in supplierlist:
+                supplier_agent = self.model.schedule.agents[supplier]
+                if self.unique_id in supplier_agent.criminal_consumers[good]:
+                    supplier_agent.criminal_consumers[good].remove (self.unique_id)
+        supplierlist.clear()
 
     def step(self):
         #first increment the  number of days that have taken place to shop for all goods
@@ -108,9 +120,6 @@ class ReputationAgent(Agent):
             if self.good:
                 for good, supplierlist in self.suppliers.items():
 
-                    if random.uniform(0,1) < self.p['random_change_suppliers']:
-                        supplierlist.clear()
-                    else:
                         bad_suppliers =[supplier for supplier in supplierlist if (
                             good in self.personal_experience and supplier in self.personal_experience[good]
                             and len(self.personal_experience[good][supplier])>0 and
@@ -121,18 +130,17 @@ class ReputationAgent(Agent):
             else:
                 for good, supplierlist in self.suppliers.items():
                     if random.uniform(0,1) < self.p['random_change_suppliers']:
-                        supplierlist.clear()
+                        self.clear_supplierlist(good,supplierlist)
                     if not supplierlist:
-                        criminal_supplier = self.find_criminal_supplier(good)
-                        if criminal_supplier is not None:
-                            supplierlist.append(criminal_supplier)
+                        self.adopt_criminal_supplier(good)
+
 
 
             #have agents start out with minute, non zero supplies of all goods, to make sure cobb douglas works
             tuplist = [(good, random.uniform(0.1,0.2)) for good, chance in self.p["chance_of_supplying"].items()]
             self.goods = OrderedDict(tuplist)
-            num_trades = self.model.transactions_per_day_distribution.rvs(
-                ) if self.good else self.model.criminal_transactions_per_day_distribution.rvs()
+            num_trades = math.floor(self.model.transactions_per_day_distribution.rvs(
+                ) if self.good else self.model.criminal_transactions_per_day_distribution.rvs())
 
             #we offer a more efficient version of cobb_douglas, which is a needs draw
 
@@ -170,9 +178,34 @@ class ReputationAgent(Agent):
         else:
             times_rated, past_rating = self.personal_experience[good][supplier]
             new_times_rated = times_rated + 1
-            now_factor = 1 + (1-self.forget_discount)
-            new_rating = ((times_rated * past_rating * self.forget_discount)  + (rating * now_factor))/new_times_rated
+            #now_factor = 1 + (1-self.forget_discount)
+            #new_rating = ((times_rated * past_rating * self.forget_discount)  + (rating * now_factor))/new_times_rated
+            new_rating = rating
             self.personal_experience[good][supplier] = (new_times_rated, new_rating)
+
+    def thresholded_roulette_wheel(self,good):
+        # sort takes a long time but we do it if choosiness is set
+
+        #get rid of all we have experienced under threshold
+        non_criminal_experiences = {key : ratings_tuple for key,ratings_tuple in self.personal_experience[good].items(
+            )if ratings_tuple[1]> self.fire_supplier_threshold }
+
+        if self.p['choosiness']:
+            sorted_suppliers = sorted(non_criminal_experiences.items(), key=lambda x: x[1][1],reverse=True)
+            winner = sorted_suppliers[0][0]
+        else:
+            ratings_sum = sum([ratings_tuple[1] for key,ratings_tuple in self.personal_experience[good].items() ])
+            roll = random.uniform(0,ratings_sum)
+            cumul = 0
+            winner = None
+            for key,ratings_tuple in non_criminal_experiences.items():
+                if winner is None:
+                    cumul = cumul + ratings_tuple[1]
+                    if cumul > roll:
+                        winner = key
+
+        return winner
+
 
     def choose_partners(self):
         # every time you choose a partner, you will choose a random supplier if its
@@ -185,6 +218,10 @@ class ReputationAgent(Agent):
 
                 supplier = None
 
+                if self.good and random.uniform(0, 1) < self.p['random_change_suppliers']:
+                    self.suppliers[good].clear()
+
+
                 if len(self.model.suppliers[good]) > 0:
                     if len(self.suppliers[good]) < 1:
                         #try a random guy according to your openness to new experiences.
@@ -192,22 +229,35 @@ class ReputationAgent(Agent):
                         #try a random guy
                         roll = random.uniform (0,1)
                         if roll < self.open_to_new_experiences:
+
                             unknowns = [supplier for supplier in self.model.suppliers[good] if (supplier != self.unique_id and
-                                (good not in self.personal_experience or supplier not in self.personal_experience[good]  ))]
+                                (good not in self.personal_experience or supplier not in self.personal_experience[good]  )
+                                )] if self.good else [supplier for supplier in self.criminal_consumers[good] if (
+                                 (supplier != self.unique_id ) and
+                                ((good not in self.personal_experience )or supplier not in self.personal_experience[good]  )
+                                )] if (good in self.criminal_consumers) else []
                             if len(unknowns) :
                                 supplier_index = random.randint(0,len(unknowns)-1)
                                 self.suppliers[good].append(unknowns[supplier_index])
                         if len(self.suppliers[good]) < 1:
                             # either we arnt open to new experiences or we know everyone already so lets try the best that
-                            #  we know, over the fire threshold.
+                            # we know, over the fire threshold.
                             if good in self.personal_experience:
-                                sorted_suppliers = sorted(self.personal_experience[good].items(), key=lambda x: x[1],reverse=True)
-                                if sorted_suppliers[0][1][1] > self.fire_supplier_threshold:
-                                    self.suppliers[good].append(sorted_suppliers[0][0])
+                                #sorted_suppliers = sorted(self.personal_experience[good].items(), key=lambda x: x[1][1],reverse=True)
+                                #if sorted_suppliers[0][1][1] > self.fire_supplier_threshold:
+                                    #self.suppliers[good].append(sorted_suppliers[0][0])
+                                #sorting takes too long, roulette wheel will do
+                                new_supplier = self.thresholded_roulette_wheel(good)
+                                if (new_supplier is not None):
+                                    self.suppliers[good].append(new_supplier)
                         if len(self.suppliers[good]) < 1:
                             #youve got no choice but to try someone new
-                            unknowns = [supplier for supplier in self.model.suppliers[good] if (supplier != self.unique_id and
-                                    (good not in self.personal_experience or supplier not in self.personal_experience[good] ) )]
+                            unknowns = [supplier for supplier in self.model.suppliers[good] if (
+                                     supplier != self.unique_id and
+                                    (good not in self.personal_experience or supplier not in self.personal_experience[good] )
+                                    )]if self.good else [supplier for supplier in self.criminal_consumers[good] if (supplier != self.unique_id and
+                                (good not in self.personal_experience or supplier not in self.personal_experience[good]  )
+                                )]if (good in self.criminal_consumers) else []
                             if len(unknowns) :
                                 supplier_index = random.randint(0,len(unknowns)-1)
                                 self.suppliers[good].append(unknowns[supplier_index])
@@ -215,7 +265,9 @@ class ReputationAgent(Agent):
 
                     if len(self.suppliers[good])> 0:
                         supplier = self.suppliers[good][0]
-                        price = self.model.schedule.agents[supplier].supplying[good]
+                        amount = self.model.amount_distributions[good].rvs() if self.good else self.model.criminal_amount_distributions[good].rvs()
+                        price = amount * self.model.schedule.agents[supplier].supplying[good]
+
                 # two cases:
                 # 1. payment without ratings:  child field populated with transid and parent left blank ,
                 #	value has payment value, unit is payment unit.
@@ -225,6 +277,7 @@ class ReputationAgent(Agent):
                 if supplier is not None:
                     #if self.p['transactions_per_day'][0]== 1000:
                     #    print ("agnet {0} repeat{1} purcahse of good{2}".format(self.unique_id, i, good))
+                    self.model.save_info_for_market_volume_report(self,supplier, price)
                     if self.good:
 
                         perception, rating = self.rate(supplier)
@@ -242,8 +295,8 @@ class ReputationAgent(Agent):
                             rating =  self.best_rating() if (
                                 random.uniform(0,1) < self.p['criminal_chance_of_rating']) else self.p['non_rating_val']
                             self.model.print_transaction_report_line(self.unique_id,supplier,
-                                price,good, self.p['types_and_units']['payment'],
-                                rating=rating )
+                                price,good, self.p['types_and_units']['rating'],
+                                rating=rating , type = 'rating')
                         else:
                             self.model.print_transaction_report_line(self.unique_id,supplier,
                                 price,good, self.p['types_and_units']['payment'] )
