@@ -1,0 +1,24 @@
+ #!/bin/bash
+ set -ex
+ 
+PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
+
+pushd $PARENT_PATH
+
+rm -rf protos
+mkdir -p protos
+
+git clone https://github.com/singnet/reputation-adapter.git
+
+
+pushd reputation-adapter/resources/protos
+mv adapter_service.proto $PARENT_PATH/protos
+popd
+
+rm -rf reputation-adapter
+
+pip install grpcio
+pip install grpcio-tools
+python -m grpc_tools.protoc -I ./protos  --python_out=./protos --grpc_python_out=./protos adapter_service.proto 
+
+popd
