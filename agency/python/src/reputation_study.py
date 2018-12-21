@@ -90,7 +90,7 @@ print('Cleaning ranks data.')
 ai_command('clear ranks')
 
 print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservativity 0.5')
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' default 0.1 conservatism 0.5')
 
 print('Getting average ranks.')
 ai_command('get ranks since ' + since_date + ' until ' + until_date + ' period ' + str(period) + ' average > ' + out_dir + '/average.tsv')
