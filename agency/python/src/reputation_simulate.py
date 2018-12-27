@@ -159,6 +159,6 @@ if verbose:
 if verbose:
 	print('Evaluating average and latest ranks:')
 ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
-ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
+#ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
