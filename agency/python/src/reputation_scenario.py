@@ -219,7 +219,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
 						if rs is not None:
-							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':cost,'time':date}])
+							rs.put_ratings([{'from':agent,'type':'transfer','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
 					daily_selections[other] = 1 + daily_selections[other] if other in daily_selections else 1
 				if verbose:
@@ -239,6 +239,8 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':rating,'weight':cost,'time':date}])
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
+						if rs is not None:
+							rs.put_ratings([{'from':agent,'type':'transfer','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
 					
 	with open('users' + str(len(all_agents)) + '.tsv', 'w') as file:
@@ -248,4 +250,5 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 
 	if verbose:
 		print('Actual volumes and ratios:')
-		print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
+
+	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
