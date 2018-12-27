@@ -46,6 +46,7 @@ class ReputationSim(Model):
             outfile.write(pretty)
         outfile.close()
         self.transaction_report = self.transaction_report()
+        self.market_volume_report = self.market_volume_report()
         self.seconds_per_day = 86400
 
 
@@ -72,16 +73,24 @@ class ReputationSim(Model):
         self.criminal_agent_ring_size_distribution = self.get_truncated_normal(*tuple(self.parameters['criminal_agent_ring_size']) )
         self.open_to_new_experiences_distribution = self.get_truncated_normal(*tuple(self.parameters['open_to_new_experiences']) )
         self.criminal_goodness_distribution = self.get_truncated_normal(*tuple(self.parameters['criminal_goodness']) )
+
         self.rating_perception_distribution = self.get_truncated_normal(*tuple(self.parameters['rating_perception']) )
         self.cobb_douglas_distributions = {good: self.get_truncated_normal(*tuple(statlist)
                                             ) for good, statlist in self.parameters['cobb_douglas_utilities'].items()}
         self.price_distributions = {good: self.get_truncated_normal(*tuple(statlist)
                                             ) for good, statlist in self.parameters['prices'].items()}
+        self.criminal_price_distributions = {good: self.get_truncated_normal(*tuple(statlist)
+                                            ) for good, statlist in self.parameters['criminal_prices'].items()}
         self.need_cycle_distributions = {good: self.get_truncated_normal(*tuple(statlist)
                                             ) for good, statlist in self.parameters['need_cycle'].items()}
         self.criminal_need_cycle_distributions = {good: self.get_truncated_normal(*tuple(statlist)
                                             ) for good, statlist in self.parameters['criminal_need_cycle'].items()}
-
+        self.amount_distributions = {good: self.get_truncated_normal(*tuple(statlist)
+                                                                    ) for good, statlist in
+                                    self.parameters['amounts'].items()}
+        self.criminal_amount_distributions = {good: self.get_truncated_normal(*tuple(statlist)
+                                                                             ) for good, statlist in
+                                             self.parameters['criminal_amounts'].items()}
 
         #this stage_list facilitiates ten different time periods within a day for trades
         stage_list = ['step',
@@ -178,6 +187,31 @@ class ReputationSim(Model):
 
         self.print_agent_goodness()
 
+        self.good2good_agent_cumul_completed_transactions  = 0
+        self.good2good_agent_cumul_total_price = 0
+        self.bad2good_agent_cumul_completed_transactions = 0
+        self.bad2good_agent_cumul_total_price = 0
+
+        self.good2bad_agent_cumul_completed_transactions  = 0
+        self.good2bad_agent_cumul_total_price = 0
+        self.bad2bad_agent_cumul_completed_transactions = 0
+        self.bad2bad_agent_cumul_total_price = 0
+
+        self.reset_stats()
+
+    def reset_stats(self):
+        self.good2good_agent_completed_transactions  = 0
+        self.good2good_agent_total_price = 0
+
+        self.bad2good_agent_completed_transactions = 0
+        self.bad2good_agent_total_price = 0
+
+        self.good2bad_agent_completed_transactions  = 0
+        self.good2bad_agent_total_price = 0
+
+        self.bad2bad_agent_completed_transactions = 0
+        self.bad2bad_agent_total_price = 0
+
     def get_end_tick(self):
         #final_tick = (final_epoch - initial_epoch) / (days / tick * miliseconds / day)
 
@@ -191,6 +225,33 @@ class ReputationSim(Model):
         path = self.parameters['output_path'] + 'transactions_' +self.parameters['param_str'] [:-1] + '.tsv'
         file = open(path, "w")
         return(file)
+
+
+    def market_volume_report(self):
+        #path = self.parameters['output_path'] + 'transactions_' +self.parameters['param_str'] + self.time[0:10] + '.tsv'
+        path = self.parameters['output_path'] + 'marketVolume_' +self.parameters['param_str'] [:-1] + '.tsv'
+        file = open(path, "w")
+
+        file.write(
+             "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\t{27}\t{28}\t{29}\t{30}\t{31}\t{32}\n".format(
+               "time", "good2bad daily avg price", "good2bad cumul avg price", "good2bad daily avg num transactions",
+                "good2bad cumul avg num transactions",
+                "good2bad daily avg market vol", "good2bad cumul avg market vol",
+                "bad2bad daily avg price", "bad2bad cumul avg price", "bad2bad daily avg num transactions",
+                "bad2bad cumul avg num transactions",
+                "bad2bad daily avg market vol", "bad2bad cumul avg market vol",
+                "good2good daily avg price", "good2good cumul avg price", "good2good daily avg num transactions",
+                "good2good cumul avg num transactions",
+                "good2good daily avg market vol", "good2good cumul avg market vol",
+                "bad2good daily avg price", "bad2good cumul avg price", "bad2good daily avg num transactions",
+                "bad2good cumul avg num transactions",
+                "bad2good daily avg market vol", "bad2good cumul avg market vol",
+                "average price ratio", "latest price ratio", "average num transactions ratio",
+                "latest num transactions ratio", "average market volume", "latest market volume",
+                "average cost of being bad", "latest cost of being bad"))
+
+        return(file)
+
 
 
     def get_epoch(self, date_time):
@@ -237,6 +298,79 @@ class ReputationSim(Model):
 
         #self.transaction_report.flush()
 
+    def print_market_volume_report_line(self):
+        time = self.schedule.time -1
+        good2good_daily_avg_price= self.good2good_agent_total_price/self.good2good_agent_completed_transactions if self.good2good_agent_completed_transactions else 0
+        good2good_cumul_avg_price= self.good2good_agent_cumul_total_price/self.good2good_agent_cumul_completed_transactions if self.good2good_agent_cumul_completed_transactions else 0
+        good2good_daily_avg_num_transactions=self.good2good_agent_completed_transactions
+        good2good_cumul_avg_num_transactions=self.good2good_agent_cumul_completed_transactions
+        good2good_daily_avg_market_vol=self.good2good_agent_total_price
+        good2good_cumul_avg_market_vol=self.good2good_agent_cumul_total_price
+        good2bad_daily_avg_price = self.good2bad_agent_total_price / self.good2bad_agent_completed_transactions if self.good2bad_agent_completed_transactions else 0
+        good2bad_cumul_avg_price = self.good2bad_agent_cumul_total_price / self.good2bad_agent_cumul_completed_transactions if self.good2bad_agent_cumul_completed_transactions else 0
+        good2bad_daily_avg_num_transactions = self.good2bad_agent_completed_transactions
+        good2bad_cumul_avg_num_transactions = self.good2bad_agent_cumul_completed_transactions
+        good2bad_daily_avg_market_vol = self.good2bad_agent_total_price
+        good2bad_cumul_avg_market_vol = self.good2bad_agent_cumul_total_price
+        bad2bad_daily_avg_price = self.bad2bad_agent_total_price / self.bad2bad_agent_completed_transactions if self.bad2bad_agent_completed_transactions else 0
+        bad2bad_cumul_avg_price = self.bad2bad_agent_cumul_total_price / self.bad2bad_agent_cumul_completed_transactions if self.bad2bad_agent_cumul_completed_transactions else 0
+        bad2bad_daily_avg_num_transactions = self.bad2bad_agent_completed_transactions
+        bad2bad_cumul_avg_num_transactions = self.bad2bad_agent_cumul_completed_transactions
+        bad2bad_daily_avg_market_vol = self.bad2bad_agent_total_price
+        bad2bad_cumul_avg_market_vol = self.bad2bad_agent_cumul_total_price
+        bad2good_daily_avg_price = self.bad2good_agent_total_price / self.bad2good_agent_completed_transactions if self.bad2good_agent_completed_transactions else 0
+        bad2good_cumul_avg_price = self.bad2good_agent_cumul_total_price / self.bad2good_agent_cumul_completed_transactions if self.bad2good_agent_cumul_completed_transactions else 0
+        bad2good_daily_avg_num_transactions = self.bad2good_agent_completed_transactions
+        bad2good_cumul_avg_num_transactions = self.bad2good_agent_cumul_completed_transactions
+        bad2good_daily_avg_market_vol = self.bad2good_agent_total_price
+        bad2good_cumul_avg_market_vol = self.bad2good_agent_cumul_total_price
+        avg_price_ratio = (good2good_cumul_avg_price+good2bad_cumul_avg_price)/bad2bad_cumul_avg_price if bad2bad_cumul_avg_price else 0
+        latest_price_ratio = (good2good_daily_avg_price+good2bad_daily_avg_price)/bad2bad_daily_avg_price if bad2bad_daily_avg_price else 0
+        avg_num_transactions_ratio = (good2good_cumul_avg_num_transactions+good2bad_cumul_avg_num_transactions)/bad2bad_cumul_avg_num_transactions if bad2bad_cumul_avg_num_transactions else 0
+        latest_num_transactions_ratio = (good2good_daily_avg_num_transactions+good2bad_daily_avg_num_transactions)/bad2bad_daily_avg_num_transactions if bad2bad_daily_avg_num_transactions else 0
+        avg_market_volume = (good2good_cumul_avg_market_vol+good2bad_cumul_avg_market_vol)/bad2bad_cumul_avg_market_vol if bad2bad_cumul_avg_market_vol else 0
+        latest_market_volume = (good2good_daily_avg_market_vol+good2bad_daily_avg_market_vol)/bad2bad_daily_avg_market_vol if bad2bad_daily_avg_market_vol else 0
+        avg_cost_of_being_bad = bad2bad_cumul_avg_market_vol/good2bad_cumul_avg_market_vol if good2bad_cumul_avg_market_vol else 0
+        latest_cost_of_being_bad = bad2bad_daily_avg_market_vol/good2bad_daily_avg_market_vol if good2bad_daily_avg_market_vol else 0
+
+
+        self.market_volume_report.write(
+            "{0}\t{1}\t{2}\t{3}\t{4}\t{5}\t{6}\t{7}\t{8}\t{9}\t{10}\t{11}\t{12}\t{13}\t{14}\t{15}\t{16}\t{17}\t{18}\t{19}\t{20}\t{21}\t{22}\t{23}\t{24}\t{25}\t{26}\t{27}\t{28}\t{29}\t{30}\t{31}\t{32}\n".format(
+            time, good2bad_daily_avg_price,good2bad_cumul_avg_price,good2bad_daily_avg_num_transactions,good2bad_cumul_avg_num_transactions,
+            good2bad_daily_avg_market_vol,good2bad_cumul_avg_market_vol,bad2bad_daily_avg_price,bad2bad_cumul_avg_price,
+            bad2bad_daily_avg_num_transactions,bad2bad_cumul_avg_num_transactions,bad2bad_daily_avg_market_vol,bad2bad_cumul_avg_market_vol,good2good_daily_avg_price,good2good_cumul_avg_price,good2good_daily_avg_num_transactions,good2good_cumul_avg_num_transactions,
+            good2good_daily_avg_market_vol,good2good_cumul_avg_market_vol,bad2good_daily_avg_price,bad2good_cumul_avg_price,
+            bad2good_daily_avg_num_transactions,bad2good_cumul_avg_num_transactions,bad2good_daily_avg_market_vol,bad2good_cumul_avg_market_vol,
+            avg_price_ratio, latest_price_ratio,avg_num_transactions_ratio, latest_num_transactions_ratio,
+            avg_market_volume, latest_market_volume, avg_cost_of_being_bad, latest_cost_of_being_bad))
+        self.market_volume_report.flush()
+        self.reset_stats()
+
+
+    def save_info_for_market_volume_report(self, consumer, supplier, payment):
+            # if increment num transactions and add cum price to the correct agent category of seller
+            if self.schedule.agents[supplier].good and consumer.good:
+                self.good2good_agent_completed_transactions += 1
+                self.good2good_agent_cumul_completed_transactions += 1
+                self.good2good_agent_total_price += payment
+                self.good2good_agent_cumul_total_price += payment
+            elif not self.schedule.agents[supplier].good and consumer.good:
+                self.good2bad_agent_completed_transactions += 1
+                self.good2bad_agent_cumul_completed_transactions += 1
+                self.good2bad_agent_total_price += payment
+                self.good2bad_agent_cumul_total_price += payment
+            elif not self.schedule.agents[supplier].good and not consumer.good:
+                self.bad2bad_agent_completed_transactions += 1
+                self.bad2bad_agent_cumul_completed_transactions += 1
+                self.bad2bad_agent_total_price += payment
+                self.bad2bad_agent_cumul_total_price += payment
+            else:  #shouldnt happen
+                self.bad2good_agent_completed_transactions += 1
+                self.bad2good_agent_cumul_completed_transactions += 1
+                self.bad2good_agent_total_price += payment
+                self.bad2good_agent_cumul_total_price += payment
+
+
     def print_agent_goodness (self, userlist = [-1]):
         #output a list of given users, sorted by goodness.  if the first item of the list is -1, then output all users
 
@@ -251,6 +385,17 @@ class ReputationSim(Model):
                 outfile.write("{0}\t{1}\n".format(id, goodness))
         outfile.close()
 
+        path = self.parameters['output_path'] + 'boolean_users_' + self.parameters['param_str'][: -1] + '.tsv'
+
+        with open(path, 'w') as outfile:
+            agents = self.schedule.agents if userlist and userlist[0] == -1 else userlist
+            outlist = [(agent.unique_id, agent.good) for agent in agents]
+            sorted_outlist = sorted(outlist, key=operator.itemgetter(1), reverse=True)
+            for id, good in sorted_outlist:
+                val = 1 if good else 0
+                outfile.write("{0}\t{1}\n".format(id, val))
+        outfile.close()
+
 
     def get_truncated_normal(self,mean=0.5, sd=0.2, low=0, upp=1.0):
         rv = truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
@@ -259,12 +404,14 @@ class ReputationSim(Model):
     def step(self):
         """Advance the model by one step."""
         self.schedule.step()
-        self.transaction_report.flush()
+        self.print_market_volume_report_line()
+        self.market_volume_report.flush()
 
     def go(self):
         while self.schedule.time < self.get_end_tick():
             self.step()
-        self.transaction_report.close()
+        self.market_volume_report.close()
+        self.market_volume_report.close()
 
 def set_param(configfile, setting):
     # setting is OrderedDict, perhaps nested before val is set.  example :  {"prices": {"milk": [2, 0.001, 0, 1000] }}
@@ -272,7 +419,8 @@ def set_param(configfile, setting):
     new_val = setting
     nextKey = next(iter(new_val.items()))[0]
     old_old_val = old_val
-    while isinstance(new_val, dict):
+    while isinstance(new_val, dict) and len(new_val)== 1:
+    #while isinstance(new_val, dict):
         nextKey = next(iter(new_val.items()))[0]
         old_old_val = old_val
         old_val = old_val[nextKey]
@@ -297,6 +445,7 @@ def call( combolist, configfile, param_str = ""):
         aigent.go()
 
 def main():
+    print (os.getcwd())
     study_path = sys.argv[1] if len(sys.argv)>1 else 'study.json'
     with open(study_path) as json_file:
         config = json.load(json_file, object_pairs_hook=OrderedDict)

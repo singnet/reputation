@@ -56,11 +56,11 @@ if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.
 	print('	<ordered_parameters> := <bin_directory> <simulation_name> <data_directory> <transaction_log_file> <user_reputations_file> <since_date> <until_date>')
 	print('	<optional_parameters> := <optional_parameter> (<optional_parameter>)*')
 	print('	<optional_parameter> := <decimal_parameter>|<boolean_parameter>')
-	print('	<decimal_parameter> := (precision | default | conservativity)=<decimal_value>')
-	print('	<boolean_parameter> := (logarithm | weighting | norm | verbose)=(True | False)')
+	print('	<decimal_parameter> := (precision | default | conservatism)=<decimal_value>')
+	print('	<boolean_parameter> := (logratings | weighting | fullnorm | verbose)=(True | False)')
 	print('Examples:')
 	print('	python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10')
-	print('	python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logarithm=False weighting=True norm=True default=0.5')
+	print('	python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logratings=False weighting=True fullnorm=True default=0.5')
 	sys.exit()
 
 
@@ -78,10 +78,10 @@ control_id = 0 # id of user to be controlled
 #default optional parameters
 precision = get_param(sys.argv,'precision','0.01')
 default = get_param(sys.argv,'default','0.5')
-conservativity = get_param(sys.argv,'conservativity','0.5')
-logarithm = get_option(sys.argv,'logarithm')
+conservatism = get_param(sys.argv,'conservatism','0.5')
+logratings = get_option(sys.argv,'logratings')
 weighting = get_option(sys.argv,'weighting')
-norm = get_option(sys.argv,'norm')
+fullnorm = get_option(sys.argv,'fullnorm')
 verbose = get_option(sys.argv,'verbose')
 
 print('binary directory:', bin_dir)
@@ -93,10 +93,10 @@ print('since date:', since_date)
 print('until date:', until_date)
 print('precision:', precision)
 print('default:', default)
-print('conservatism:', conservativity)
-print('logarithm:', logarithm)
+print('conservatism:', conservatism)
+print('logratings:', logratings)
 print('weighting:', weighting)
-print('norm:', norm)
+print('fullnorm:', fullnorm)
 print('verbose:', verbose)
 
 
@@ -129,12 +129,12 @@ if not os.path.exists(out_dir):
 
 if verbose:
 	print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else '')+ (' logarithm' if logarithm else ''))
+ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else '')+ (' logratings' if logratings else ''))
 
 if verbose:
 	print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default ' + default + ' conservativity ' + conservativity \
-		+ (' norm' if norm else ''))
+ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default ' + default + ' conservatism ' + conservatism \
+		+ (' fullnorm' if fullnorm else ''))
 
 if verbose:
 	print('Checking ranks:')
@@ -159,6 +159,6 @@ if verbose:
 if verbose:
 	print('Evaluating average and latest ranks:')
 ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
-ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
+#ai_command('compute accuracy file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/average.tsv')
 ai_command('compute pearson file ' + reputations_file + ' file ' + out_dir + '/latest.tsv')

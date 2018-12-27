@@ -44,13 +44,13 @@ class AigentsAPIReputationService(RatingService,RankingService):
 		self.verbose = verbose # service parameter, no impact on algorithm, impact on log level 
 		self.parameters = {}
 		self.parameters['default'] = 0.5 # default (initial) rank
-		self.parameters['conservatism'] = 0.5 #AKA conservativity, blending factor between previous (default) rank and differential one 
-		self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
+		self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
+		self.parameters['precision'] = 0.01 # Used to round/up or round down financaial values or weights as value = round(value/precision)
 		self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
-		self.parameters['fullnorm'] = True #AKA norm, full-scale normalization of incremental ratings
+		self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
 		self.parameters['liquid'] = True # forces to account for rank of rater
 		self.parameters['logranks'] = True # applies log10 to ranks
-		self.parameters['logratings'] = True #AKA logarithm, applies log10(1+value) to financial values and weights
+		self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
 		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period 
 		if self.verbose:
 			logger.info('Creating Aigents session')
@@ -116,8 +116,21 @@ class AigentsAPIReputationService(RatingService,RankingService):
 
 	def set_parameters(self,parameters):
 		for key in parameters:
-			self.parameters[key] = parameters[key]
-		return 0
+			value = parameters[key]
+			self.parameters[key] = value
+		cmd = 'set parameters' \
+			+ ' default ' + str(self.parameters['default']) \
+			+ ' conservatism ' + str(self.parameters['conservatism']) \
+			+ ' precision ' + str(self.parameters['precision']) \
+			+ ' liquid ' + 'true' if self.parameters['liquid'] else 'false'
+		if self.parameters['fullnorm']:
+			cmd += ' fullnorm'
+		if self.parameters['weighting']:
+			cmd += ' weighting'
+		if self.parameters['logratings']:
+			cmd += ' logratings'
+		res = self.reputation_request(cmd)
+		return 0 if res.strip() == 'Ok.' else 1
 
 	def clear_ratings(self):
 		if self.verbose:
@@ -215,6 +228,6 @@ class AigentsAPIReputationService(RatingService,RankingService):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + (' norm' if self.parameters['fullnorm'] else ''))
+		res = self.reputation_request('update ranks date ' + str(date) + (' fullnorm' if self.parameters['fullnorm'] else ''))
 		return 0 if res.strip() == 'Ok.' else 1
 		

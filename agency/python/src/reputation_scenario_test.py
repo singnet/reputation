@@ -32,8 +32,9 @@ from aigents_reputation_api import AigentsAPIReputationService
 rs = None
 #rs = AigentsCLIReputationService('../../bin','./','testsim',False) # this one is very slow
 #rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+#rs.set_parameters({'weighting':True,'logratings':False})
 
-verbose = True
+verbose = False
 days = 10
 consumers = 1.0 
 suppliers = 1.0
