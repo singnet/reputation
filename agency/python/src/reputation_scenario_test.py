@@ -32,7 +32,8 @@ from aigents_reputation_api import AigentsAPIReputationService
 rs = None
 #rs = AigentsCLIReputationService('../../bin','./','testsim',False) # this one is very slow
 #rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-#rs.set_parameters({'weighting':True,'logratings':False})
+if rs is not None:
+	rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 
 verbose = False
 days = 10

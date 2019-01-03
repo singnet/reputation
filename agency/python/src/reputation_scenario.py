@@ -140,7 +140,6 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 	if rs is not None:
 		rs.clear_ratings()
 		rs.clear_ranks()
-		rs.set_parameters({'fullnorm':True})
 
 	actual_bad_volume = 0
 	actual_good_volume = 0
