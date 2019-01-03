@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,10 @@ import requests
 from urllib.parse import quote
 
 # Expected Aigents server version 
-version = "1.3.5"
+version = "1.4.1"
 
 # Expected Aigents copyright information
-copyright = " Copyright © 2018 Anton Kolonin, Aigents."
+copyright = " Copyright © 2019 Anton Kolonin, Aigents."
 
 # URL to Aigents server
 base_url = "http://localtest.com:1180/?"
