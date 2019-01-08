@@ -35,7 +35,6 @@ class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCas
 	def setUp(self):
 		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
 
-
 # Test Web-service-based Aigents Reputation Service wrapper
 # TODO make port 1180 configurable!
 class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCase):
@@ -51,7 +50,6 @@ class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCas
 		del self.rs
 		self.server_process.kill()
 		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
-
 
 if __name__ == '__main__':
     unittest.main()

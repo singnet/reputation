@@ -119,9 +119,16 @@ class AigentsCLIReputationService(RatingService,RankingService):
 			#getting rating object as dict
 			#{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt2}
 			rating_dict = {}
-			rating_dict['from'] = rating[0]
-			rating_dict['type'] = rating[1]
-			rating_dict['to'] = rating[2]
+			#invert -d to -s suffixes
+			type = rating[1]
+			if type.endswith('-d'):
+				rating_dict['type'] = type[:-2] + '-s'
+				rating_dict['from'] = rating[2]
+				rating_dict['to'] = rating[0]
+			else:
+				rating_dict['type'] = type
+				rating_dict['from'] = rating[0]
+				rating_dict['to'] = rating[2]
 			rating_dict['value'] = float(rating[3])
 			#TODO properly get ratings time from Aigents implementation 
 			rating_dict['time'] = filter['since']
