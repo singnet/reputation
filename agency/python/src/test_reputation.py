@@ -91,12 +91,17 @@ class TestReputationServiceBase(object):
 		#TODO end up with output format of the get_ratings method and extend unit test to check the data after then
 		#now we are just counting number of ratings returned in free format 
 		result, ratings = rs.get_ratings(filter)
+		#print(ratings);
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 3)
 		ratings = sorted(ratings, key=lambda elem: "%s %s" % (elem['from'], elem['to']))
-		self.assertEqual(ratings[0]['from'], '4')
-		self.assertEqual(ratings[0]['to'], '1')
-		self.assertEqual(ratings[1]['to'], '2')
+		#print(ratings);
+		self.assertEqual(ratings[0]['from'], '1')
+		self.assertEqual(ratings[0]['to'], '4')
+		self.assertEqual(ratings[1]['from'], '2')
+		self.assertEqual(ratings[1]['to'], '4')
+		self.assertEqual(ratings[2]['from'], '4')
+		self.assertEqual(ratings[2]['to'], '5')
 		self.assertEqual(ratings[1]['value'], 100.0)
 		self.assertEqual(ratings[2]['time'], dt2)
 		
