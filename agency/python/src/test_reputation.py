@@ -27,10 +27,6 @@ import datetime
 import time
 import logging
 
-#from aigents_reputation_cli import *
-#from aigents_reputation_api import *
-from reputation_service_api import *
-
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -125,4 +121,4 @@ class TestReputationServiceBase(object):
 			if rank['id'] == '4':
 				self.assertEqual(rank['rank'], 100)
 			if rank['id'] == '1':
-				self.assertEqual(rank['rank'], 33) 
+				self.assertEqual(rank['rank'], 33)			
