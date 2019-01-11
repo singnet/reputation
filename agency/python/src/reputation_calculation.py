@@ -182,7 +182,6 @@ def simulate(good_agent,bad_agent,since,sim_days,ratings):
 	return(mynewdf)
 
 
-
 ### Get strings between two strings; will be useful when extracting the date.
 def find_between( s, first, last ):
     try:
@@ -216,20 +215,19 @@ def days_between(d1, d2):
 ### need_occurance=False.
 def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False):
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
-    ### Now we will just store the first occurance of each account in a dictionary (first_occurance)
-    ### The easiest (and in pandas probably the fastest) way would be to create sorted dataframe and then iterate
-    ### and check if we already have certain record. If no, create, if yes, it was created before, so pass.
-    ### When it is created we also store date of creation.
-
+    ### Now we will just store the first occurance of each account in a dictionary (first_occurance).
+    ##  Inputs are dictionaries, arrays and True/False statements.
     i=0
     new_array = []
     while i<len(new_subset):
         if 'rating' in list(new_subset[i].keys()):
+            ### put ratings in array. Note, that we don't always have information about rating, that is
+            ### what ratings were given by specific customers.
             new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['value'],new_subset[i]['rating']])
         else:
             new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['value']])
         i+=1
-
+    ### We make array of dates and transactions to specific agents.
     dates_array = []
     to_array = []
     i = 0
@@ -257,13 +255,16 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
         i = 0
         while i<len(uniques):
             ### if it is alredy there, pass, otherwise create new key.
+            ### First occurance is a dictionary that calculates how many dates has a certain ID been in dictionary,
+            ### that is when it first appeared. Unfortunately these calculations might be wrong; the reason is
+            ### that this is not needed at the moment. This was originally defined for reputation approach ??, which is
+            ### not used by us.
             if uniques[i] in first_occurance:
                 first_occurance[uniques[i]] += 1
             else:
                 first_occurance[uniques[i]] = 0
             i+=1
-        ### So, we store date from "From" column, but we should do the same from "To" column. This means that we are really just
-        ### looking for first occurance.
+
 
     
     if temporal_aggregation:
@@ -277,12 +278,15 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
         ### Temporal aggregation=True;
         ### First let's just find all the duplicates;
         ### We merge from and to arrays and look for unique ones...
+        ### The idea of this code is that if there were multiple transactions in a day, we merge them and look at
+        ### the averages.
         merged = []
         i=0
         while i<len(from_data):
             newnr = str(from_data[i])+"_"+str(to_data[i])
             merged.append(newnr)
             i+=1
+        ### Here we just count how many times it appears
         already_used = {}
         for i in merged:
             if i in already_used.keys():
@@ -294,6 +298,7 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
         #### merged data has the same indexing as new_array. 
         i = 0
         ### If exists, pass, otherwise this:
+        ### We sum up each feature.
         already_used2 = {}
         new_array2 = []
         to_array2 = []
@@ -309,6 +314,7 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
                 ratings[merged[i]] = new_array[i][3]
             i+=1
         i=0
+        ### And divide it by the number of times it appears - getting average.
         already_used2 = {}
         while i<len(merged):
             if merged[i] in already_used2.keys():
@@ -348,6 +354,7 @@ def update_reputation(reputation,new_array,default_reputation):
 ### This one is with log...
 def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRanks=True,weighting=True,
                                    liquid = True,logratings=False) :
+    ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
     mys = {}
     i = 0
@@ -357,10 +364,11 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
         else:
             mys[new_array[i][1]] = 0
         i+=1
-
+    ## getting the formula for mys.
     unique_ids = np.unique(to_array)
     k=0
     i = 0
+    ### Formula differs based on conditions. If ratings are included, formula includes ratings, then there are weights, etc.
     if rating:
         while i<len(unique_ids):
             amounts = []
@@ -425,6 +433,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
 ### This one is with log...
 
 def rater_reputation(previous_reputations,rater_id,liquid=False):
+    ### Assigning rater reputation. It is not trivial; if liquid=True, then we can expect that 
     if (not liquid):
         rater_rep = 1
     else:
@@ -491,6 +500,19 @@ def calculate_new_reputation_no_log(new_array,to_array,reputation,rating,normali
         else:
             mys[k] = mys[k] /max_value
     return(mys)
+
+def normalize_reputation(reputation,normalizedRanks):
+    max_value = max(reputation.values())
+    min_value = min(reputation.values())
+    for k in reputation.keys():
+        
+        #if normalizedRanks:
+        #    reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
+        if normalizedRanks:
+            reputation[k] = reputation[k] /max_value
+    return(reputation)    
+    
+
 ### Initialize dictionary with all keys from our dataset and 0 values;
 def initialize_dict(from_array,to_array):
     mydict = {}
@@ -516,8 +538,8 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
         if k in all_keys:
             reputation[k] = (1-conservativity) * mys[k] + conservativity * reputation[k]
         else:
-            reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
-
+            #reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
+            reputation[k] = (1-conservativity) * 0 + conservativity * reputation[k]
         j+=1        
     return(reputation)
 

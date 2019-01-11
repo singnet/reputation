@@ -25,10 +25,10 @@
 import unittest
 
 from test_reputation import TestReputationServiceBase
-
-from aigents_reputation_cli import *
 from reputation_service_api import *
 
+
+# TODO @nejc - have this separate test_reputation_service_api.py file for this 
 # Python Native Reputation Service implmentation 
 class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.TestCase):
 
@@ -42,5 +42,6 @@ class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.Test
 rep_service = TestAigentsPythonReputationService()
 rep_service.test_smoke()
 
-if __name__ == '__main__':
-    unittest.main()
+#if __name__ == '__main__':
+#    unittest.main()
+#

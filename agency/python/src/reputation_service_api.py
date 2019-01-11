@@ -48,8 +48,6 @@ Reputation Service native implementation in Python
 #print( rs.get_parameters() )
 
 
-
-
 class PythonReputationService(object):
     ### This function allows us to set up the parameters.
     ### Setting up the way we do in Anton's recommendation.
@@ -209,6 +207,8 @@ class PythonReputationService(object):
         ### In our case we take approach c.
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.default,self.conservaticism)
+        #print(normalize_reputation(self.reputation,self.fullnorm))
+        self.reputation = normalize_reputation(self.reputation,self.fullnorm)
         
         self.all_reputations[mydate] = self.reputation
         return(0)
@@ -249,7 +249,7 @@ class PythonReputationService(object):
                 result = {}
         all_results = []
         for k in result.keys():
-            all_results.append({'id':k,'rank':result[k]*100})  
+            all_results.append({'id':k,'rank':round(result[k]*100)})  
         return(0,all_results)
         
     def add_time(self,addition=0):
@@ -305,4 +305,3 @@ class PythonReputationService(object):
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
         self.all_reputations = {}
         self.set_parameters(params)
-            
