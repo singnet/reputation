@@ -55,6 +55,7 @@ class AigentsAPIReputationService(RatingService,RankingService):
 		if self.verbose:
 			logger.info('Creating Aigents session')
 		self.create_session()
+		self.request('Your retention period 3650.') #make sure it can host up to 10 years of data 
 	
 	def __del__(self):
 		if self.verbose:
