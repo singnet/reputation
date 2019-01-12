@@ -41,7 +41,7 @@ import logging
 import random
 import datetime
 import time
-from aigents_api import *
+#from aigents_api import *
 
 network = 'reptest'
 
@@ -540,7 +540,7 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
         else:
             #reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
             reputation[k] = (1-conservativity) * 0 + conservativity * reputation[k]
-        j+=1        
+        j+=1  
     return(reputation)
 
 def where(to_array,the_id):
