@@ -55,6 +55,7 @@ class AigentsAPIReputationService(RatingService,RankingService):
 		if self.verbose:
 			logger.info('Creating Aigents session')
 		self.create_session()
+		self.request('Your retention period 3650.') #make sure it can host up to 10 years of data 
 	
 	def __del__(self):
 		if self.verbose:
@@ -175,9 +176,16 @@ class AigentsAPIReputationService(RatingService,RankingService):
 				#getting rating object as dict
 				#{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt2}
 				rating_dict = {}
-				rating_dict['from'] = rating[0]
-				rating_dict['type'] = rating[1]
-				rating_dict['to'] = rating[2]
+				#invert -d to -s suffixes
+				type = rating[1]
+				if type.endswith('-d'):
+					rating_dict['type'] = type[:-2] + '-s'
+					rating_dict['from'] = rating[2]
+					rating_dict['to'] = rating[0]
+				else:
+					rating_dict['type'] = type
+					rating_dict['from'] = rating[0]
+					rating_dict['to'] = rating[2]
 				rating_dict['value'] = float(rating[3])
 				#TODO properly get ratings time from Aigents implementation 
 				rating_dict['time'] = filter['since']
