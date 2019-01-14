@@ -26,7 +26,7 @@ Reputation Service wrapper around Aigents Java-based Command Line Interface
 
 import os
 import subprocess
-from reputation_api import *
+from reputation_base_api import *
 
 #TODO make configurable
 java_options = '-Xms128m -Xmx256m -Dsun.zip.disableMemoryMapping=true'
@@ -36,25 +36,13 @@ def os_command(command):
 	#os.system(command)
 	r = subprocess.check_output(command,shell=True) 
 	return r.decode()
-	
 
-class AigentsCLIReputationService(RatingService,RankingService):
+class AigentsCLIReputationService(ReputationServiceBase):
 
 	def __init__(self, bin_dir, data_dir, name, verbose=False):
+		ReputationServiceBase.__init__(self,name,verbose)
 		self.bin_dir = bin_dir
 		self.data_dir = data_dir
-		self.name = name #service parameter, no impact on algorithm, name of the storage scheme
-		self.verbose = verbose #service parameter, no impact on algorithm, impact on log level 
-		self.parameters = {}
-		self.parameters['default'] = 0.5 # default (initial) rank
-		self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
-		self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
-		self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
-		self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
-		self.parameters['liquid'] = True # forces to account for rank of rater
-		self.parameters['logranks'] = True # applies log10 to ranks
-		self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
-		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period 
 	
 	def ai_command(self,command):
 		aigents_command = 'java ' + java_options + ' -cp '+ self.bin_dir + '/Aigents.jar' \
