@@ -39,9 +39,10 @@ class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.Test
     rs.set_parameters(params)
     
     print(rs)
-rep_service = TestAigentsPythonReputationService()
-rep_service.test_smoke()
 
-#if __name__ == '__main__':
-#    unittest.main()
+if __name__ == '__main__':
+    unittest.main()
+    rep_service = TestAigentsPythonReputationService()
+    rep_service.test_smoke()
+
 #

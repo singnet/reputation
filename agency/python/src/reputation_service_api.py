@@ -26,27 +26,10 @@ import abc
 from reputation_service_api import *
 from reputation_calculation import *
 
-#TODO @neic to implement
 
 """
 Reputation Service native implementation in Python
 """        
-
-
-
-##TODO @nejc move this out to unittest eventually
-#import datetime
-#rs = PythonReputationService()
-#print( rs.clear_ratings() )
-#print( rs.clear_ranks() )
-#print( rs.put_ratings([]) )
-#print( rs.put_ranks(datetime.date(2018, 1, 1),{}) )
-#print( rs.get_ratings({}) )
-#print( rs.get_ranks({}) )
-#print( rs.update_ranks(datetime.date(2018, 1, 1)) )
-#print( rs.set_parameters({"param1":"value1","param2":"value2"}) )
-#print( rs.get_parameters() )
-
 
 class PythonReputationService(object):
     ### This function allows us to set up the parameters.
@@ -207,7 +190,6 @@ class PythonReputationService(object):
         ### In our case we take approach c.
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.default,self.conservaticism)
-        #print(normalize_reputation(self.reputation,self.fullnorm))
         self.reputation = normalize_reputation(self.reputation,self.fullnorm)
         
         self.all_reputations[mydate] = self.reputation
@@ -281,8 +263,8 @@ class PythonReputationService(object):
         i = 0
         while i<len(mydict):
             mydict[i]['id'] = str(mydict[i]['id'])
-            mydict[i]['rank'] = mydict[i]['rank']/100
-            i+=1        
+            mydict[i]['rank'] = mydict[i]['rank']*0.01
+            i+=1   
         if dt1 in self.all_reputations:
             myreps = self.all_reputations[dt1]
         else:
@@ -297,6 +279,7 @@ class PythonReputationService(object):
         self.all_reputations[dt1] = myreps
         if dt1 == max(self.all_reputations.keys()):
             self.reputation = myreps
+        
         return(0)
         
     def __init__(self):
