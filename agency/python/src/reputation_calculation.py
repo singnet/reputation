@@ -370,6 +370,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
     mys = {}
+    start1 = time.time()
     i = 0
     while i<len(new_array):
         if new_array[i][1] in mys:
@@ -386,25 +387,24 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
         while i<len(unique_ids):
             amounts = []
             ### Here we get log transformation of each amount value. 
-            get_subset = where(to_array,unique_ids[i])            
+            get_subset = np.where(to_array==unique_ids[i])[0]
+            #get_subset = where(to_array,unique_ids[i])            
             k=0 
             for k in get_subset:
                 if weighting:
                     amounts.append(new_array[k][3] * new_array[k][2] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-
                 else:
                     amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-              
             
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
     else:
         while i<len(unique_ids):
-        
             amounts = []
-            ### Here we get log transformation of each amount value.            
-            get_subset = where(to_array,unique_ids[i]) 
+            ### Here we get log transformation of each amount value.    
+            get_subset = np.where(to_array==unique_ids[i])[0]
+            #get_subset = where(to_array,unique_ids[i]) 
             k=0 
             for k in get_subset:
                 if weighting:
@@ -417,7 +417,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
-                     
+    #print("Second milestone",time.time()-start1)                 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
     for k in mys.keys():
@@ -427,12 +427,11 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             mys[k] = np.log10(1 + mys[k])
     ### Nr 6;
     ### We divide it by max value, as specified. There are different normalizations possible...
-      
     return(mys)
 
 def normalized_differential(mys,normalizedRanks):
-    max_value = max(mys.values())
-    min_value = min(mys.values())
+    max_value = max(mys.values(), default=1)
+    min_value = min(mys.values(), default=0)
     for k in mys.keys():
         if normalizedRanks: ### normalizedRanks is equal to fullnorm.
             mys[k] = (mys[k]-min_value) /(max_value-min_value)
@@ -452,8 +451,8 @@ def rater_reputation(previous_reputations,rater_id,liquid=False):
     return(rater_rep)
 
 def normalize_reputation(reputation,normalizedRanks):
-    max_value = max(reputation.values())
-    min_value = min(reputation.values())
+    max_value = max(reputation.values(), default=1)
+    min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
 
         if normalizedRanks:

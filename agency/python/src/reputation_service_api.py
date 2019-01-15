@@ -146,8 +146,14 @@ class PythonReputationService(object):
         max_date = mydate + datetime.timedelta(days=self.update_period)
         i=0
         while i<len(self.ratings):
-            if (self.ratings[i]['time'] >= min_date and self.ratings[i]['time']<max_date):
-                self.current_ratings.append(self.ratings[i])
+            mydict = self.ratings[i]
+            if type(mydict) is list:
+                mydict = mydict[0]
+            #print(type(mydict))
+            #print(mydict.keys())
+            #print(mydict['time'])
+            if (mydict['time'] >= min_date and mydict['time']<max_date):
+                self.current_ratings.append(mydict)
             i+=1
    
 
@@ -186,7 +192,6 @@ class PythonReputationService(object):
                                                               normalizedRanks=self.fullnorm,weighting = self.weighting,
                                                              liquid = self.liquid, logratings = self.logratings) 
         ### And then update reputation.
-        
         ### In our case we take approach c.
         if self.logratings:
             for k in new_reputation.keys():
@@ -233,7 +238,20 @@ class PythonReputationService(object):
         for k in result.keys():
             all_results.append({'id':k,'rank':round(result[k]*100)})  
         return(0,all_results)
-        
+    
+    def get_ranks_dict(self,times):
+        if self.all_reputations == {}:
+            result = {}
+        else:
+            if times['date'] in list(self.all_reputations.keys()):
+                result = self.all_reputations[times['date']]
+            else:
+                result = {}
+        all_results = []
+        for k in result.keys():
+            all_results.append({'id':k,'rank':round(result[k]*100)})  
+        return(0,all_results)
+    
     def add_time(self,addition=0):
         if addition==0:
             self.date = self.date + timedelta(days=self.update_period)
@@ -286,5 +304,6 @@ class PythonReputationService(object):
         params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'update_period': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
+        self.reputation = {}
         self.all_reputations = {}
         self.set_parameters(params)
