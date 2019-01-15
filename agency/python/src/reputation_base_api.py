@@ -35,6 +35,7 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.verbose = verbose #service parameter, no impact on algorithm, impact on log level 
 		self.parameters = {}
 		self.parameters['default'] = 0.5 # default (initial) reputation rank
+		self.parameters['decayed'] = 0.0 # decaying (final) reputaion rank, may be equal to default one
 		self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
 		self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
 		self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
@@ -43,8 +44,6 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['logranks'] = True # applies log10 to ranks
 		self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
 		self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
-		self.parameters['decayed_reputaion'] = 0 # decaying (final) reputaion rank, may be equal to default one
 		self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
 		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
-		
 		

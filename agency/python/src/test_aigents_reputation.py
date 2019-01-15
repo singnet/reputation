@@ -25,7 +25,7 @@
 import unittest
 import time
 
-from test_reputation import TestReputationServiceBase
+from test_reputation import *
 from aigents_reputation_cli import *
 from aigents_reputation_api import *
 
@@ -37,19 +37,25 @@ class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCas
 
 # Test Web-service-based Aigents Reputation Service wrapper
 # TODO make port 1180 configurable!
-class TestAigentsAPIReputationService(TestReputationServiceBase,unittest.TestCase):
+class TestAigentsAPIReputationService(TestReputationServiceParameters,unittest.TestCase):
 
-	def setUp(self):
+	@classmethod
+	def setUpClass(cls):
 		cmd = 'java -cp ../../bin/mail.jar:../../bin/pdfbox-app-2.0.0-RC2.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path \'./al_test.txt\', http port 1180, cookie domain localtest.com, console off'
-		self.server_process = subprocess.Popen(cmd.split())
+		cls.server_process = subprocess.Popen(cmd.split())
 		#self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
 		time.sleep(10)
+
+	@classmethod
+	def tearDownClass(cls):
+		cls.server_process.kill()
+		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
+
+	def setUp(self):
 		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 
 	def tearDown(self):
 		del self.rs
-		self.server_process.kill()
-		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
-
+		
 if __name__ == '__main__':
     unittest.main()

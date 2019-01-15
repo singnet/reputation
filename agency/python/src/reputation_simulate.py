@@ -129,12 +129,12 @@ if not os.path.exists(out_dir):
 
 if verbose:
 	print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision ' + precision + (' weighting' if weighting else '')+ (' logratings' if logratings else ''))
+ai_command('load ratings file ' + transactions_file + ' precision ' + precision + ' weighting ' + ('true' if weighting else 'false') + ' logratings ' + ('true' if logratings else 'false'))
 
 if verbose:
 	print('Updating reputation ranks.')
 ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default ' + default + ' conservatism ' + conservatism \
-		+ (' fullnorm' if fullnorm else ''))
+		+ ' fullnorm ' + ('true' if fullnorm else 'false'))
 
 if verbose:
 	print('Checking ranks:')

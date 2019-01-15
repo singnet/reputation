@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,7 @@ class TestReputationSimulation(unittest.TestCase):
 		#self.assertEqual(lines[len(lines)-2],'0.99258326462725') 
 		self.assertEqual(str(round(float(lines[len(lines)-4]),14)),'0.98218768825066') 
 		self.assertEqual(str(round(float(lines[len(lines)-2]),14)),'0.99258326462725') 
-	
+
 	def testRatingsWithFeedback(self):
 		#Step 1 - generate simulated data with reputation feedback
 		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}

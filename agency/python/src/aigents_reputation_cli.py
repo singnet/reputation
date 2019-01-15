@@ -166,7 +166,8 @@ class AigentsCLIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			print( 'update_ranks', date )
-		res = self.ai_command('update ranks date ' + str(date) + (' fullnorm' if self.parameters['fullnorm'] else ''))
+		cmd = 'update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false')
+		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
 
 	def get_parameters(self):
