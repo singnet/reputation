@@ -28,6 +28,7 @@ import time
 import logging
 
 # Uncomment this for logging to console
+#logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
 class TestReputationServiceBase(object):
 

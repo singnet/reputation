@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -110,15 +110,16 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			self.parameters[key] = value
 		cmd = 'set parameters' \
 			+ ' default ' + str(self.parameters['default']) \
+			+ ' decayed ' + str(self.parameters['decayed']) \
 			+ ' conservatism ' + str(self.parameters['conservatism']) \
 			+ ' precision ' + str(self.parameters['precision']) \
-			+ ' liquid ' + 'true' if self.parameters['liquid'] else 'false'
-		if self.parameters['fullnorm']:
-			cmd += ' fullnorm'
-		if self.parameters['weighting']:
-			cmd += ' weighting'
-		if self.parameters['logratings']:
-			cmd += ' logratings'
+			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' period ' + str(self.parameters['update_period']) \
+			+ ' aggregation ' + ('true' if self.parameters['aggregation'] else 'false') \
+			+ ' downrating ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
+			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 
@@ -225,6 +226,6 @@ class AigentsAPIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + (' fullnorm' if self.parameters['fullnorm'] else ''))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		
