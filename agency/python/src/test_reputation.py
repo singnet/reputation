@@ -32,7 +32,8 @@ import logging
 
 class TestReputationServiceBase(object):
 
-	def test_smoke(self):
+	def test_base(self):
+		print('Testing base',type(self).__name__)
 		rs = self.rs
 		
 		#check default parameters
@@ -88,11 +89,9 @@ class TestReputationServiceBase(object):
 		#TODO end up with output format of the get_ratings method and extend unit test to check the data after then
 		#now we are just counting number of ratings returned in free format 
 		result, ratings = rs.get_ratings(filter)
-		#print(ratings);
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ratings), 3)
 		ratings = sorted(ratings, key=lambda elem: "%s %s" % (elem['from'], elem['to']))
-		#print(ratings);
 		self.assertEqual(ratings[0]['from'], '1')
 		self.assertEqual(ratings[0]['to'], '4')
 		self.assertEqual(ratings[1]['from'], '2')
@@ -122,3 +121,118 @@ class TestReputationServiceBase(object):
 				self.assertEqual(rank['rank'], 100)
 			if rank['id'] == '1':
 				self.assertEqual(rank['rank'], 33)			
+
+
+class TestReputationServiceParameters(TestReputationServiceBase):
+
+	def clear(self):
+		self.assertEqual( self.rs.clear_ratings(), 0 )
+		self.assertEqual( self.rs.clear_ranks(), 0 )
+
+	def rate_3_days(self,dt1,dt2,dt3,verbose=False):
+		rs = self.rs
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':50,'weight':None,'time':dt1}]), 0 )
+		self.assertEqual(rs.update_ranks(dt1), 0)
+		if verbose:
+			result, ranks = rs.get_ranks({'date':dt1})
+			print(ranks)
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		if verbose:
+			result, ranks = rs.get_ranks({'date':dt2})
+			print(ranks)
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt3}]), 0 )
+		self.assertEqual(rs.update_ranks(dt3), 0)
+		if verbose:
+			result, ranks = rs.get_ranks({'date':dt3})
+			print(ranks)
+
+	#self.parameters['decayed'] = 0.0 # decaying (final) reputaion rank, may be equal to default one
+	def test_decayed(self):
+		print('Testing decayed',type(self).__name__)
+		rs = self.rs
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)		
+		#test with default decay to 0
+		self.assertEqual( rs.set_parameters({'decayed':0.0}), 0 )
+		self.clear()
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['4'], 8)	
+		#test with alt decay to 50
+		self.assertEqual( rs.set_parameters({'decayed':0.5}), 0 )
+		self.clear()
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['4'], 45)	
+		#test with alt decay to 100
+		self.assertEqual( rs.set_parameters({'decayed':1.0}), 0 )
+		self.clear()
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['4'], 83)
+	
+	#self.parameters['default'] = 0.5 # default (initial) reputation rank
+	def test_default(self):
+		print('Testing default',type(self).__name__)
+		rs = self.rs
+		self.clear()
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0}), 0 )
+		self.assertEqual( rs.put_ranks(dt1,[{'id':1,'rank':50},{'id':2,'rank':100}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':6,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['6'], 100) #because its rater has default 100
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':0.0,'decayed':0.0}), 0 )
+		self.assertEqual( rs.put_ranks(dt1,[{'id':1,'rank':50},{'id':2,'rank':100}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':6,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['6'], 0) #because its rater has default 0
+	
+ 	#self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
+	def test_conservatism(self):
+		print('Testing conservatism',type(self).__name__)
+		rs = self.rs
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)	
+		# old experience matters only
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0,'conservatism':1.0}), 0 )
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['3'], 100)
+		# both old and new experiences matter
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0,'conservatism':0.5}), 0 )
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['3'], 25)
+		# old experience does not matter
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0,'conservatism':0.0}), 0 )
+		self.rate_3_days(dt1,dt2,dt3)
+		ranks = rs.get_ranks_dict({'date':dt3})
+		self.assertEqual(ranks['3'], 0)
+
+	#TODO
+	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
+	#self.parameters['liquid'] = True # forces to account for rank of rater
+	#self.parameters['logranks'] = True # applies log10 to ranks
+	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
+	#self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
+	#self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
+	#self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
+	#self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
+	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
