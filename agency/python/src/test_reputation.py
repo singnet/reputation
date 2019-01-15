@@ -179,9 +179,9 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 	def test_default(self):
 		print('Testing default',type(self).__name__)
 		rs = self.rs
-		self.clear()
 		dt1 = datetime.date(2018, 1, 1)
 		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':1,'rank':50},{'id':2,'rank':100}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':100,'weight':None,'time':dt2}]), 0 )
@@ -226,13 +226,58 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 		ranks = rs.get_ranks_dict({'date':dt3})
 		self.assertEqual(ranks['3'], 0)
 
-	#TODO
 	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
-	#self.parameters['liquid'] = True # forces to account for rank of rater
-	#self.parameters['logranks'] = True # applies log10 to ranks
+	def test_fullnorm(self):
+		print('Testing fullnorm',type(self).__name__)
+		rs = self.rs
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 96) # because its logarithmic differential is not normalized down to 0
+		
 	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
+	def test_logratings(self):
+		print('Testing logratings',type(self).__name__)
+		rs = self.rs
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':1,'weight':100,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':1,'weight':1000,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 56)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':1,'weight':100,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':1,'weight':1000,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 49)
+
+	#TODO
+	#self.parameters['liquid'] = True # forces to account for rank of rater
 	#self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
 	#self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
 	#self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
+	
+	#TODO after when implemented
 	#self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
 	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
+	#self.parameters['logranks'] = True # applies log10 to ranks
+	
