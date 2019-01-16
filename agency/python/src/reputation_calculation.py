@@ -387,7 +387,8 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
         while i<len(unique_ids):
             amounts = []
             ### Here we get log transformation of each amount value. 
-            get_subset = np.where(to_array==unique_ids[i])[0]
+            get_subset = np.where(np.array(to_array)==unique_ids[i])[0]
+
             #get_subset = where(to_array,unique_ids[i])            
             k=0 
             for k in get_subset:
@@ -395,7 +396,6 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
                     amounts.append(new_array[k][3] * new_array[k][2] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
                 else:
                     amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-            
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
@@ -403,7 +403,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
         while i<len(unique_ids):
             amounts = []
             ### Here we get log transformation of each amount value.    
-            get_subset = np.where(to_array==unique_ids[i])[0]
+            get_subset = np.where(np.array(to_array)==unique_ids[i])[0]
             #get_subset = where(to_array,unique_ids[i]) 
             k=0 
             for k in get_subset:
@@ -417,7 +417,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
-    #print("Second milestone",time.time()-start1)                 
+    #print("Second milestone",time.time()-start1) 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
     for k in mys.keys():
