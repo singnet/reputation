@@ -207,16 +207,29 @@ def parse_prefix(line, fmt):
     return datetime.strptime(line[:cover], fmt)
 
 def days_between(d1, d2):
-    return abs((d2 - d1).days)    
-    
+    return abs((d2 - d1).days) 
+
+
+def transform_ratings(ratings, logratings):
+    if logratings:
+        i=0
+        while i<len(ratings):
+            if ratings[i]['value']<0:
+                ratings[i]['value'] = -np.log10(1-ratings[i]['value'])
+            else:
+                ratings[i]['value'] = np.log10(1+ratings[i]['value'])
+            i+=1
+            
+    return(ratings)
 ###   Get starting dates and first occurances of each addresses. Also, preparation or arrays and other data
 ### to be used in the future.
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
 ### need_occurance=False.
-def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False):
+def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False,logratings=False):
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
     ### Now we will just store the first occurance of each account in a dictionary (first_occurance).
     ##  Inputs are dictionaries, arrays and True/False statements.
+    new_subset = transform_ratings(new_subset,logratings)
     i=0
     new_array = []
     while i<len(new_subset):
@@ -357,6 +370,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
     mys = {}
+    start1 = time.time()
     i = 0
     while i<len(new_array):
         if new_array[i][1] in mys:
@@ -373,36 +387,28 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
         while i<len(unique_ids):
             amounts = []
             ### Here we get log transformation of each amount value. 
-            get_subset = where(to_array,unique_ids[i])            
+            get_subset = np.where(np.array(to_array)==unique_ids[i])[0]
+
+            #get_subset = where(to_array,unique_ids[i])            
             k=0 
             for k in get_subset:
-               
                 if weighting:
-                    if logratings:
-                        amounts.append(np.log10(1+new_array[k][3]) * np.log10(1+new_array[k][2])* rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    else:
-                        
-                        amounts.append(new_array[k][3] * np.log10(1+new_array[k][2])* rater_reputation(reputation,new_array[k][0],liquid=liquid))
+                    amounts.append(new_array[k][3] * new_array[k][2] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
                 else:
-                    if logratings:
-                        amounts.append(np.log10(1+new_array[k][3]) * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    else:
-                        amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-            
+                    amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
     else:
         while i<len(unique_ids):
-        
             amounts = []
-            ### Here we get log transformation of each amount value.            
-            get_subset = where(to_array,unique_ids[i]) 
+            ### Here we get log transformation of each amount value.    
+            get_subset = np.where(np.array(to_array)==unique_ids[i])[0]
+            #get_subset = where(to_array,unique_ids[i]) 
             k=0 
             for k in get_subset:
                 if weighting:
-                    amounts.append(np.log10(1+new_array[k][2])* rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    
+                    amounts.append(new_array[k][2] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
                 else:
                     amounts.append(rater_reputation(reputation,new_array[k][0],liquid=liquid))###new_array[k][2] is Amount, new_array[k][3] is rating
                 if k==len(to_array)-1:
@@ -411,7 +417,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             mys[unique_ids[i]] = sum(amounts)
 
             i+=1
-                     
+    #print("Second milestone",time.time()-start1) 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
     for k in mys.keys():
@@ -421,14 +427,18 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             mys[k] = np.log10(1 + mys[k])
     ### Nr 6;
     ### We divide it by max value, as specified. There are different normalizations possible...
-    max_value = max(mys.values())
-    min_value = min(mys.values())
+    return(mys)
+
+def normalized_differential(mys,normalizedRanks):
+    max_value = max(mys.values(), default=1)
+    min_value = min(mys.values(), default=0)
     for k in mys.keys():
-        if normalizedRanks:
+        if normalizedRanks: ### normalizedRanks is equal to fullnorm.
             mys[k] = (mys[k]-min_value) /(max_value-min_value)
         else:
-            mys[k] = mys[k] /max_value
+            mys[k] = mys[k] /max_value  
     return(mys)
+        
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
 
@@ -440,74 +450,11 @@ def rater_reputation(previous_reputations,rater_id,liquid=False):
         rater_rep = previous_reputations[rater_id]
     return(rater_rep)
 
-def calculate_new_reputation_no_log(new_array,to_array,reputation,rating,normalizedRanks=True,weighting=True,
-                                   liquid = True,logratings=False):
-    ### This is needed;
-    mys = {}
-    i = 0
-    while i<len(new_array):
-        if new_array[i][1] in mys:
-            pass
-        else:
-            mys[new_array[i][1]] = 0
-        i+=1
-    unique_ids = np.unique(to_array)
-    k=0
-    i = 0
-    if rating:
-        while i<len(unique_ids):
-            amounts = []
-            get_subset = where(to_array,unique_ids[i])
-            k=0 
-            for k in get_subset:
-                if weighting:
-                    if logratings:
-                        amounts.append(np.log10(1+new_array[k][3]) * new_array[k][2]* rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    else:
-                        amounts.append(new_array[k][3] * new_array[k][2]* rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                else:
-                    if logratings:
-                        amounts.append(np.log(new_array[k][3]) * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    else:
-                        amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))
-            mys[unique_ids[i]] = sum(amounts)
-            i+=1
-    else:
-        while i<len(unique_ids):
-            amounts = []
-            get_subset = np.where(to_array==unique_ids[i])[0]
-            k=0 
-            for k in get_subset:
-                    if weighting:
-                        amounts.append(new_array[k][2]* rater_reputation(reputation,new_array[k][0],liquid=liquid))
-                    else:
-                        amounts.append(rater_reputation(reputation,new_array[k][0],liquid=liquid))
-            mys[unique_ids[i]] = sum(amounts)
-            i+=1
-    ### nr 5.
-    for k in mys.keys():
-        if mys[k]<0:
-            mys[k] = -np.log10(1 - mys[k])
-        else:
-            mys[k] = np.log10(1 + mys[k])
-    ### Nr 6;
-    max_value = max(mys.values())
-    min_value = min(mys.values())
-    for k in mys.keys():
-        
-        if normalizedRanks:
-            mys[k] = (mys[k]-min_value) /(max_value-min_value)
-        else:
-            mys[k] = mys[k] /max_value
-    return(mys)
-
 def normalize_reputation(reputation,normalizedRanks):
-    max_value = max(reputation.values())
-    min_value = min(reputation.values())
+    max_value = max(reputation.values(), default=1)
+    min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
-        
-        #if normalizedRanks:
-        #    reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
+
         if normalizedRanks:
             reputation[k] = reputation[k] /max_value
     return(reputation)    
@@ -543,6 +490,8 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
         j+=1  
     return(reputation)
 
+
+
 def where(to_array,the_id):
     our_ids = []
     i=0
@@ -569,4 +518,3 @@ def avg_rep_calculate(avg_reputation,new_reputation,multiplier):
             pass
     return(avg_reputation)
     
-

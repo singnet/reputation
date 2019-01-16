@@ -27,11 +27,7 @@ import unittest
 from test_reputation import TestReputationServiceBase
 from reputation_service_api import *
 
-
-# TODO @nejc - have this separate test_reputation_service_api.py file for this 
-# Python Native Reputation Service implmentation 
 class TestAigentsPythonReputationService(TestReputationServiceBase,unittest.TestCase):
-
     rs = PythonReputationService()
     params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1,

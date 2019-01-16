@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,31 +27,20 @@ Reputation Service wrapper around Aigents Java-based Command Line Interface
 import sys
 import urllib.parse
 import requests
-from reputation_api import *
+from reputation_base_api import *
 
 import logging
 logger = logging.getLogger(__name__)	
 
-class AigentsAPIReputationService(RatingService,RankingService):
+class AigentsAPIReputationService(ReputationServiceBase):
 
 	def __init__(self, base_url, login_email, secret_question, secret_answer, real_mode, name, verbose=False):
+		ReputationServiceBase.__init__(self,name,verbose)
 		self.base_url = base_url # Aigents Web API hosting URL
 		self.login_email = login_email # Aigents user identification by email 
 		self.secret_question = secret_question # Aigents prompt for password
 		self.secret_answer = secret_answer # Aigents password value
 		self.real_mode = real_mode # whether to connect to real Aigents server (True) or fake test oe (False) 
-		self.name = name # service parameter, no impact on algorithm, name of the storage scheme
-		self.verbose = verbose # service parameter, no impact on algorithm, impact on log level 
-		self.parameters = {}
-		self.parameters['default'] = 0.5 # default (initial) rank
-		self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
-		self.parameters['precision'] = 0.01 # Used to round/up or round down financaial values or weights as value = round(value/precision)
-		self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
-		self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
-		self.parameters['liquid'] = True # forces to account for rank of rater
-		self.parameters['logranks'] = True # applies log10 to ranks
-		self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
-		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period 
 		if self.verbose:
 			logger.info('Creating Aigents session')
 		self.create_session()
@@ -121,15 +110,16 @@ class AigentsAPIReputationService(RatingService,RankingService):
 			self.parameters[key] = value
 		cmd = 'set parameters' \
 			+ ' default ' + str(self.parameters['default']) \
+			+ ' decayed ' + str(self.parameters['decayed']) \
 			+ ' conservatism ' + str(self.parameters['conservatism']) \
 			+ ' precision ' + str(self.parameters['precision']) \
-			+ ' liquid ' + 'true' if self.parameters['liquid'] else 'false'
-		if self.parameters['fullnorm']:
-			cmd += ' fullnorm'
-		if self.parameters['weighting']:
-			cmd += ' weighting'
-		if self.parameters['logratings']:
-			cmd += ' logratings'
+			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' period ' + str(self.parameters['update_period']) \
+			+ ' aggregation ' + ('true' if self.parameters['aggregation'] else 'false') \
+			+ ' downrating ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
+			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 
@@ -236,6 +226,6 @@ class AigentsAPIReputationService(RatingService,RankingService):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + (' fullnorm' if self.parameters['fullnorm'] else ''))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		
