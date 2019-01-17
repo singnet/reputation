@@ -28,13 +28,14 @@ import time
 from test_reputation import *
 from aigents_reputation_cli import *
 from aigents_reputation_api import *
-"""
+
 # Test Command-line-based Aigents Reputation Service wrapper 
 class TestAigentsCLIReputationService(TestReputationServiceBase,unittest.TestCase):
 
 	def setUp(self):
 		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
-"""
+
+
 # Test Web-service-based Aigents Reputation Service wrapper
 # TODO make port 1180 configurable!
 class TestAigentsAPIReputationService(TestReputationServiceParameters,unittest.TestCase):

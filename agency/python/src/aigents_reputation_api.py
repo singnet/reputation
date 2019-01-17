@@ -116,7 +116,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
 			+ ' period ' + str(self.parameters['update_period']) \
 			+ ' aggregation ' + ('true' if self.parameters['aggregation'] else 'false') \
-			+ ' downrating ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
 			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false')
