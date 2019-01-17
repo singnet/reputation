@@ -78,10 +78,12 @@ control_id = 0 # id of user to be controlled
 #default optional parameters
 precision = get_param(sys.argv,'precision','0.01')
 default = get_param(sys.argv,'default','0.5')
+decayed = get_param(sys.argv,'decayed','0.0')
 conservatism = get_param(sys.argv,'conservatism','0.5')
 logratings = get_option(sys.argv,'logratings')
 weighting = get_option(sys.argv,'weighting')
 fullnorm = get_option(sys.argv,'fullnorm')
+downrating = get_option(sys.argv,'downrating')
 verbose = get_option(sys.argv,'verbose')
 
 print('binary directory:', bin_dir)
@@ -93,10 +95,12 @@ print('since date:', since_date)
 print('until date:', until_date)
 print('precision:', precision)
 print('default:', default)
+print('decayed:', decayed)
 print('conservatism:', conservatism)
 print('logratings:', logratings)
 print('weighting:', weighting)
 print('fullnorm:', fullnorm)
+print('downrating:', downrating)
 print('verbose:', verbose)
 
 
@@ -129,11 +133,18 @@ if not os.path.exists(out_dir):
 
 if verbose:
 	print('Loading transaction ratings.')
-ai_command('load ratings file ' + transactions_file + ' precision ' + precision + ' weighting ' + ('true' if weighting else 'false') + ' logratings ' + ('true' if logratings else 'false'))
+ai_command('load ratings file ' + transactions_file \
+		+ ' precision ' + precision \
+		+ ' weighting ' + ('true' if weighting else 'false') \
+		+ ' downrating ' + ('true' if downrating else 'false') \
+		+ ' logratings ' + ('true' if logratings else 'false'))
 
 if verbose:
 	print('Updating reputation ranks.')
-ai_command('update ranks since ' + since_date + ' until ' + until_date + ' default ' + default + ' conservatism ' + conservatism \
+ai_command('update ranks since ' + since_date + ' until ' + until_date \
+		+ ' default ' + default \
+		+ ' decayed ' + decayed \
+		+ ' conservatism ' + conservatism \
 		+ ' fullnorm ' + ('true' if fullnorm else 'false'))
 
 if verbose:
