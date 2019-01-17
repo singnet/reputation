@@ -34,18 +34,24 @@ from reputation_scenario import reputation_simulate
 
 class TestReputationSimulation(unittest.TestCase):
 
-	def setUp(self):
+	@classmethod
+	def setUpClass(cls):
 		cmd = 'java -cp ../../bin/mail.jar:../../bin/pdfbox-app-2.0.0-RC2.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path \'./al_test.txt\', http port 1180, cookie domain localtest.com, console off'
-		self.server_process = subprocess.Popen(cmd.split())
+		cls.server_process = subprocess.Popen(cmd.split())
 		#self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
 		time.sleep(10)
+
+	@classmethod
+	def tearDownClass(cls):
+		cls.server_process.kill()
+		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
+
+	def setUp(self):
 		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 		self.rs.set_parameters({'weighting':True,'logratings':False})
 
 	def tearDown(self):
 		del self.rs
-		self.server_process.kill()
-		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
 
 	def testRatingsNoFeedback(self):
 		#Step 1 - generate simulated data
