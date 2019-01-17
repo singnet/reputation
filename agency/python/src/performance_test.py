@@ -55,7 +55,7 @@ good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppl
 bad_agent = {"range": [801,1000], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
 
 start = time.time()
-rs = AigentsAPIReputationService('http://localtest.com:1190/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = AigentsAPIReputationService('http://localtest.com:1188/', 'john@doe.org', 'q', 'a', False, 'test', True)
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
