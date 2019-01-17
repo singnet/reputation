@@ -26,15 +26,10 @@ import time
 import datetime
 from reputation_scenario import reputation_simulate
 from reputation_service_api import *
+from aigents_reputation_api import AigentsAPIReputationService
 
 #TODO use any other Reputation Service here
 rs = None
-start = time.time()
-
-rs = PythonReputationService()
-
-if rs is not None:
-    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 
 verbose = False
 days = 183
@@ -59,9 +54,19 @@ bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers"
 good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
 bad_agent = {"range": [801,1000], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
 
-#log t1
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1188/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
-#log t2
-#measure t2-t1 as run time
-print("Time spent:",time.time()-start)
+print("Time spent Aigents:",time.time()-start)
+
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+print("Time spent Python:",time.time()-start)
+
+
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
