@@ -306,7 +306,27 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 		self.assertEqual(ranks['1'], 50)
 		self.assertEqual(ranks['2'], 100) # because it gets into the same period as '3'
 
-class TestReputationServiceParametersAdvanced(TestReputationServiceParameters):
+	#self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
+	def test_weighting(self):
+		print('Testing '+type(self).__name__+' weighting')
+		rs = self.rs
+		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'], 100)
+		self.assertEqual(ranks['2'], 0)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'weighting':False,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value':1,'weight':100,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'5','type':'rating','to':'2','value':1,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'], 100)
+		self.assertEqual(ranks['2'], 100)	
 
 	def test_downrating(self):
 		print('Testing '+type(self).__name__+' downrating')
@@ -353,28 +373,6 @@ class TestReputationServiceParametersAdvanced(TestReputationServiceParameters):
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['2'], 0)
-
-	#self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
-	def test_weighting(self):
-		print('Testing '+type(self).__name__+' weighting')
-		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
-		self.clear()
-		self.assertEqual( rs.set_parameters({'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':10,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'], 100)
-		self.assertEqual(ranks['2'], 0)
-		self.clear()
-		self.assertEqual( rs.set_parameters({'weighting':False,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value':1,'weight':100,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'5','type':'rating','to':'2','value':1,'weight':10,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'], 100)
-		self.assertEqual(ranks['2'], 100)	
 
 	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
 	def test_logratings(self):
