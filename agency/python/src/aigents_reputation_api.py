@@ -90,7 +90,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		except Exception as e:
 			logger.error('request ' + url + ' ' + str(type(e)))
 			print('Specify proper url to Aigents server or run it locally, eg.')
-			print('java -cp ../../bin/mail.jar:../../bin/javax.json-1.0.2.jar:../../bin/Aigents.jar net.webstructor.agent.Farm store path \'./al_test.txt\', cookie domain localtest.com, console off &')
+			print('java -cp ../../bin/Aigents.jar:../../bin/* net.webstructor.agent.Farm store path \'./al_test.txt\', cookie domain localtest.com, console off &')
 			print('or')
 			print('sh aigents_server_start.sh')
 			return 'No connection to Aigents, ' + str(type(e))
