@@ -72,7 +72,12 @@ class AigentsCLIReputationService(ReputationServiceBase):
 	1 - unknown error
 	"""
 	def put_ratings(self,ratings):
-		cmd = 'add ratings '
+		cmd = 'add ratings' \
+			+ ' precision ' + str(self.parameters['precision']) \
+			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
+			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
+			+ ' '
 		for rating in ratings:
 			if self.verbose:
 				print( 'put_ratings', rating )
@@ -166,7 +171,14 @@ class AigentsCLIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			print( 'update_ranks', date )
-		cmd = 'update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false')
+		cmd = 'update ranks date ' + str(date) \
+			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
+			+ ' default ' + str(self.parameters['default']) \
+			+ ' decayed ' + str(self.parameters['decayed']) \
+			+ ' conservatism ' + str(self.parameters['conservatism']) \
+			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
+			+ ' period ' + str(self.parameters['update_period']) \
+			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false')
 		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
 
