@@ -41,10 +41,10 @@ class PythonReputationService(object):
             default1 = changes['default']
         else:
             default1 = self.default
-        if 'conservaticism' in changes.keys():
-            conservaticism = changes['conservaticism']
+        if 'conservatism' in changes.keys():
+            conservatism = changes['conservatism']
         else:
-            conservaticism = self.conservaticism
+            conservatism = self.conservatism
         if 'precision' in changes.keys():
             precision = changes['precision']
         else:
@@ -88,9 +88,13 @@ class PythonReputationService(object):
         if 'first_occurance' in changes.keys():
             self.first_occurance = changes['first_occurance']
         else:
-            self.first_occurance = {}   
+            self.first_occurance = {}
+        if 'decayed' in changes.keys():
+            self.decayed = changes['decayed']
+        else:
+            self.decayed = 0
         self.default=default1
-        self.conservaticism = conservaticism
+        self.conservatism = conservatism
         self.precision = precision
         self.weighting = weighting
         self.fullnorm = fullnorm
@@ -106,7 +110,7 @@ class PythonReputationService(object):
         
     ### This functions merely displays the parameters.
     def get_parameters(self):              
-        return({'default': self.default, 'conservatism':self.conservaticism, 'precision':self.precision,
+        return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
                'use_ratings':self.use_ratings, 'date':self.date})
@@ -114,7 +118,8 @@ class PythonReputationService(object):
     def set_date(self,newdate):
         self.our_date = newdate
     def clear_ranks(self):
-        self.ranks = {}    
+        self.reputation = {}   
+        self.all_reputations = {}
         return(0)
     def clear_ratings(self):
         self.ratings = {}
@@ -142,31 +147,31 @@ class PythonReputationService(object):
         self.dates = all_dates
 
     def select_data(self,mydate):
-        min_date = mydate
-        max_date = mydate + datetime.timedelta(days=self.update_period)
+        min_date = mydate - datetime.timedelta(days=self.update_period)
+        max_date = mydate
         i=0
         while i<len(self.ratings):
             mydict = self.ratings[i]
             if type(mydict) is list:
                 mydict = mydict[0]
-            #print(type(mydict))
-            #print(mydict.keys())
-            #print(mydict['time'])
-            if (mydict['time'] >= min_date and mydict['time']<max_date):
+            if (mydict['time'] > min_date and mydict['time']<=max_date):
                 self.current_ratings.append(mydict)
             i+=1
    
 
     def convert_data(self,data):
-        daily_data = data[['from','type','to','value','weight','time','rating']].to_dict("records")
-        self.ratings = daily_data
+        daily_data = data[['from','type','to','weight','time','value','type']].to_dict("records")
+        
         self.all_dates()
         i = 0
         while i<len(daily_data):
             daily_data[i]['from'] = str(daily_data[i]['from'])
             daily_data[i]['to'] = str(daily_data[i]['to'])
             i+=1
+        self.ratings = daily_data
         return(daily_data)
+             
+        
         
     def update_ranks(self,mydate):
         ### And then we iterate through functions. First we prepare arrays and basic computations.
@@ -175,30 +180,32 @@ class PythonReputationService(object):
         i=0
         problem = False
         while i<len(self.current_ratings):
-            if (self.use_ratings==True and (not 'rating' in self.current_ratings[i].keys())):
+            if (self.use_ratings==True and (not 'value' in self.current_ratings[i].keys())):
                 problem=True
             i+=1
         if problem:
             print("Ratings is set to True, but no ratings were given. Changing the setting to False")
             self.use_ratings=False
+        problem = False 
         
         start1 = time.time()
-        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,
-                                                                             self.temporal_aggregation,self.logratings)  
+        
+        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
+                                                                             self.temporal_aggregation,False,self.logratings)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
         since = self.date - timedelta(days=self.update_period)
         new_reputation = calculate_new_reputation(array1,to_array,self.reputation,self.use_ratings,
                                                               normalizedRanks=self.fullnorm,weighting = self.weighting,
-                                                             liquid = self.liquid, logratings = self.logratings) 
+                                                             liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
-        if self.logratings:
-            for k in new_reputation.keys():
-                new_reputation[k] = np.log10(new_reputation[k])
+        #if self.logratings:
+        #    for k in new_reputation.keys():
+        #        new_reputation[k] = np.log10(1+new_reputation[k])
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm)
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
-                                                       self.date, self.default,self.conservaticism)
+                                                       self.date, self.decayed,self.conservatism)
         self.reputation = normalize_reputation(self.reputation,True)
         self.all_reputations[mydate] = self.reputation
         return(0)
@@ -215,6 +222,7 @@ class PythonReputationService(object):
         ### Below is not needed in our case.                 
             
     def put_ratings(self,ratings):
+        
         i = 0
         while i<len(ratings):
             ratings[i]['from'] = str(ratings[i]['from'])
@@ -224,6 +232,7 @@ class PythonReputationService(object):
             self.ratings = ratings
         else:
             self.ratings.append(ratings)
+        
         return(0)  
         
     def get_ranks(self,times):
@@ -231,12 +240,12 @@ class PythonReputationService(object):
             result = {}
         else:
             if times['date'] in list(self.all_reputations.keys()):
-                result = self.all_reputations[times['date']]
+                result = dict(self.all_reputations[times['date']])
             else:
                 result = {}
         all_results = []
         for k in result.keys():
-            all_results.append({'id':k,'rank':round(result[k]*100)})  
+            all_results.append({'id':k,'rank':round(result[k]*100,0)})  
         return(0,all_results)
     
     def get_ranks_dict(self,times):
@@ -244,13 +253,12 @@ class PythonReputationService(object):
             result = {}
         else:
             if times['date'] in list(self.all_reputations.keys()):
-                result = self.all_reputations[times['date']]
+                result = dict(self.all_reputations[times['date']])
             else:
                 result = {}
-        all_results = []
         for k in result.keys():
-            all_results.append({'id':k,'rank':round(result[k]*100)})  
-        return(0,all_results)
+            result[k] = int(result[k]*100)#round(result[k]*100,0)    
+        return(result)    
     
     def add_time(self,addition=0):
         if addition==0:
@@ -301,9 +309,10 @@ class PythonReputationService(object):
         return(0)
         
     def __init__(self):
-        params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
-         'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'update_period': 1,
-         'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
+        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
+         'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': True, 'update_period': 1,
+         'use_ratings': True, 'start_date': datetime.date(2018, 1, 1),'decayed':0.0}
         self.reputation = {}
         self.all_reputations = {}
         self.set_parameters(params)
+        
