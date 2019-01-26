@@ -93,6 +93,10 @@ class PythonReputationService(object):
             self.decayed = changes['decayed']
         else:
             self.decayed = 0
+        if 'downrating' in changes.keys():
+            self.downrating = changes['downrating']
+        else:
+            self.downrating = False   
         self.default=default1
         self.conservatism = conservatism
         self.precision = precision
@@ -161,7 +165,6 @@ class PythonReputationService(object):
 
     def convert_data(self,data):
         daily_data = data[['from','type','to','weight','time','value','type']].to_dict("records")
-        
         self.all_dates()
         i = 0
         while i<len(daily_data):
@@ -170,8 +173,7 @@ class PythonReputationService(object):
             i+=1
         self.ratings = daily_data
         return(daily_data)
-             
-        
+
         
     def update_ranks(self,mydate):
         ### And then we iterate through functions. First we prepare arrays and basic computations.
@@ -189,9 +191,13 @@ class PythonReputationService(object):
         problem = False 
         
         start1 = time.time()
+        if len(self.current_ratings)>0:
+            if (self.current_ratings[0]['type']=="payment" and self.downrating==True):
+                print("if we only have payments, we have no ratings. Therefore downratings cannot be True. Setting them to False")
+                self.downrating=False
         
         array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
-                                                                             self.temporal_aggregation,False,self.logratings)  
+                                                                             self.temporal_aggregation,False,self.logratings,self.downrating)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
         since = self.date - timedelta(days=self.update_period)
