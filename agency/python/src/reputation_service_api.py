@@ -212,7 +212,10 @@ class PythonReputationService(object):
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm)
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.decayed,self.conservatism)
-        self.reputation = normalize_reputation(self.reputation,True)
+        ### Apply normalizedRanks=True AKA "full normalization" to prevent negative ratings on "downrating"
+        ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
+        ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
+        self.reputation = normalize_reputation(self.reputation,self.downrating)
         self.all_reputations[mydate] = self.reputation
         return(0)
         
