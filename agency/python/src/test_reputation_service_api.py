@@ -27,9 +27,9 @@ import unittest
 from test_reputation import *
 from reputation_service_api import *
 
-# @nejc9921 - uncomment this line when all tests are passing and remove all debugging prints from the code or turn them into logging 
-#class TestPythonReputationService(TestReputationServiceParameters,unittest.TestCase):
-# @nejc9921 - remove this line when all tests are passing
+# @nejc9921 - uncomment the following line when all tests are passing and remove all debugging prints from the code or turn them into logging 
+#class TestPythonReputationService(TestReputationServiceParametersBase,unittest.TestCase):
+# @nejc9921 - remove the following line when all tests are passing
 class TestPythonReputationService(TestReputationServiceParametersBase,unittest.TestCase):
     def setUp(self):
         self.rs = PythonReputationService()
