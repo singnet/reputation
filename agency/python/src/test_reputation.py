@@ -123,7 +123,7 @@ class TestReputationServiceBase(object):
 				self.assertEqual(rank['rank'], 33)			
 
 
-class TestReputationServiceParameters(TestReputationServiceBase):
+class TestReputationServiceExtended(TestReputationServiceBase):
 
 	def clear(self):
 		self.assertEqual( self.rs.clear_ratings(), 0 )
@@ -226,26 +226,6 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 		ranks = rs.get_ranks_dict({'date':dt3})
 		self.assertEqual(ranks['3'], 0)
 
-	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
-	def test_fullnorm(self):
-		print('Testing '+type(self).__name__+' fullnorm')
-		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
-		self.clear()
-		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
-		self.clear()
-		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['3'], 96) # because its logarithmic differential is not normalized down to 0
-
 	#self.parameters['liquid'] = True # forces to account for rank of rater
 	def test_liquid(self):
 		print('Testing '+type(self).__name__+' liquid')
@@ -328,6 +308,8 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 		self.assertEqual(ranks['1'], 100)
 		self.assertEqual(ranks['2'], 100)	
 
+class TestReputationServiceParameters(TestReputationServiceExtended):
+	
 	def test_downrating(self):
 		print('Testing '+type(self).__name__+' downrating')
 		rs = self.rs
@@ -395,6 +377,26 @@ class TestReputationServiceParameters(TestReputationServiceBase):
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['3'], 49)
+
+	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
+	def test_fullnorm(self):
+		print('Testing '+type(self).__name__+' fullnorm')
+		rs = self.rs
+		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['3'], 96) # because its logarithmic differential is not normalized down to 0
 
 	#TODO after when implemented
 	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
