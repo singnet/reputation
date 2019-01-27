@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -122,9 +122,6 @@ class RankingService(ReputationService):
 	def clear_ranks(self):
 		pass
 
+	@abc.abstractmethod
 	def get_ranks_dict(self,filter):
-		ranks_dict = {}
-		res, ranks = self.get_ranks(filter)
-		for rank in ranks:
-			ranks_dict[rank['id']] = rank['rank']
-		return ranks_dict
+		pass
