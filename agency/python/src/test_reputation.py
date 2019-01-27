@@ -317,16 +317,49 @@ class TestReputationServiceParameters(TestReputationServiceParametersBase):
 		dt1 = datetime.date(2018, 1, 1)
 		dt2 = datetime.date(2018, 1, 2)
 		#print('=================')
+		#input()
 		self.clear()
 		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':'1','rank':90},{'id':'2','rank':90},{'id':'3','rank':10},{'id':'4','rank':10}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 100,'weight':10,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':   0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
 		self.assertEqual( rs.put_ratings([{'from':'3','type':'rating','to':'4','value': 100,'weight':10,'time':dt2}]), 0 )
+		"""
+		Here is the explanation of the expected math
+		old:
+		R1 = 90
+		R2 = 90
+		R3 = 10
+		R4 = 10
+		differential:
+		R2' = 90(rater) * 10(precision) * 100(value) * 10(weight) = 900000 
+		R4' = 10(rater) * 10(precision) * 100(value) * 10(weight) = 100000
+		normalized:
+		R2'' = log10(1+900000) = 5.95 
+		R4'' = log10(1+100000) = 5.00
+		R2''' = (5.95 / 5.95) * 100 = 100
+		R4''' = (5.00 / 5.95) * 100 = 84
+		blended:
+		R1'''' = (90 + 50) / 2 = 70
+		R2'''' = (90 + 100) / 2 = 95
+		R3'''' = (10 + 50) / 2 = 30
+		R4'''' = (10 + 84) / 2 = 47
+		blended normalized:
+		R1''''' = (70 / 95) * 100 = 73.68
+		R2''''' = (95 / 95) * 100 = 100.00 
+		R3''''' = (30 / 95) * 100 = 31.57
+		R4''''' = (47 / 95) * 100 = 49.47
+		"""
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		#print(ranks)
 		self.assertEqual(len(ranks), 4)
+		#TODO https://github.com/singnet/reputation/issues/96
+		#TODO fix it to be 74
+		self.assertEqual(ranks['1'], 73)
+		self.assertEqual(ranks['2'], 100)
+		#TODO fix it to be 32
+		self.assertEqual(ranks['3'], 31)
 		self.assertEqual(ranks['4'], 49)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'downrating':True, 'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
