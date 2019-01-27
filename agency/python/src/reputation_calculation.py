@@ -211,6 +211,7 @@ def days_between(d1, d2):
 
 def downratings(condition,ratings):
     if condition:
+    	### it is expected current_max to be 100 (or 1.0 on 100% scale)
         current_max = 0
         i = 0
         while i<len(ratings):
@@ -225,6 +226,7 @@ def downratings(condition,ratings):
         
         i=0
         while i<len(ratings):
+        	### it is expected ratings to be converted to range -100 to +100 (or -1.0 to +1.0 on -100% to +100% scale)
             ratings[i]['value'] = ratings[i]['value']/current_max
             if ratings[i]['value']<0.25:
                 ratings[i]['value'] = ratings[i]['value']/0.25-1
@@ -520,11 +522,13 @@ def rater_reputation(previous_reputations,rater_id,liquid=False):
         rater_rep = 1
     return(rater_rep)
 
-def normalize_reputation(reputation,normalizedRanks):
+def normalize_reputation(reputation,normalizedRanks=False):
     max_value = max(reputation.values(), default=1)
     min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
-        if normalizedRanks:
+        if normalizedRanks: ### normalizedRanks is equal to fullnorm.
+            reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
+        else:
             reputation[k] = reputation[k] /max_value
     return(reputation)    
     
