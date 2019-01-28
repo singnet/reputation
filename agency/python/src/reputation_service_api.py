@@ -265,8 +265,9 @@ class PythonReputationService(object):
                 result = dict(self.all_reputations[times['date']])
             else:
                 result = {}
+        print(result)
         for k in result.keys():
-            result[k] = int(result[k]*100)#round(result[k]*100,0)    
+            result[k] = round(result[k]*100,0)    
         return(result)    
     
     def add_time(self,addition=0):
