@@ -56,3 +56,17 @@ class TestAigentsAPIReputationService(TestReputationServiceParameters,unittest.T
 
 if __name__ == '__main__':
     unittest.main()
+
+"""
+#check Aigents Java RS
+x = TestAigentsAPIReputationService()
+x.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+x.test_decayed()
+del x.rs
+
+#check Python RS
+from reputation_service_api import *
+x.rs = PythonReputationService()
+x.test_decayed()
+del x.rs
+"""
