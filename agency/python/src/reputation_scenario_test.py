@@ -31,9 +31,9 @@ from aigents_reputation_api import AigentsAPIReputationService
 #TODO use any other Reputation Service here
 rs = None
 #rs = AigentsCLIReputationService('../../bin','./','testsim',False) # this one is very slow
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'testapi', True)
 if rs is not None:
-	rs.set_parameters({'weighting':True,'fullnorm':False,'logratings':True,'downrating':True,'precision':0.01,'default':0.5,'conservatism':0.5,'decayed':0.0})
+	rs.set_parameters({'weighting':True,'fullnorm':True,'logratings':False,'downrating':True,'precision':0.01,'default':0.5,'conservatism':0.5,'decayed':0.0})
 
 verbose = True
 days = 10

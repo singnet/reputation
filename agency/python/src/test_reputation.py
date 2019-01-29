@@ -334,8 +334,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.assertEqual(ranks['1'], 100)
 		self.assertEqual(ranks['2'], 100)	
 
-class TestReputationServiceParameters(TestReputationServiceParametersBase):
-	
 	#self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
 	def test_downrating(self):
 		print('Testing '+type(self).__name__+' downrating')
@@ -396,6 +394,30 @@ class TestReputationServiceParameters(TestReputationServiceParametersBase):
 		self.assertEqual(len(ranks), 4)
 		self.assertEqual(ranks['4'], 0)
 
+	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
+	def test_fullnorm(self):
+		print('Testing '+type(self).__name__+' fullnorm')
+		rs = self.rs
+		dt2 = datetime.date(2018, 1, 2)
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(len(ranks), 2)
+		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
+		self.clear()
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual(rs.update_ranks(dt2), 0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(len(ranks), 2)
+		self.assertEqual(ranks['3'], 97) # because its logarithmic differential is not normalized down to 0
+
+class TestReputationServiceParameters(TestReputationServiceParametersBase):
+	
 	#self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
 	def test_precision(self):
 		print('Testing '+type(self).__name__+' precision')
@@ -443,28 +465,6 @@ class TestReputationServiceParameters(TestReputationServiceParametersBase):
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(len(ranks), 3)
 		self.assertEqual(ranks['3'], 50)
-
-	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
-	def test_fullnorm(self):
-		print('Testing '+type(self).__name__+' fullnorm')
-		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
-		self.clear()
-		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(len(ranks), 2)
-		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
-		self.clear()
-		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(len(ranks), 2)
-		self.assertEqual(ranks['3'], 97) # because its logarithmic differential is not normalized down to 0
 
 	#TODO after when implemented
 	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
