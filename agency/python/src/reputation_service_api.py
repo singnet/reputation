@@ -196,14 +196,12 @@ class PythonReputationService(object):
                 print("if we only have payments, we have no ratings. Therefore downratings cannot be True. Setting them to False")
                 self.downrating=False
         
-        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
+        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,
                                                                              self.temporal_aggregation,False,self.logratings,self.downrating)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
-        since = self.date - timedelta(days=self.update_period)
-        new_reputation = calculate_new_reputation(array1,to_array,self.reputation,self.use_ratings,
-                                                              normalizedRanks=self.fullnorm,weighting = self.weighting,
-                                                             liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        since = self.date - timedelta(days=self.update_period)      
+        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
         #if self.logratings:
@@ -215,7 +213,9 @@ class PythonReputationService(object):
         ### Apply normalizedRanks=True AKA "full normalization" to prevent negative ratings on "downrating"
         ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
+        ### Downratings seem to pass, so I assume this comment is resolved.
         self.reputation = normalize_reputation(self.reputation,self.downrating)
+        
         self.all_reputations[mydate] = self.reputation
         return(0)
         
@@ -265,7 +265,6 @@ class PythonReputationService(object):
                 result = dict(self.all_reputations[times['date']])
             else:
                 result = {}
-        print(result)
         for k in result.keys():
             result[k] = round(result[k]*100,0)    
         return(result)    
@@ -319,7 +318,7 @@ class PythonReputationService(object):
         return(0)
         
     def __init__(self):
-        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
+        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.1, 'weighting': True, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': True, 'update_period': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1),'decayed':0.0}
         self.reputation = {}
