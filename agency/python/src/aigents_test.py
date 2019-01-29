@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -48,15 +48,15 @@ get("Ok.\n")
 say("reputation network testnet  update ranks default 0.1 date 2018-10-14")
 get("Ok.\n")
 say("reputation network testnet  get ranks date 2018-10-14")
-get("Ok.\n2	100\n1	66\n3	63\n")
+get("Ok.\n2	100\n1	67\n3	63\n")
 say("reputation network testnet  get ranks date 2018-10-14 id 1 id 2")
-get("Ok.\n2	100\n1	66\n")
+get("Ok.\n2	100\n1	67\n")
 say("reputation network testnet  get ranks date 2018-10-14 id 2 id 3")
 get("Ok.\n2	100\n3	63\n")
 say("reputation network testnet  get ranks since 2018-10-13 until 2018-10-14")
-get("Ok.\n1	100	66\n2	50	100\n3		63\n")
+get("Ok.\n1	100	67\n2	50	100\n3		63\n")
 say("reputation network testnet  get ranks since 2018-10-13 until 2018-10-14 average")
-get("Ok.\n1	83.0\n2	75.0\n3	63.0\n")
+get("Ok.\n1	83.5\n2	75.0\n3	63.0\n")
 say("reputation network testnet  get ranks since 2018-10-13 until 2018-10-14 id 2 id 3")
 get("Ok.\n2	50	100\n3		63\n")
 

@@ -238,7 +238,7 @@ def downratings(condition,ratings):
     else:
         return(ratings)
 
-def transform_ratings(ratings, logratings,precision_fix):
+def transform_ratings(ratings, logratings):
     if logratings:
         i=0        
         while i<len(ratings):
@@ -253,14 +253,6 @@ def transform_ratings(ratings, logratings,precision_fix):
                 else:
                     ratings[i]['value'] = np.log10(1+ratings[i]['value'])#np.log10(1+ratings[i]['value'])
             i+=1
-    i=0
-    while i<len(ratings):
-        if ratings[i]['weight']!=None:
-            ratings[i]['weight'] = round(ratings[i]['weight']/precision_fix)*precision_fix
-        else:
-            ratings[i]['value'] = round(ratings[i]['value']/precision_fix)*precision_fix
-        print("ratings:",ratings[i])
-        i+=1
     return(ratings)
 
 def weight_calc(value):
@@ -272,7 +264,7 @@ def weight_calc(value):
 ### to be used in the future.
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
 ### need_occurance=False.
-def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation=False,need_occurance=False,
+def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False,
                        logratings=False,downrating=False):
     ### need_occurance is set to false by default and might even be removed for good. It was made in order to
     ### facilitate some other approaches towards updating rankings, which we decided not to use in the end.
@@ -281,7 +273,7 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
     ##  Inputs are dictionaries, arrays and True/False statements.
     #print("old_subset:",new_subset)
     new_subset = downratings(downrating,new_subset)
-    new_subset = transform_ratings(new_subset,logratings,precision)
+    new_subset = transform_ratings(new_subset,logratings)
     i=0
     new_array = []
     israting = True
@@ -408,12 +400,12 @@ def update_reputation(reputation,new_array,default_reputation):
     new_ids = []
     while i<len(new_array):
         ### If we already have it, we do nothing in this function...
-        if new_array[i][0] in reputation:
-            pass
-        ## If we do not have this record, we set it default reputation.
-        else:
-            new_ids.append(new_array[i][0])
-            reputation[new_array[i][0]] = default_reputation
+        #if new_array[i][0] in reputation:
+        #    pass
+        ### If we do not have this record, we set it default reputation.
+        #else:
+        #    new_ids.append(new_array[i][0])
+        #    reputation[new_array[i][0]] = default_reputation
         ### The rest is also checking for "to" transactions and doing the same thing there..
         if new_array[i][1] in reputation:
             pass
@@ -425,11 +417,10 @@ def update_reputation(reputation,new_array,default_reputation):
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRanks=True,weighting=True,
+def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,normalizedRanks=True,weighting=True,
                                    liquid = False,logratings=False,logranks=True) :
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
-    #print("All transactions",new_array)
     mys = {}
     start1 = time.time()
     i = 0
@@ -445,7 +436,6 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
     i = 0
     to_array = np.array(to_array)
     ### Formula differs based on conditions. If ratings are included, formula includes ratings, then there are weights, etc.
-    #print("new_array",new_array)
     if rating:
         while i<len(unique_ids):
             amounts = []
@@ -456,9 +446,9 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             k=0 
             for k in get_subset:
                 if weighting:
-                    amounts.append(new_array[k][3] * weight_calc(new_array[k][2]) * rater_reputation(reputation,new_array[k][0],liquid=liquid))
+                    amounts.append(new_array[k][3] * weight_calc(new_array[k][2]) * rater_reputation(reputation,new_array[k][0],default,liquid=liquid)*100*precision**-1)#*100*precision**-1
                 else:
-                    amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],liquid=liquid))                 
+                    amounts.append(new_array[k][3] * rater_reputation(reputation,new_array[k][0],default,liquid=liquid)*100*precision**-1)#*100*precision**-1                 
             mys[unique_ids[i]] = sum(amounts)
 #
             i+=1
@@ -470,17 +460,15 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,normalizedRank
             #get_subset = where(to_array,unique_ids[i]) 
             k=0 
             for k in get_subset:
+                
                 if weighting:
-                    amounts.append(weight_calc(new_array[k][2]) * rater_reputation(reputation,new_array[k][0],liquid=liquid))
+                    amounts.append(weight_calc(new_array[k][2]) * rater_reputation(reputation,new_array[k][0],default,liquid=liquid)*100*precision**-1)#*100*precision**-1
                 else:
-                    amounts.append(rater_reputation(reputation,new_array[k][0],liquid=liquid))###new_array[k][2] is Amount, new_array[k][3] is rating
+                    amounts.append(rater_reputation(reputation,new_array[k][0],default,liquid=liquid)*100*precision**-1)###*100*precision**-1
                     
                 if k==len(to_array)-1:
                     break             
-            mys[unique_ids[i]] = sum(amounts)
-#
-                ### FIX THIS: I think ratings are not taken into account...                
-          
+            mys[unique_ids[i]] = sum(amounts)          
             i+=1
 
     ### nr 5.
@@ -510,7 +498,7 @@ def normalized_differential(mys,normalizedRanks):
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
 
-def rater_reputation(previous_reputations,rater_id,liquid=False):
+def rater_reputation(previous_reputations,rater_id,default,liquid=False):
     ### Assigning rater reputation. It is not trivial; if liquid=True, then we can expect that 
     if rater_id in previous_reputations.keys():
         
@@ -519,7 +507,10 @@ def rater_reputation(previous_reputations,rater_id,liquid=False):
         else:
             rater_rep = previous_reputations[rater_id]
     else:
-        rater_rep = 1
+        if (not liquid):
+            rater_rep = 1
+        else:
+            rater_rep = default               
     return(rater_rep)
 
 def normalize_reputation(reputation,normalizedRanks=False):
