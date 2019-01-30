@@ -204,9 +204,6 @@ class PythonReputationService(object):
         new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
-        #if self.logratings:
-        #    for k in new_reputation.keys():
-        #        new_reputation[k] = np.log10(1+new_reputation[k])
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm)
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.decayed,self.conservatism)
@@ -318,7 +315,7 @@ class PythonReputationService(object):
         return(0)
         
     def __init__(self):
-        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.1, 'weighting': True, 'fullnorm': True,
+        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': True, 'update_period': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1),'decayed':0.0}
         self.reputation = {}
