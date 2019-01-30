@@ -160,23 +160,18 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.assertEqual( rs.set_parameters({'decayed':0.0}), 0 )
 		self.clear()
 		self.rate_3_days(dt1,dt2,dt3)
-		
-		# TODO fix PythonReputationService so it can pass the following
-		"""
+        
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt1,'until':dt1})
 		ratings = sorted(ratings, key=lambda elem: "%s %s" % (elem['from'], elem['to']))
-		#print(ratings)
 		self.assertEqual(len(ratings), 3)
 		self.assertEqual(ratings[0]['value'], 100)
 		self.assertEqual(ratings[1]['value'], 100)
 		self.assertEqual(ratings[2]['value'],  50)
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt2,'until':dt2})
-		#print(ratings)
 		self.assertEqual(len(ratings), 1)
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt3,'until':dt3})
-		#print(ratings)
 		self.assertEqual(len(ratings), 1)
-		"""
+		
 		
 		# TODO fix either PythonReputationService or AigentsAPIReputationService 
 		# so the raanks are rounded up consistently in the following block

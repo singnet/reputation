@@ -282,7 +282,9 @@ class PythonReputationService(object):
             results = []
             i = 0
             while i<len(self.ratings):
-                if self.ratings[i]['from'] in all_ids:
+                if type(self.ratings[i]) is list:
+                    self.ratings[i] = self.ratings[i][0]
+                if str(self.ratings[i]['from']) in all_ids:
                     if (self.ratings[i]['time'] >= since and self.ratings[i]['time'] <= until):
                         results.append(self.ratings[i])
                 if self.ratings[i]['to'] in all_ids:
