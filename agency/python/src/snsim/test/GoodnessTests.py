@@ -10,13 +10,13 @@ from collections import OrderedDict
 class GoodnessTests(unittest.TestCase):
 
     def setUp(self):
-        study_path = "../eightyPercentSolution.json"
+        study_path = "../test.json"
         self.softAssertionErrors = []
         with open(study_path) as json_file:
-            config = json.load(json_file, object_pairs_hook=OrderedDict)
-        error_path = "../" + config['parameters']["output_path"] + "error_log.txt"
-        self.t = config['tests']
-        self.error_log = open(error_path, "a+")
+            self.config = json.load(json_file, object_pairs_hook=OrderedDict)
+        self.error_path = "../" + self.config['parameters']["output_path"] + "error_log.txt"
+        self.t = self.config['tests']
+        self.error_log = open(self.error_path, "a+")
         self.transactions = OrderedDict()
         self.boolean_users = OrderedDict()
         self.users = OrderedDict()
@@ -24,9 +24,9 @@ class GoodnessTests(unittest.TestCase):
         self.codes = []
         for code, limits in self.t.items():
             self.codes.append(code)
-            users_path = "../" + config['parameters']["output_path"] +"users_" + code + ".tsv"
-            boolean_users_path = "../" + config['parameters']["output_path"] +"boolean_users_" + code + ".tsv"
-            transactions_path = "../" + config['parameters']["output_path"] +"transactions_" + code + ".tsv"
+            users_path = "../" + self.config['parameters']["output_path"] +"users_" + code + ".tsv"
+            boolean_users_path = "../" + self.config['parameters']["output_path"] +"boolean_users_" + code + ".tsv"
+            transactions_path = "../" + self.config['parameters']["output_path"] +"transactions_" + code + ".tsv"
             self.transactions[code] = pd.read_csv(transactions_path, "\t", header=None)
             self.boolean_users[code] = pd.read_csv(boolean_users_path, "\t", header=None)
             self.users[code] = pd.read_csv(boolean_users_path, "\t", header=None)
@@ -34,7 +34,6 @@ class GoodnessTests(unittest.TestCase):
     def tearDown(self):
         self.assertEqual([], self.softAssertionErrors)
         self.error_log.close()
-
 
     def is_honest(self,code,agent):
         this_agent = self.boolean_users[code][self.boolean_users[code][0]== agent]
@@ -69,8 +68,15 @@ class GoodnessTests(unittest.TestCase):
         # measure whether inequity occurs within a given boundsAn individual good agent is treated with equity if it
         # can engage in the economy in proportion to its talent.
 
+        self.error_log.write("\nFile:{0} ".format(self.error_path))
+        print("File:{0} ".format(self.error_path))
+        out_path = "../" + self.config['parameters']["output_path"] + "inequity_tests.tsv"
+        self.output_tsv = open(out_path, "w")
+        self.output_tsv.write("code\tinequity")
+
         for i, code in enumerate(self.codes):
             if code[0] == 'r':
+                self.output_tsv.write("\n{0}\t".format(code))
                 all_agents = self.boolean_users[code].iloc[:, 0]
                 honest_agents = [agent for agent in all_agents if
                                  self.is_honest(code, agent)] if all_agents is not None and len(
@@ -88,6 +94,7 @@ class GoodnessTests(unittest.TestCase):
                 else:
                     inequity = sys.maxsize
 
+                self.output_tsv.write("{0}".format(inequity))
                 self.error_log.write("\ntime: {0} code: {1} inequity: {2} lower: {3} upper: {4}".format(
                     datetime.datetime.now(), code, inequity, self.t[code]['inequity']['lower'],self.t[code]['inequity']['upper']))
 
@@ -102,6 +109,8 @@ class GoodnessTests(unittest.TestCase):
                     self.assertLessEqual(inequity, self.t[code]['inequity']['upper'])
                 except AssertionError as e:
                     self.softAssertionErrors.append(str(e))
+
+        self.output_tsv.close()
 
 
 if __name__ == '__main__':

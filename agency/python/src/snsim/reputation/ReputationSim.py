@@ -11,22 +11,24 @@ import datetime as dt
 import time
 import operator
 from scipy.stats import truncnorm
-from reputation import ReputationAgent
+from reputation.ReputationAgent import ReputationAgent
 import math
 from reputation import Aigents
 from random import shuffle
+from aigents_reputation_api import AigentsAPIReputationService
 
 
 from mesa import Model
 from mesa.time import StagedActivation
 
 class ReputationSim(Model):
-    def __init__(self, study_path='study.json', opened_config= False):
+    def __init__(self,study_path='study.json',rs=None,  opened_config= False):
 
         if opened_config:
             config = study_path
         else:
             with open(study_path) as json_file:
+
                 config = json.load(json_file, object_pairs_hook=OrderedDict)
 
         #save the config with the output
@@ -47,6 +49,8 @@ class ReputationSim(Model):
         outfile.close()
         self.transaction_report = self.transaction_report()
         self.market_volume_report = self.market_volume_report()
+        self.error_log = self.error_log() if self.parameters['error_log'] else None
+
         self.seconds_per_day = 86400
 
 
@@ -59,11 +63,15 @@ class ReputationSim(Model):
 
         self.initial_epoch = self.get_epoch(self.parameters['initial_date'])
         self.final_epoch = self.get_epoch(self.parameters['final_date'])
+        self.since = self.get_datetime(self.parameters['initial_date'])
+        self.daynum = 0
         self.next_transaction = 0
         self.end_tick = self.get_end_tick()
         self.goodness_distribution = self.get_truncated_normal(*tuple(self.parameters['goodness']) )
         self.fire_supplier_threshold_distribution = self.get_truncated_normal(
             *tuple(self.parameters['fire_supplier_threshold']))
+        self.reputation_system_threshold_distribution = self.get_truncated_normal(
+            *tuple(self.parameters['reputation_system_threshold']))
         self.forget_discount_distribution = self.get_truncated_normal(
             *tuple(self.parameters['forget_discount']))
         self.criminal_transactions_per_day_distribution = self.get_truncated_normal(
@@ -186,6 +194,7 @@ class ReputationSim(Model):
                 agent_count += 1
 
         self.print_agent_goodness()
+        self.print_agent_goods()
 
         self.good2good_agent_cumul_completed_transactions  = 0
         self.good2good_agent_cumul_total_price = 0
@@ -197,7 +206,23 @@ class ReputationSim(Model):
         self.bad2bad_agent_cumul_completed_transactions = 0
         self.bad2bad_agent_cumul_total_price = 0
 
+        self.reputation_system = rs
+        self.ranks = {}
+        if not self.parameters['observer_mode']:
+            self.reset_reputation_system()
+        self.rank_history = self.rank_history()
         self.reset_stats()
+        #print ('Last line of ReputationSim __init__')
+
+
+    def reset_reputation_system(self):
+        if self.reputation_system:
+
+            self.reputation_system.clear_ratings()
+            self.reputation_system.clear_ranks()
+            self.reputation_system.set_parameters({'fullnorm': True})
+
+
 
     def reset_stats(self):
         self.good2good_agent_completed_transactions  = 0
@@ -226,6 +251,30 @@ class ReputationSim(Model):
         file = open(path, "w")
         return(file)
 
+    def error_log(self):
+        #path = self.parameters['output_path'] + 'transactions_' +self.parameters['param_str'] + self.time[0:10] + '.tsv'
+        path = self.parameters['output_path'] + 'errorLog_' +self.parameters['param_str'] [:-1] + '.tsv'
+        file = open(path, "w")
+        return(file)
+
+    def rank_history(self):
+        #path = self.parameters['output_path'] + 'transactions_' +self.parameters['param_str'] + self.time[0:10] + '.tsv'
+        path = self.parameters['output_path'] + 'rankHistory_' +self.parameters['param_str'] [:-1] + '.tsv'
+        file = open(path, "w")
+        file.write('time\t')
+        for i in range(len(self.schedule.agents)):
+            file.write('{0}\t'.format(self.schedule.agents[i].unique_id))
+        file.write('\n')
+        return(file)
+
+    def write_rank_history_line(self):
+        time = round(self.schedule.time)
+        self.rank_history.write('{0}\t'.format(time))
+        for i in range(len(self.schedule.agents)):
+            id = str(self.schedule.agents[i].unique_id)
+            rank = self.ranks[id] if id in self.ranks else -1
+            self.rank_history.write('{0}\t'.format(rank))
+        self.rank_history.write('\n')
 
     def market_volume_report(self):
         #path = self.parameters['output_path'] + 'transactions_' +self.parameters['param_str'] + self.time[0:10] + '.tsv'
@@ -258,9 +307,17 @@ class ReputationSim(Model):
         #date_time = '29.08.2011 11:05:02'
         pattern = '%d.%m.%Y %H:%M:%S'
         epoch = int(time.mktime(time.strptime(date_time, pattern)))
+
         return epoch
 
 
+    def get_datetime(self, date_time):
+        #date_time = '29.08.2011 11:05:02'
+        pattern = '%d.%m.%Y %H:%M:%S'
+        date_tuple = time.strptime(date_time, pattern)
+        date = dt.date(date_tuple[0], date_tuple[1], date_tuple[2])
+
+        return date
 
     def get_next_transaction(self):
         if not self.transaction_numbers:
@@ -268,6 +325,25 @@ class ReputationSim(Model):
             shuffle( self.transaction_numbers)
         self.next_transaction = self.transaction_numbers.pop()
         return self.next_transaction
+
+    def send_trade_to_reputation_system(self, from_agent, to_agent, payment, tags,  payment_unit='', parent = '',rating = '',
+                                      type = 'payment'):
+        if self.reputation_system is not None:
+            value_val = float(rating if rating else payment)
+            date = self.since + dt.timedelta(days=self.daynum)
+            if rating:
+                self.reputation_system.put_ratings([{'from': from_agent, 'type': type, 'to': to_agent,
+                                                              'value': value_val,'weight':int(payment), 'time': date}])
+                if self.error_log:
+                    self.error_log.write(str([{'from': from_agent, 'type': type, 'to': to_agent,
+                                                                    'value': value_val,'weight':int(payment), 'time': date}])+ "\n")
+
+            else:
+                self.reputation_system.put_ratings([{'from': from_agent, 'type': type, 'to': to_agent,
+                                                     'value': value_val, 'time': date}])
+                if self.error_log:
+                    self.error_log.write(str([{'from': from_agent, 'type': type, 'to': to_agent,
+                                           'value': value_val, 'time': date}]) + "\n")
 
     def print_transaction_report_line(self, from_agent, to_agent, payment, tags,  payment_unit='', parent = '',rating = '',
                                       type = 'payment'):
@@ -397,21 +473,66 @@ class ReputationSim(Model):
         outfile.close()
 
 
+    def print_agent_goods (self, userlist = [-1]):
+        #output a list of given users, sorted by goodness.  if the first item of the list is -1, then output all users
+
+        #path = self.parameters['output_path'] + 'users_' + self.parameters['param_str'] + self.time[0:10] + '.tsv'
+        path = self.parameters['output_path'] + 'goods_' + self.parameters['param_str'][: -1]  + '.tsv'
+
+        with open(path, 'w') as outfile:
+            agents = self.schedule.agents if userlist and userlist[0] == -1 else userlist
+            for agent in agents:
+                outlist = []
+                line = []
+                line.append(str(agent.unique_id))
+                for good,suplist in self.suppliers.items():
+                    line.append(good if good in agent.supplying else "")
+                outlist.append(line)
+            sorted_outlist = sorted(outlist,  key=operator.itemgetter(1), reverse=True)
+            for line in sorted_outlist:
+                for item in line:
+                    outfile.write("{0}\t".format(item))
+                outfile.write("\n")
+        outfile.close()
+
+
     def get_truncated_normal(self,mean=0.5, sd=0.2, low=0, upp=1.0):
         rv = truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
         return rv
 
     def step(self):
+        present = round(self.schedule.time)
+        print('time {0}'.format(present))
+        if self.error_log:
+            self.error_log.write('time {0}\n'.format(self.schedule.time))
         """Advance the model by one step."""
         self.schedule.step()
         self.print_market_volume_report_line()
-        self.market_volume_report.flush()
+        #self.market_volume_report.flush()
+        if self.error_log:
+            self.error_log.flush()
+        self.daynum = round(self.schedule.time)
+        prev_date = self.since + dt.timedelta(days=(self.daynum - 1))
+        if self.reputation_system:
+            if self.daynum % self.parameters['ranks_update_period'] == 0:
+                self.reputation_system.update_ranks(prev_date)
+            #if present > 60:
+                self.ranks = self.reputation_system.get_ranks_dict({'date':prev_date})
+            self.write_rank_history_line()
+            if self.error_log:
+                self.error_log.write("ranks: {0}\n".format(str(self.ranks)))
+
+
 
     def go(self):
         while self.schedule.time < self.get_end_tick():
             self.step()
         self.market_volume_report.close()
-        self.market_volume_report.close()
+        self.transaction_report.close()
+        if self.error_log:
+            self.error_log.close()
+        if self.rank_history:
+            self.rank_history.close()
 
 def set_param(configfile, setting):
     # setting is OrderedDict, perhaps nested before val is set.  example :  {"prices": {"milk": [2, 0.001, 0, 1000] }}
@@ -427,7 +548,7 @@ def set_param(configfile, setting):
         new_val = new_val[nextKey]
     old_old_val[nextKey] = new_val
 
-def call( combolist, configfile, param_str = ""):
+def call( combolist, configfile, rs=None,  param_str = ""):
     if combolist:
         mycombolist = copy.deepcopy(combolist)
         level,settings = mycombolist.popitem(last = False)
@@ -435,14 +556,21 @@ def call( combolist, configfile, param_str = ""):
             myconfigfile = copy.deepcopy(configfile)
             set_param(myconfigfile, setting)
             my_param_str = param_str + name + "_"
-            call(mycombolist, myconfigfile, my_param_str)
+            #if not (
+                    #my_param_str == 'r_1000_0.1_' # or
+                    #my_param_str == 'p_1000_0.1_' or
+                    #my_param_str == 'r_100_0.1_' #or
+                    #my_param_str == 'p_100_0.1_'
+            #): #for sttarting in the middle of a batch run
+
+            call(mycombolist, myconfigfile, rs, my_param_str)
     else:
         configfile['parameters']['seed'] = configfile['parameters']['seed'] + 1
         set_param( configfile, {"param_str": param_str })
-        repsim = ReputationSim(configfile, opened_config = True)
+        repsim = ReputationSim(study_path =configfile, rs=rs, opened_config = True)
+        print ("{0} : {1}  port:{2} ".format(configfile['parameters']['output_path'],param_str,configfile['parameters']['port']))
         repsim.go()
-        aigent = Aigents(configfile, opened_config = True)
-        aigent.go()
+
 
 def main():
     print (os.getcwd())
@@ -450,7 +578,28 @@ def main():
     with open(study_path) as json_file:
         config = json.load(json_file, object_pairs_hook=OrderedDict)
         if config['batch']['on']:
-            call(config['batch']['parameter_combinations'], config)
+            now = dt.datetime.now()
+            epoch = now.strftime('%s')
+            dirname = 'test'+ epoch
+            rs = None if config['parameters']['observer_mode'] else AigentsAPIReputationService(
+                'http://localtest.com:{0}/'.format(config['parameters']['port']), 'john@doe.org','q', 'a', False, dirname, True)
+            if rs is not None:
+                rs.set_parameters({
+                    'precision': config['batch']['reputation_parameters']['precision'],
+                    'default': config['batch']['reputation_parameters']['default'],
+                    'conservatism':config['batch']['reputation_parameters']['conservatism'],
+                    'fullnorm':config['batch']['reputation_parameters']['fullnorm'],
+                    'weighting': config['batch']['reputation_parameters']['weighting'],
+                    'logratings': config['batch']['reputation_parameters']['logratings'] ,
+                    'decayed': config['batch']['reputation_parameters']['decayed'] ,
+                    'liquid': config['batch']['reputation_parameters']['liquid'],
+                     'logranks': config['batch']['reputation_parameters']['logranks'] ,
+                     'downrating': config['batch']['reputation_parameters']['downrating'],
+                     'update_period': config['batch']['reputation_parameters']['update_period'],
+                     'aggregation': config['batch']['reputation_parameters']['aggregation']
+
+                })
+            call(config['batch']['parameter_combinations'], config,rs=rs)
         else:
             repsim = ReputationSim(sys.argv[1]) if len(sys.argv) > 1 else ReputationSim()
             repsim.go()
