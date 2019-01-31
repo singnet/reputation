@@ -34,7 +34,7 @@ from aigents_reputation_api import *
 # just import json
 # with open(study_path) as json_file:
 # 	config = json.load(json_file, object_pairs_hook=OrderedDict)
-class TestAigentsAPIReputationService(TestReputationServiceParameters,unittest.TestCase):
+class TestAigentsAPIReputationService(TestReputationServiceParametersBase,unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls):
@@ -58,15 +58,17 @@ if __name__ == '__main__':
     unittest.main()
 
 """
-#check Aigents Java RS
-x = TestAigentsAPIReputationService()
-x.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-x.test_decayed()
-del x.rs
+from reputation_service_api import *
 
 #check Python RS
-from reputation_service_api import *
+x = TestAigentsAPIReputationService()
+
+#check Aigents Java RS
+x.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+x.test_precision()
+del x.rs
+
 x.rs = PythonReputationService()
-x.test_decayed()
+x.test_precision()
 del x.rs
 """
