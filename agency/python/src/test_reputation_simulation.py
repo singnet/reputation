@@ -30,6 +30,7 @@ import subprocess
 import os
 
 from reputation_scenario import reputation_simulate 
+from aigents_reputation_api import *
 from reputation_service_api import *
 
 class TestReputationSimulationBase(object):
@@ -108,7 +109,7 @@ class TestReputationSimulationAigents(TestReputationSimulationBase,unittest.Test
 class TestReputationSimulationPython(TestReputationSimulationBase,unittest.TestCase):
 
 	def setUp(self):
-		self.rs = PythonReputationService()
+		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 		self.rs.set_parameters({'weighting':True,'logratings':False})
 
 
