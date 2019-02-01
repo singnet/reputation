@@ -30,7 +30,6 @@ import subprocess
 import os
 
 from reputation_scenario import reputation_simulate 
-from aigents_reputation_api import *
 from reputation_service_api import *
 
 class TestReputationSimulationBase(object):
@@ -98,7 +97,8 @@ class TestReputationSimulationAigents(TestReputationSimulationBase,unittest.Test
 		os.system('kill -9 $(ps -A -o pid,args | grep java | grep \'net.webstructor.agent.Farm\' | grep 1180 | awk \'{print $1}\')')
 
 	def setUp(self):
-		self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+		#self.rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+		self.rs = PythonReputationService()
 		self.rs.set_parameters({'weighting':True,'logratings':False})
 
 	def tearDown(self):
