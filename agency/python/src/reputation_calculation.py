@@ -439,6 +439,7 @@ def logratings_precision(rating,lograting,precision,weighting):
                 new_rating = rating[2]/precision
             else:
                 new_rating = rating[2] * rating[3]/precision
+    new_rating = round(new_rating) #TODO see if we need to keep this rounding which is needed to sync-up with Aigents Java reputation system
     return(new_rating)
 
 ### Get updated reputations, new calculations of them...

@@ -131,9 +131,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 
 	def rate_3_days(self,dt1,dt2,dt3,verbose=False):
 		rs = self.rs
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt1}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':100,'weight':None,'time':dt1}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':50,'weight':None,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':1,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':100,'weight':1,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':50,'weight':1,'time':dt1}]), 0 )
 		self.assertEqual(rs.update_ranks(dt1), 0)
 		if verbose:
 			result, ranks = rs.get_ranks({'date':dt1})
@@ -161,25 +161,19 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.clear()
 		self.rate_3_days(dt1,dt2,dt3)
 		
-		# TODO fix PythonReputationService so it can pass the following
-		"""
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt1,'until':dt1})
 		ratings = sorted(ratings, key=lambda elem: "%s %s" % (elem['from'], elem['to']))
-		#print(ratings)
 		self.assertEqual(len(ratings), 3)
 		self.assertEqual(ratings[0]['value'], 100)
 		self.assertEqual(ratings[1]['value'], 100)
 		self.assertEqual(ratings[2]['value'],  50)
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt2,'until':dt2})
-		#print(ratings)
 		self.assertEqual(len(ratings), 1)
 		r, ratings = rs.get_ratings({'ids':['1'],'since':dt3,'until':dt3})
-		#print(ratings)
 		self.assertEqual(len(ratings), 1)
-		"""
 		
 		# TODO fix either PythonReputationService or AigentsAPIReputationService 
-		# so the raanks are rounded up consistently in the following block
+		# so the ranks are rounded up consistently in the following block
 		
 		ranks = rs.get_ranks_dict({'date':dt3})
 		#print(ranks)
@@ -401,20 +395,22 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		dt2 = datetime.date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':1,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':1,'time':dt2}]), 0 )
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(len(ranks), 2)
 		self.assertEqual(ranks['3'], 50) # because its logarithmic differential is normalized down to 0
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':None,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':None,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':1,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':1,'time':dt2}]), 0 )
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(len(ranks), 2)
 		self.assertEqual(ranks['3'], 97) # because its logarithmic differential is not normalized down to 0
+
+	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
 	def test_logratings(self):
 		print('Testing '+type(self).__name__+' logratings')
 		rs = self.rs
@@ -438,8 +434,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.assertEqual(len(ranks), 3)
 		self.assertEqual(ranks['3'], 50)
 
-class TestReputationServiceParameters(TestReputationServiceParametersBase):
-	
 	#self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
 	def test_precision(self):
 		print('Testing '+type(self).__name__+' precision')
@@ -450,21 +444,39 @@ class TestReputationServiceParameters(TestReputationServiceParametersBase):
 		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value': 1,'weight':None,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'5','type':'rating','to':'2','value': 9,'weight':None,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'6','type':'rating','to':'3','value':99,'weight':None,'time':dt2}]), 0 )
+		#TODO Aigents RS returns only 1 here - need to fix to support multiple id-s in request
+		r, ratings = rs.get_ratings({'ids':['4','5','6'],'since':dt2,'until':dt2})
+		"""
+		1) Applying log ratings:
+		4->1: v = 1, p = 0.1, v' = 10, v'' = log10(10+1) = 1.0413926851582249
+		5->2: v = 9, p = 0.1, v' = 90, v'' = log10(90+1) = 1.9590413923210936
+		6->3: v = 99, p = 0.1, v' = 990, v'' = log10(90+1) = 2.9960736544852753
+		"""
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(len(ranks), 3) # since only 3 agents (1,2,3) are rated, we expect to see only in ranks only them
-		self.assertEqual(ranks['2'], 50)
+		self.assertEqual(ranks['3'], 100)
+		self.assertEqual(ranks['2'], 79)
+		self.assertEqual(ranks['1'], 50)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'precision':10,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':False,'logratings':True,'liquid':False}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value': 1,'weight':None,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'5','type':'rating','to':'2','value': 9,'weight':None,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'6','type':'rating','to':'3','value':99,'weight':None,'time':dt2}]), 0 )
+		r, ratings = rs.get_ratings({'ids':['4','5','6'],'since':dt2,'until':dt2})
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(len(ranks), 3) # since only 3 agents (1,2,3) are rated, we expect to see only in ranks only them
+		self.assertEqual(ranks['3'], 100)
 		self.assertEqual(ranks['2'], 0)
+		self.assertEqual(ranks['1'], 0)
 
-	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
+
+class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
+
+	def test_aggregation(self):
+		#TODO @nejc9921 - implement this
+		pass	
 
 	#TODO after when implemented
 	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period

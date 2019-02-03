@@ -137,6 +137,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			item = ' from ' + str(rating['from']) + ' type ' + rating['type'] + ' to ' + str(rating['to']) +\
 					' value ' + str(rating['value']) + (' weight ' + str(rating['weight']) if 'weight' in rating and rating['weight'] is not None else '') + ' time ' + str(rating['time'])
 			cmd += item
+		#print(cmd)
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 
