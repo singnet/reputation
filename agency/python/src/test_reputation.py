@@ -474,9 +474,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 
 
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
-	def clear(self):
-		self.assertEqual( self.rs.clear_ratings(), 0 )
-		self.assertEqual( self.rs.clear_ranks(), 0 )
         
 	def test_aggregation(self):
 		rs = self.rs
