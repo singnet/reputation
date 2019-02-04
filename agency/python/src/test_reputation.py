@@ -327,6 +327,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'], 100)
 		self.assertEqual(ranks['2'], 100)	
+        
 
 	#self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
 	def test_downrating(self):
@@ -473,11 +474,31 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 
 
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
-
+        
 	def test_aggregation(self):
-		#TODO @nejc9921 - implement this
-		pass	
-
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		dt2 = datetime.date(2018, 1, 2)
+		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],60)
+		self.clear()
+		rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':True,'fullnorm':False})
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+        
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],68)    
+		#pass
+        
 	#TODO after when implemented
+    ### Comment: I believe those are already in defaults
 	#self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
 	#self.parameters['logranks'] = True # applies log10 to ranks
