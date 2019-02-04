@@ -264,8 +264,8 @@ def weight_calc(value,lograting,precision,weighting):
 ### to be used in the future.
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
 ### need_occurance=False.
-def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,need_occurance=False,
-                       logratings=False,downrating=False):
+def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation=False,need_occurance=False,
+                       logratings=False,downrating=False,weighting=True):
     ### need_occurance is set to false by default and might even be removed for good. It was made in order to
     ### facilitate some other approaches towards updating rankings, which we decided not to use in the end.
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
@@ -320,7 +320,6 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
             else:
                 first_occurance[uniques[i]] = 0
             i+=1
-    
     if temporal_aggregation:
         from_data = []
         to_data = to_array
@@ -360,7 +359,7 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
         ratings = {}
         while i<len(merged):
             if merged[i] in already_used2.keys():
-                amounts[merged[i]] = amounts[merged[i]] + weight_calc(new_array[i][2])             
+                amounts[merged[i]] = amounts[merged[i]] + weight_calc(new_array[i],logratings,precision,weighting)             
                 if israting:
                     ratings[merged[i]] = ratings[merged[i]] + new_array[i][3]
 
@@ -368,7 +367,7 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
                 
             else:
                 already_used2[merged[i]]=1
-                amounts[merged[i]] = weight_calc(new_array[i][2])
+                amounts[merged[i]] = weight_calc(new_array[i],logratings,precision,weighting)
                 if israting:
                     ratings[merged[i]] = new_array[i][3]                        
             i+=1
@@ -388,7 +387,6 @@ def reputation_calc_p1(new_subset,first_occurance,temporal_aggregation=False,nee
                 
                 to_array2.append(to_array[i])
             i+=1
-               
         new_array = new_array2
         to_array = to_array2
     return(new_array,dates_array,to_array,first_occurance)
