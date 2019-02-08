@@ -1,15 +1,21 @@
 # Reputation
 
-This repository contains early pre-alpha experiments for Reputation system of SingularityNET.
+This repository contains early pre-alpha proof-of-concept developments and experiments for Reputation system of SingularityNET.
 
-At the moment, the work is in very early stage.
+At the moment, the work is in early stage.
 
 Any source forks and contributions make sense only in case if are made in tight collaboration with SingularityNET.
 
 Any production use and use other than for experimental purposes is not encouraged and can be done only at ones own risk.
 
-For more information, see [Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
+## Contents
 
+* Python [Reputaion Agency Service wrapper](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputaion engine
+* Python [Reputaion Agency Service command line tool](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputaion engine
+* Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_service_api.py) 
+* Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_scenario.py)
+* Python [extended simulation framework](https://github.com/singnet/reputation/tree/master/agency/python/src/snsim)
+* Auxiliary [scripts for SigluarityNET Adapter integration](https://github.com/singnet/reputation/tree/master/scripts)
 
 ## Development 
 
@@ -18,6 +24,8 @@ These instructions are intended to facilitate the development and testing of Sin
 ### Prerequisites
 
 * Python/Pip
+* Java 6 or later (needed for developments based on Aigents Java)
+* Pandas (needed for native Python developments)
 
 ### Installing
 
@@ -27,19 +35,11 @@ $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
 
-* Compile [Protocol Buffers](https://developers.google.com/protocol-buffers/docs/downloads) and generate Python stubs from proto defintiion
-```bash
-$ ./scripts/compile-proto
-```
+## Resources
 
-The python stubs are placed in a freshly created `./protos` folder.
-This script use `pip` to install `grpcio-tools` and `protoc` compiler.
+For more information, see the following.
 
-
-
-
-
-
-
-
-
+[Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
+[A Reputation System for Artificial Societies](https://arxiv.org/abs/1806.07342) paper
+[Reputation System for Online Communities](https://arxiv.org/abs/1811.08149) paper (in Russian)
+[Reputation Consensus and System for Liquid Democracy Governance](https://www.youtube.com/watch?v=5Pi973JPbZA) video
