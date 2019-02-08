@@ -27,7 +27,7 @@ from reputation_service_api import *
 ### We measure time spent:
 start = time.time()
 ## Define our reputation_system class
-reputation_system = PythonReputationService()
+reputation_system = AigentsAPIReputationService()
 ### Set parameters!
 params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
          'liquid': False, 'logranks': False, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1,
