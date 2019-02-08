@@ -31,7 +31,7 @@ from reputation_base_api import *
 Reputation Service native implementation in Python
 """        
 
-class AigentsAPIReputationService(ReputationServiceBase):
+class PythonReputationService(ReputationServiceBase):
     ### This function allows us to set up the parameters.
     ### Setting up the way we do in Anton's recommendation.
     ### update_period is how many days we jump in one period... We can adjust it...
