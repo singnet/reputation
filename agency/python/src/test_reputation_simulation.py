@@ -108,7 +108,7 @@ class TestReputationSimulationAigents(TestReputationSimulationBase,unittest.Test
 class TestReputationSimulationPython(TestReputationSimulationBase,unittest.TestCase):
 
 	def setUp(self):
-		self.rs = AigentsAPIReputationService()
+		self.rs = PythonReputationService()
 		self.rs.set_parameters({'weighting':True,'logratings':False})
 
 
