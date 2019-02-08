@@ -39,7 +39,7 @@ $ cd reputation
 
 For more information, see the following.
 
-[Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
-[A Reputation System for Artificial Societies](https://arxiv.org/abs/1806.07342) paper
-[Reputation System for Online Communities](https://arxiv.org/abs/1811.08149) paper (in Russian)
-[Reputation Consensus and System for Liquid Democracy Governance](https://www.youtube.com/watch?v=5Pi973JPbZA) video
+* [Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
+* [A Reputation System for Artificial Societies](https://arxiv.org/abs/1806.07342) paper
+* [Reputation System for Online Communities](https://arxiv.org/abs/1811.08149) paper (in Russian)
+* [Reputation Consensus and System for Liquid Democracy Governance](https://www.youtube.com/watch?v=5Pi973JPbZA) video
