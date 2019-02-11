@@ -10,8 +10,8 @@ Any production use and use other than for experimental purposes is not encourage
 
 ## Contents
 
-* Python [Reputaion Agency Service wrapper](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputaion engine
-* Python [Reputaion Agency Service command line tool](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputaion engine
+* Python [Reputation Agency Service wrapper](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
+* Python [Reputation Agency Service command line tool](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
 * Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_service_api.py) 
 * Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_scenario.py)
 * Python [extended simulation framework](https://github.com/singnet/reputation/tree/master/agency/python/src/snsim)
@@ -39,7 +39,7 @@ $ cd reputation
 
 For more information, see the following.
 
-[Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
-[A Reputation System for Artificial Societies](https://arxiv.org/abs/1806.07342) paper
-[Reputation System for Online Communities](https://arxiv.org/abs/1811.08149) paper (in Russian)
-[Reputation Consensus and System for Liquid Democracy Governance](https://www.youtube.com/watch?v=5Pi973JPbZA) video
+* [Reputation System Design for SingularityNET](https://blog.singularitynet.io/reputation-system-design-for-singularitynet-8b5b61e8ed0e)
+* [A Reputation System for Artificial Societies](https://arxiv.org/abs/1806.07342) paper
+* [Reputation System for Online Communities](https://arxiv.org/abs/1811.08149) paper (in Russian)
+* [Reputation Consensus and System for Liquid Democracy Governance](https://www.youtube.com/watch?v=5Pi973JPbZA) video
