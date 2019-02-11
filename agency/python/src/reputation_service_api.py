@@ -25,13 +25,13 @@
 import abc
 from reputation_service_api import *
 from reputation_calculation import *
-
+from reputation_base_api import *
 
 """
 Reputation Service native implementation in Python
 """        
 
-class PythonReputationService(object):
+class PythonReputationService(ReputationServiceBase):
     ### This function allows us to set up the parameters.
     ### Setting up the way we do in Anton's recommendation.
     ### update_period is how many days we jump in one period... We can adjust it...
@@ -196,8 +196,8 @@ class PythonReputationService(object):
                 print("if we only have payments, we have no ratings. Therefore downratings cannot be True. Setting them to False")
                 self.downrating=False
         
-        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,
-                                                                             self.temporal_aggregation,False,self.logratings,self.downrating)  
+        array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
+                                                                             self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
         since = self.date - timedelta(days=self.update_period)      
@@ -228,12 +228,12 @@ class PythonReputationService(object):
         ### Below is not needed in our case.                 
             
     def put_ratings(self,ratings):
-        
         i = 0
         while i<len(ratings):
             ratings[i]['from'] = str(ratings[i]['from'])
             ratings[i]['to'] = str(ratings[i]['to'])
             i+=1
+
         if self.ratings == {}:
             self.ratings = ratings
         else:
