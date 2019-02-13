@@ -37,36 +37,110 @@ consumers = 1.0
 suppliers = 1.0
 
 #Unhealthy agent environment set
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
-
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
-
-#Semi-healthy agent environment set 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
-
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
-
-#Healthy agent environment set (default) 
 good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [801,1000], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
-
+bad_agent = {"range": [801,1000], "values": [10,100], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+"""
 start = time.time()
-rs = AigentsAPIReputationService('http://localtest.com:1188/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 print("Time spent Aigents:",time.time()-start)
-
+del rs
+"""
 start = time.time()
 rs = PythonReputationService()
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 print("Time spent Python:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Aigents:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:   
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Python:",time.time()-start)
+del rs
 
+#Semi-healthy agent environment set 
+good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [801,1000], "values": [5,50], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+"""
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+print("Time spent Aigents:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+print("Time spent Python:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Aigents:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:   
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Python:",time.time()-start)
+del rs
 
-#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+#Healthy agent environment set (default) 
+good_agent = {"range": [1,800], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [801,1000], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+"""
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+print("Time spent Aigents:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+print("Time spent Python:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Aigents:",time.time()-start)
+del rs
+"""
+start = time.time()
+rs = PythonReputationService()
+if rs is not None:
+    rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+print("Time spent Python:",time.time()-start)
+del rs
+

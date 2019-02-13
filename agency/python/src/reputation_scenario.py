@@ -250,4 +250,4 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 	if verbose:
 		print('Actual volumes and ratios:')
 
-	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume))
+	print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad',actual_good_to_bad_volume,'Good/Bad:',str(actual_good_volume/actual_bad_volume),'Bad/Good_to_Bad:',str(actual_bad_volume/actual_good_to_bad_volume),'LTS:',str(actual_good_to_bad_volume/actual_good_volume),'PFS:',str(actual_good_to_bad_volume/actual_bad_volume))
