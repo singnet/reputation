@@ -279,10 +279,16 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
         if 'value' in list(new_subset[i].keys()):
             ### put ratings in array. Note, that we don't always have information about rating, that is
             ### what ratings were given by specific customers.
-            new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['weight'],new_subset[i]['value']])
+            if 'weight' in new_subset[i].keys():
+                new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['weight'],new_subset[i]['value']])
+            else:
+                new_array.append([new_subset[i]['from'],new_subset[i]['to'],None,new_subset[i]['value']])
         else:
             israting = False
-            new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['weight']])
+            if 'weight' in new_subset[i].keys():
+                new_array.append([new_subset[i]['from'],new_subset[i]['to'],new_subset[i]['weight']])
+            else:
+                new_array.append([new_subset[i]['from'],new_subset[i]['to'],None])
         i+=1
     ### We make array of dates and transactions to specific agents.
     dates_array = []
