@@ -176,7 +176,8 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 	bad_agents_count = len(bad_agents)
 	good_agents_volume = good_agents_count * good_agents_transactions * good_agents_values[0]
 	bad_agents_volume = bad_agents_count * bad_agents_transactions * bad_agents_values[0]
-	code = ('r' if ratings else 'p') + '_' + str(round(good_agents_values[0]/bad_agents_values[0])) + '_' + str(good_agents_transactions/bad_agents_transactions) 
+	code = ('r' if ratings else 'p') + '_' + str(round(good_agents_values[0]/bad_agents_values[0])) + '_' + str(good_agents_transactions/bad_agents_transactions) \
+		+ (('rs' if rs.get_parameters()['weighting'] == True else 'nw') if rs is not None else '') 
 	transactions = 'transactions' + str(len(all_agents)) + '_' + code + '.tsv'
 	
 	if verbose:
