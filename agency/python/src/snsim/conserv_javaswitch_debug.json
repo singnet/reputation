@@ -176,7 +176,7 @@
       "weighting": true,
       "logratings": false,
       "decayed": 0.5,
-      "liquid": true,
+      "liquid": false,
       "logranks": false,
       "downrating": false,
       "update_period": 1,
