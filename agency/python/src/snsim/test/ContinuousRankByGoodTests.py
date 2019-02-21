@@ -242,6 +242,7 @@ class ContinuousRankByGoodTests(unittest.TestCase):
             goods2suppliers = OrderedDict()
             goods2market_volume = OrderedDict()
             suppliers2goods = OrderedDict()
+            suppliers2goods2market_volume = OrderedDict()
             self.transactions[code].sort_values(self.transactions[code].columns[1],inplace=True)
             suppliers = self.transactions[code].iloc[:,4].unique()
             consumers = self.transactions[code].iloc[:,3].unique()
@@ -251,6 +252,7 @@ class ContinuousRankByGoodTests(unittest.TestCase):
                 just_supplier1 = self.transactions[code][self.transactions[code].iloc[:,4] == supplier]
                 just_supplier = just_supplier1[just_supplier1.iloc[:,3].isin (honest_consumers)]
                 suppliers2goods[supplier]= set()
+                suppliers2goods2market_volume[supplier]={}
                 for good in goods:
                     #include just suppliers of honest customers, in the good
                     just_goods = just_supplier[just_supplier[11] == good]
@@ -261,6 +263,7 @@ class ContinuousRankByGoodTests(unittest.TestCase):
                         goods2suppliers[good].add(supplier)
                         price_col = 5 if code[0] == 'p' else 14
                         goodPerSupplierMV = just_goods[price_col].sum()
+                        suppliers2goods2market_volume[supplier][good] = goodPerSupplierMV
                         if good not in goods2market_volume:
                             goods2market_volume[good] = goodPerSupplierMV
                         else:
@@ -269,6 +272,7 @@ class ContinuousRankByGoodTests(unittest.TestCase):
                 self.goods_tsv.write("\n{0}\t{1}\t".format(code,supplier))
                 for good in goods:
                     self.goods_tsv.write("{0}\t".format(good))
+                    self.goods_tsv.write("{0}\t".format(suppliers2goods2market_volume[supplier][good]))
             sorted_agents = self.users[code].sort_values(self.users[code].columns[0])
             good2rmsd_continuous = OrderedDict()
             good2rmsdg_continuous = OrderedDict()

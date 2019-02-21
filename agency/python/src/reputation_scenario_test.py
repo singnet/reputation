@@ -21,42 +21,56 @@
 # SOFTWARE.
 
 # Reputation Scenario Test Data Generation
+import time
 
 import datetime
 from reputation_scenario import reputation_simulate
-from aigents_reputation_cli import AigentsCLIReputationService
+from reputation_service_api import *
 from aigents_reputation_api import AigentsAPIReputationService
 
-
 #TODO use any other Reputation Service here
-rs = None
-#rs = AigentsCLIReputationService('../../bin','./','testsim',False) # this one is very slow
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'testapi', True)
+#rs = None
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
 if rs is not None:
-	rs.set_parameters({'weighting':True,'fullnorm':True,'logratings':False,'downrating':True,'precision':0.01,'default':0.5,'conservatism':0.5,'decayed':0.0})
+    rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False})
 
-verbose = True
-days = 10
-consumers = 1.0 
-suppliers = 1.0
-	
+verbose = False
+days = 183
+consumers = 0.9 
+suppliers = 0.1
+
+
+#Very-very unhealthy agent environment set
+good_agent = {"range": [1,950], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [951,1000], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+
+#Very unhealthy agent environment set
+good_agent = {"range": [1,950], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [951,1000], "values": [50,500], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
+
 #Unhealthy agent environment set
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [9,10], "values": [10,100], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+good_agent = {"range": [1,950], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [951,1000], "values": [10,100], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
 
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
 
 #Semi-healthy agent environment set 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [9,10], "values": [5,50], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+good_agent = {"range": [1,950], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [951,1000], "values": [5,50], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
 
 #Healthy agent environment set (default) 
-good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": suppliers, "consumers": consumers}
+good_agent = {"range": [1,950], "values": [100,1000], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": [951,1000], "values": [1,10], "transactions": 10, "suppliers": suppliers, "consumers": consumers}
 
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 #reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, False, rs, verbose)
