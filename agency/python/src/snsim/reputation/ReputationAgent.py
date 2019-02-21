@@ -222,10 +222,15 @@ class ReputationAgent(Agent):
                     winner = int(over_threshold[roll])
 
             else:
-                # thresholded random, using the reputation system only
+                # thresholded random, using the reputation system AND past experience
+
+                under_threshold = set( [key for key, ratings_tuple in
+                                            self.personal_experience[good].items(
+                                            ) if ratings_tuple[1] <= self.fire_supplier_threshold]
+                                       )if good in self.personal_experience else set()
                 over_threshold = [agent for agent, rating in self.model.ranks.items() if
                                   rating > self.reputation_system_threshold and good in self.model.schedule.agents[
-                                      int(agent)].supplying]
+                                      int(agent)].supplying and agent not in under_threshold]
                 if len(over_threshold):
                     roll = np.random.randint(0, len(over_threshold))
                     winner = int(over_threshold[roll])
@@ -266,10 +271,13 @@ class ReputationAgent(Agent):
                                 winner = key
                 else:
 
+                    under_threshold = set([key for key, ratings_tuple in
+                                           self.personal_experience[good].items(
+                                           ) if  ratings_tuple[1] <= self.fire_supplier_threshold])if good in self.personal_experience else set()
                     non_criminal_experiences = {int(agent): rating for agent, rating in self.model.ranks.items() if
                                                 rating > self.reputation_system_threshold and good in
                                                 self.model.schedule.agents[int(agent)
-                                                ].supplying}
+                                                ].supplying and agent not in under_threshold}
                     ratings_sum = sum([rating for key, rating in non_criminal_experiences.items()])
                     roll = random.uniform(0, ratings_sum)
                     cumul = 0
@@ -288,6 +296,8 @@ class ReputationAgent(Agent):
 
         if self.needs:
             good = self.needs.pop(False)
+
+            merchandise_recieved = False
 
             for i in range(self.multiplier):
 
@@ -374,6 +384,8 @@ class ReputationAgent(Agent):
                         if self.good:
 
                             perception, rating = self.rate(supplier)
+                            if self.model.schedule.agents[supplier].good:
+                                merchandise_recieved = True
                             self.update_personal_experience(good, supplier, perception)
                             if self.p['include_ratings']:
                                 self.model.print_transaction_report_line(self.unique_id,supplier,
@@ -417,7 +429,7 @@ class ReputationAgent(Agent):
                             for bad_supplier in bad_suppliers:
                                 supplierlist.remove(bad_supplier)
 
-
+            #if merchandise_recieved:  #commented out for unrestricted
             self.days_until_shop[good]= self.shopping_pattern[good]
 
     def best_rating(self):
