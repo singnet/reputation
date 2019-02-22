@@ -16,6 +16,7 @@ import math
 from reputation import Aigents
 from random import shuffle
 from aigents_reputation_api import AigentsAPIReputationService
+from reputation_service_api import PythonReputationService
 
 
 from mesa import Model
@@ -194,7 +195,6 @@ class ReputationSim(Model):
                 agent_count += 1
 
         self.print_agent_goodness()
-        self.print_agent_goods()
 
         self.good2good_agent_cumul_completed_transactions  = 0
         self.good2good_agent_cumul_total_price = 0
@@ -473,28 +473,6 @@ class ReputationSim(Model):
         outfile.close()
 
 
-    def print_agent_goods (self, userlist = [-1]):
-        #output a list of given users, sorted by goodness.  if the first item of the list is -1, then output all users
-
-        #path = self.parameters['output_path'] + 'users_' + self.parameters['param_str'] + self.time[0:10] + '.tsv'
-        path = self.parameters['output_path'] + 'goods_' + self.parameters['param_str'][: -1]  + '.tsv'
-
-        with open(path, 'w') as outfile:
-            agents = self.schedule.agents if userlist and userlist[0] == -1 else userlist
-            for agent in agents:
-                outlist = []
-                line = []
-                line.append(str(agent.unique_id))
-                for good,suplist in self.suppliers.items():
-                    line.append(good if good in agent.supplying else "")
-                outlist.append(line)
-            sorted_outlist = sorted(outlist,  key=operator.itemgetter(1), reverse=True)
-            for line in sorted_outlist:
-                for item in line:
-                    outfile.write("{0}\t".format(item))
-                outfile.write("\n")
-        outfile.close()
-
 
     def get_truncated_normal(self,mean=0.5, sd=0.2, low=0, upp=1.0):
         rv = truncnorm((low - mean) / sd, (upp - mean) / sd, loc=mean, scale=sd)
@@ -557,18 +535,21 @@ def call( combolist, configfile, rs=None,  param_str = ""):
             set_param(myconfigfile, setting)
             my_param_str = param_str + name + "_"
             #if not (
-                    #my_param_str == 'r_1000_0.1_' # or
-                    #my_param_str == 'p_1000_0.1_' or
-                    #my_param_str == 'r_100_0.1_' #or
-                    #my_param_str == 'p_100_0.1_'
+                    #my_param_str == 'r_5_1_'  or
+                    #my_param_str == 'r_1_1_' or
+                    #my_param_str == 'r_10_1_' or
+                    #my_param_str == 'p_20_1_'
             #): #for sttarting in the middle of a batch run
+            #if not my_param_str.startswith("r"):
 
             call(mycombolist, myconfigfile, rs, my_param_str)
     else:
         configfile['parameters']['seed'] = configfile['parameters']['seed'] + 1
         set_param( configfile, {"param_str": param_str })
         repsim = ReputationSim(study_path =configfile, rs=rs, opened_config = True)
-        print ("{0} : {1}  port:{2} ".format(configfile['parameters']['output_path'],param_str,configfile['parameters']['port']))
+       # print ("{0} : {1}  port:{2} ".format(configfile['parameters']['output_path'],param_str,configfile['parameters']['port']))
+        print("{0} : {1}".format(configfile['parameters']['output_path'], param_str))
+
         repsim.go()
 
 
@@ -581,22 +562,26 @@ def main():
             now = dt.datetime.now()
             epoch = now.strftime('%s')
             dirname = 'test'+ epoch
-            rs = None if config['parameters']['observer_mode'] else AigentsAPIReputationService(
-                'http://localtest.com:{0}/'.format(config['parameters']['port']), 'john@doe.org','q', 'a', False, dirname, True)
+
+
+            rs = None if config['parameters']['observer_mode'] else (PythonReputationService(
+                ) if not config['parameters']['use_java']else AigentsAPIReputationService(
+                    'http://localtest.com:{0}/'.format(config['parameters']['port']),
+                        'john@doe.org','q', 'a', False, dirname, True))
             if rs is not None:
                 rs.set_parameters({
-                    'precision': config['batch']['reputation_parameters']['precision'],
-                    'default': config['batch']['reputation_parameters']['default'],
-                    'conservatism':config['batch']['reputation_parameters']['conservatism'],
-                    'fullnorm':config['batch']['reputation_parameters']['fullnorm'],
-                    'weighting': config['batch']['reputation_parameters']['weighting'],
-                    'logratings': config['batch']['reputation_parameters']['logratings'] ,
-                    'decayed': config['batch']['reputation_parameters']['decayed'] ,
-                    'liquid': config['batch']['reputation_parameters']['liquid'],
-                     'logranks': config['batch']['reputation_parameters']['logranks'] ,
-                     'downrating': config['batch']['reputation_parameters']['downrating'],
-                     'update_period': config['batch']['reputation_parameters']['update_period'],
-                     'aggregation': config['batch']['reputation_parameters']['aggregation']
+                    'precision': config['parameters']['reputation_parameters']['precision'],
+                    'default': config['parameters']['reputation_parameters']['default'],
+                    'conservatism':config['parameters']['reputation_parameters']['conservatism'],
+                    'fullnorm':config['parameters']['reputation_parameters']['fullnorm'],
+                    'weighting': config['parameters']['reputation_parameters']['weighting'],
+                    'logratings': config['parameters']['reputation_parameters']['logratings'] ,
+                    'decayed': config['parameters']['reputation_parameters']['decayed'] ,
+                    'liquid': config['parameters']['reputation_parameters']['liquid'],
+                     'logranks': config['parameters']['reputation_parameters']['logranks'] ,
+                     'downrating': config['parameters']['reputation_parameters']['downrating'],
+                     'update_period': config['parameters']['reputation_parameters']['update_period'],
+                     'aggregation': config['parameters']['reputation_parameters']['aggregation']
 
                 })
             call(config['batch']['parameter_combinations'], config,rs=rs)
