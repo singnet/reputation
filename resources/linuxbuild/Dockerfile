@@ -5,13 +5,14 @@ RUN apt-get update && \
   apt-get upgrade -y && \
   apt-get install -y sudo && \
   apt-get install -y vim && \
+  apt-get install -y nmap && \
   apt-get install -y  software-properties-common && \
   add-apt-repository ppa:webupd8team/java -y && \
   apt-get update && \
   echo oracle-java7-installer shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections && \
   apt-get install -y oracle-java8-installer --allow-unauthenticated && \
   apt-get clean
-
+  
 # create a root user
 RUN adduser --disabled-login --gecos "" user
 RUN adduser user sudo
