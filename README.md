@@ -24,16 +24,51 @@ These instructions are intended to facilitate the development and testing of Sin
 ### Prerequisites
 
 * Python/Pip
+* Docker (Optional)
 * Java 6 or later (needed for developments based on Aigents Java)
 * Pandas (needed for native Python developments)
 
 ### Installing
 
 * Clone the git repository
+
 ```bash
 $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
+
+#### Without Docker
+
+* Install dependencies in editable/development mode on your local machine
+
+```bash
+$ bash scripts/install
+```
+
+#### With Docker
+
+* Build and run into an interactive session (requires docker daemon running)
+
+```bash
+$ bash scripts/docker-run
+```
+
+If you run `pwd` the reuslt should be `/home/user/reputation`
+
+* In order to exit from the current Docker container
+
+```bash
+$ exit
+```
+
+### Testing
+
+* Launch unit tests 
+
+```bash
+$ bash scripts/test
+```
+
 
 ## Resources
 
