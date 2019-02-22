@@ -3,6 +3,8 @@ FROM python
 
 RUN apt-get update && \
   apt-get upgrade -y && \
+  apt-get install -y sudo && \
+  apt-get install -y vim && \
   apt-get install -y  software-properties-common && \
   add-apt-repository ppa:webupd8team/java -y && \
   apt-get update && \
@@ -10,8 +12,11 @@ RUN apt-get update && \
   apt-get install -y oracle-java8-installer --allow-unauthenticated && \
   apt-get clean
 
-# create a non-root user
+# create a root user
 RUN adduser --disabled-login --gecos "" user
+RUN adduser user sudo
+RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+
 
 ADD . /home/user/reputation
 
@@ -27,6 +32,8 @@ RUN bash /home/user/reputation/scripts/install
 
 WORKDIR /home/user/reputation	
 USER user
+
+
 CMD ["/bin/bash"]
 
 
