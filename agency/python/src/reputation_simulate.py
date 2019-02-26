@@ -142,6 +142,10 @@ ai_command('load ratings file ' + transactions_file \
 if verbose:
 	print('Updating reputation ranks.')
 ai_command('update ranks since ' + since_date + ' until ' + until_date \
+		+ ' precision ' + precision \
+		+ ' weighting ' + ('true' if weighting else 'false') \
+		+ ' downrating ' + ('true' if downrating else 'false') \
+		+ ' logratings ' + ('true' if logratings else 'false') \
 		+ ' default ' + default \
 		+ ' decayed ' + decayed \
 		+ ' conservatism ' + conservatism \
