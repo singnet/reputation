@@ -259,7 +259,7 @@ def weight_calc(value,lograting,precision,weighting):
     if value != None:
         return(logratings_precision(value,lograting,precision,weighting))
     else:
-        return(1)
+        return(1,None)
 ###   Get starting dates and first occurances of each addresses. Also, preparation or arrays and other data
 ### to be used in the future.
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
@@ -365,7 +365,8 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
         ratings = {}
         while i<len(merged):
             if merged[i] in already_used2.keys():
-                amounts[merged[i]] = amounts[merged[i]] + weight_calc(new_array[i],logratings,precision,weighting)             
+                new_rating, new_weight = weight_calc(new_array[i],logratings,precision,weighting)
+                amounts[merged[i]] = amounts[merged[i]] + new_rating
                 if israting:
                     ratings[merged[i]] = ratings[merged[i]] + new_array[i][3]
 
@@ -373,7 +374,8 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
                 
             else:
                 already_used2[merged[i]]=1
-                amounts[merged[i]] = weight_calc(new_array[i],logratings,precision,weighting)
+                new_rating, new_weight = weight_calc(new_array[i],logratings,precision,weighting)
+                amounts[merged[i]] = new_rating
                 if israting:
                     ratings[merged[i]] = new_array[i][3]                        
             i+=1
@@ -413,9 +415,9 @@ def update_reputation(reputation,new_array,default_reputation):
 
 
 def logratings_precision(rating,lograting,precision,weighting):
+    new_weight = None # assume no weight computed by default
     if not weighting:
         rating[2] = None
-
     if lograting:
         if rating[2] == None:
             if precision==None:
@@ -430,9 +432,11 @@ def logratings_precision(rating,lograting,precision,weighting):
                     new_rating = np.log10(1+ int(rating[2]/precision))
             else:
                 if precision==None:
-                    new_rating = round(np.log10(1+ rating[2]) * rating[3])
+                    new_weight = np.log10(1+ rating[2])
                 else:
-                    new_rating = round(np.log10(1+ rating[2]/precision) * rating[3])
+                    new_weight = np.log10(1+ rating[2]/precision)
+                new_rating = round(new_weight * rating[3])
+                #print(rating,precision,'=>',new_rating,new_weight)
     else:
         if precision==None:
             precision=1
@@ -442,9 +446,17 @@ def logratings_precision(rating,lograting,precision,weighting):
             if rating[3] == None:
                 new_rating = rating[2]/precision
             else:
-                new_rating = rating[2] * rating[3]/precision
+                # That is old code where rating is misused as weight
+                # new_weight = rating[3]/precision
+                # new_rating = rating[2] * new_weight
+                # This is fixed code
+                # TODO see if the same fixes should be applied elsewhere starting with the case case of logratings
+                new_weight = rating[2]/precision
+                new_rating = rating[3] * new_weight
+                #print(rating,precision,'=>',new_rating,new_weight)
+
     new_rating = round(new_rating) #TODO see if we need to keep this rounding which is needed to sync-up with Aigents Java reputation system
-    return(new_rating)
+    return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Σj (Fij * Qij * Rjt-1 ) / Σj (Qij)
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
@@ -452,7 +464,9 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                                    liquid = False,logratings=False,logranks=True) :
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
+    denominate = False # denominate by weight for Σj (Qij) as dRit = Σj (Fij * Qij * Rjt-1 ) / Σj (Qij)
     mys = {}
+    myd = {} # denominators 
     start1 = time.time()
     i = 0
     while i<len(new_array):
@@ -470,14 +484,23 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     if rating:
         while i<len(unique_ids):
             amounts = []
+            denominators = []
             ### Here we get log transformation of each amount value. 
             get_subset = np.where(to_array==unique_ids[i])[0]
             for k in get_subset:
                 if weighting:
-                    amounts.append(weight_calc(new_array[k],logratings,precision,weighting) * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
+                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
+                    #print(unique_ids[i],new_rating,new_weight)
+                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
+                    if denominate and new_weight is not None:
+                    	denominators.append(new_weight) # denomination by sum of weights in such case
                 else:
-                    amounts.append(weight_calc(new_array[k],logratings,precision,weighting) * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1                 
+                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
+                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1
+                    #no need for denomination by sum of weights in such case 
             mys[unique_ids[i]] = sum(amounts)
+            if len(denominators) > 0:
+            	myd[unique_ids[i]] = sum(denominators)
 #
             i+=1
     else:
@@ -488,8 +511,9 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
             k=0 
             for k in get_subset:
                 if weighting:
-                    
-                    amounts.append(weight_calc(new_array[k],logratings,precision) * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
+                    #TODO if there is no rating, how can we have weghing here?
+                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision)
+                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
                 else:
                     amounts.append(rater_reputation(reputation,new_array[k][0],default,liquid=liquid))###*100*precision**-1
                     
@@ -497,6 +521,10 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     break             
             mys[unique_ids[i]] = sum(amounts)          
             i+=1
+
+    if denominate and len(mys) == len(myd):
+        for k, v in mys.items():
+            mys[k] = v / myd[k]
 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
