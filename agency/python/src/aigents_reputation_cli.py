@@ -172,6 +172,10 @@ class AigentsCLIReputationService(ReputationServiceBase):
 		if self.verbose:
 			print( 'update_ranks', date )
 		cmd = 'update ranks date ' + str(date) \
+			+ ' precision ' + str(self.parameters['precision']) \
+			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
+			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
 			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' default ' + str(self.parameters['default']) \
 			+ ' decayed ' + str(self.parameters['decayed']) \
