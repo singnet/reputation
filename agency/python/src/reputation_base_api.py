@@ -39,6 +39,7 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
 		self.parameters['precision'] = 0.01 # Used to dound/up or round down financaial values or weights as value = round(value/precision)
 		self.parameters['weighting'] = True # forces to weight ratings with financial values, if present
+		self.parameters['denomination'] = False # forces to denominate weighted ratings with sum of weights
 		self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
 		self.parameters['liquid'] = True # forces to account for rank of rater
 		self.parameters['logranks'] = True # applies log10 to ranks

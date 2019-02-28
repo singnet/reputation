@@ -341,7 +341,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		#print('=================')
 		#input()
 		self.clear()
-		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
+		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True,'denomination':True}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':'1','rank':90},{'id':'2','rank':90},{'id':'3','rank':10},{'id':'4','rank':10}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 100,'weight':10,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':   0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
@@ -384,8 +384,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.assertEqual(ranks['1'], 74)
 		self.assertEqual(ranks['2'], 100)
 		self.assertEqual(ranks['3'], 32)
-		#self.assertEqual(ranks['4'], 41)# with financial denomination
-		self.assertEqual(ranks['4'], 49)# with no financial denomination
+		self.assertEqual(ranks['4'], 41)# with financial denomination
+		#self.assertEqual(ranks['4'], 49)# with no financial denomination
 		self.clear()
 		self.assertEqual( rs.set_parameters({'downrating':True, 'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':'1','rank':90},{'id':'2','rank':90},{'id':'3','rank':10},{'id':'4','rank':10}]), 0 )
@@ -404,7 +404,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs = self.rs
 		dt2 = datetime.date(2018, 1, 2)
 		self.clear()
-		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True}), 0 )
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True,'denomination':True}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':1,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':50,'weight':1,'time':dt2}]), 0 )
 		self.assertEqual(rs.update_ranks(dt2), 0)
@@ -420,9 +420,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		#print(ranks)
 		self.assertEqual(len(ranks), 2)
 		# with financial denomination
-		#self.assertEqual(ranks['3'], 96) # because its logarithmic differential is not normalized down to 0
+		self.assertEqual(ranks['3'], 96) # because its logarithmic differential is not normalized down to 0
 		# with no financial denomination
-		self.assertEqual(ranks['3'], 97) # because its logarithmic differential is not normalized down to 0
+		#self.assertEqual(ranks['3'], 97) # because its logarithmic differential is not normalized down to 0
 
 	#self.parameters['logratings'] = True # applies log10(1+value) to financial values and weights
 	def test_logratings(self):
@@ -541,7 +541,6 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
         
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'],68)    
-		#pass
         
 	#TODO after when implemented
     ### Comment: I believe those are already in defaults

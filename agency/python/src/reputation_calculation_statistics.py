@@ -29,7 +29,7 @@ start = time.time()
 ## Define our reputation_system class
 reputation_system = PythonReputationService()
 ### Set parameters!
-params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
+params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True, 'denomination': False,
          'liquid': False, 'logranks': False, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
 reputation_system.set_parameters(params)
