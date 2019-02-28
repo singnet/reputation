@@ -460,11 +460,10 @@ def logratings_precision(rating,lograting,precision,weighting):
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,normalizedRanks=True,weighting=True,
+def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,normalizedRanks=True,weighting=True,denomination=True,
                                    liquid = False,logratings=False,logranks=True) :
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
-    denominate = False # denominate by weight for Σj (Qij) as dRit = Σj (Fij * Qij * Rjt-1 ) / Σj (Qij)
     mys = {}
     myd = {} # denominators 
     start1 = time.time()
@@ -492,7 +491,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
                     #print(unique_ids[i],new_rating,new_weight)
                     amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
-                    if denominate and new_weight is not None:
+                    if denomination and new_weight is not None:
                     	denominators.append(new_weight) # denomination by sum of weights in such case
                 else:
                     new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
@@ -522,7 +521,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
             mys[unique_ids[i]] = sum(amounts)          
             i+=1
 
-    if denominate and len(mys) == len(myd):
+    if denomination and len(mys) == len(myd):
         for k, v in mys.items():
             mys[k] = v / myd[k]
 
