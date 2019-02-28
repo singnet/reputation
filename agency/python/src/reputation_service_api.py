@@ -53,6 +53,10 @@ class PythonReputationService(ReputationServiceBase):
             weighting = changes['weighting']
         else:
             weighting = self.weighting
+        if 'denomination' in changes.keys():
+            denomination = changes['denomination']
+        else:
+            denomination = self.denomination
         if 'fullnorm' in changes.keys():
             fullnorm = changes['fullnorm']
         else:
@@ -101,6 +105,7 @@ class PythonReputationService(ReputationServiceBase):
         self.conservatism = conservatism
         self.precision = precision
         self.weighting = weighting
+        self.denomination = denomination
         self.fullnorm = fullnorm
         self.liquid=liquid
         self.logranks = logranks
@@ -117,7 +122,7 @@ class PythonReputationService(ReputationServiceBase):
         return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'use_ratings':self.use_ratings, 'date':self.date,'decayed':self.decayed})
+               'use_ratings':self.use_ratings, 'date':self.date,'decayed':self.decayed,'denomination':self.denomination})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -200,8 +205,8 @@ class PythonReputationService(ReputationServiceBase):
                                                                              self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
-        since = self.date - timedelta(days=self.update_period)      
-        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        since = self.date - timedelta(days=self.update_period)
+        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm)
@@ -317,7 +322,7 @@ class PythonReputationService(ReputationServiceBase):
         return(0)
         
     def __init__(self):
-        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,
+        params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'denomination': False, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': True, 'update_period': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1),'decayed':0.0}
         self.reputation = {}
