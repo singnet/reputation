@@ -139,7 +139,8 @@ class ReputationSim(Model):
             nsuppliers = OrderedDict()
             for good,chance in sorted_suppliers:
                 if sup_count < num_suppliers1:
-                    rounded = round(num_suppliers1 * chance)
+                    normalized = chance/chance_of_supplier
+                    rounded = round(num_suppliers1 * normalized)
                     num_sup_this_good =  rounded if rounded > 0 else 1
                     num_sup_this_good = min (num_sup_this_good,(num_suppliers1-sup_count))
                     sup_count = sup_count + num_sup_this_good
@@ -170,7 +171,8 @@ class ReputationSim(Model):
             nsuppliers = OrderedDict()
             for good,chance in sorted_suppliers:
                 if sup_count < num_suppliers1:
-                    rounded = round(num_suppliers1 * chance)
+                    normalized = chance/chance_of_supplier
+                    rounded = round(num_suppliers1 * normalized)
                     num_sup_this_good =  rounded if rounded > 0 else 1
                     num_sup_this_good = min (num_sup_this_good,(num_suppliers1-sup_count))
                     sup_count = sup_count + num_sup_this_good
@@ -535,10 +537,10 @@ def call( combolist, configfile, rs=None,  param_str = ""):
             set_param(myconfigfile, setting)
             my_param_str = param_str + name + "_"
             #if not (
-                    #my_param_str == 'r_5_1_'  or
-                    #my_param_str == 'r_1_1_' or
-                    #my_param_str == 'r_10_1_' or
-                    #my_param_str == 'p_20_1_'
+                    #my_param_str == 'r_20_1_'  or
+                    #my_param_str == 'r_20_0.5_' or
+                    #my_param_str == 'r_20_0.1_' or
+                    #my_param_str == 'r_10_1_'
             #): #for sttarting in the middle of a batch run
             #if not my_param_str.startswith("r"):
 

@@ -218,7 +218,7 @@ class PythonReputationService(ReputationServiceBase):
         ### Downratings seem to pass, so I assume this comment is resolved.
         self.reputation = normalize_reputation(self.reputation,self.downrating)
         
-        self.all_reputations[mydate] = self.reputation
+        self.all_reputations[mydate] = dict(self.reputation)
         return(0)
         
     def update_ratings(self, ratings, mydate):
