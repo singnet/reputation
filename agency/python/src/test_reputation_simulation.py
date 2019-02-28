@@ -45,6 +45,7 @@ class TestReputationSimulationBase(object):
 		cmd = 'python reputation_simulate.py ../../bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logratings=False weighting=True fullnorm=True default=0.5'
 		r = subprocess.check_output(cmd,shell=True)
 		lines = r.decode().splitlines()
+		#print(lines)
 		self.assertEqual(str(round(float(lines[len(lines)-4]),3)),'0.995') 
 		self.assertEqual(str(round(float(lines[len(lines)-2]),3)),'0.984') 
 
@@ -59,6 +60,7 @@ class TestReputationSimulationBase(object):
 		r = subprocess.check_output(cmd,shell=True)
 		#os.system(cmd)
 		lines = r.decode().splitlines()
+		#print(lines)
 		self.assertEqual(str(round(float(lines[len(lines)-4]),3)),'0.982') 
 		self.assertEqual(str(round(float(lines[len(lines)-2]),3)),'0.994') 
 
@@ -71,6 +73,8 @@ class TestReputationSimulationBase(object):
 		#Step 2 - check reputations
 		r1 = self.rs.get_ranks_dict({'date':datetime.date(2018, 1, 1)})
 		r2 = self.rs.get_ranks_dict({'date':datetime.date(2018, 1, 2)})
+		#print(r1)
+		#print(r2)
 		#Checking good agents
 		assert r1['1'] > 60
 		assert r1['2'] > 60
@@ -110,7 +114,6 @@ class TestReputationSimulationPython(TestReputationSimulationBase,unittest.TestC
 	def setUp(self):
 		self.rs = PythonReputationService()
 		self.rs.set_parameters({'weighting':True,'logratings':False})
-
 
 
 if __name__ == '__main__':

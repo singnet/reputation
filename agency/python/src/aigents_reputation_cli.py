@@ -175,6 +175,7 @@ class AigentsCLIReputationService(ReputationServiceBase):
 			+ ' precision ' + str(self.parameters['precision']) \
 			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
+			+ ' denomination ' + ('true' if self.parameters['denomination'] else 'false') \
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
 			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' default ' + str(self.parameters['default']) \
