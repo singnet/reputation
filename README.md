@@ -27,16 +27,7 @@ These instructions are intended to facilitate the development and testing of Sin
 * Java 6 or later (needed for developments based on Aigents Java)
 * Docker (Optional)
 
-### Installing
-
-* Clone the git repository
-
-```bash
-$ git clone git@github.com:singnet/reputation.git
-$ cd reputation
-```
-
-#### Without Docker
+### Aigents Server (required)
 
 * Edit hosts file, adding the line with "127.0.0.1 localtest.com"
 
@@ -52,45 +43,19 @@ Windows: c:\WINDOWS\system32\drivers\etc\hosts
 sh agency/python/src/aigents_server_start.sh 
 ```
 
-* Install dependencies in editable/development mode on your local machine
+### Installing
+
+* Clone the git repository
 
 ```bash
-$ bash scripts/install
-```
-
-#### With Docker
-
-* Build the docker image if the first time 
-
-```sh
-$ bash scripts/docker-build
-```
-
-* Run into an interactive session (requires docker daemon running)
-
-```bash
-$ bash scripts/docker-run
-```
-
-If you run `pwd` the reuslt should be `/home/user/reputation`
-
-* Run Aigents Java Server
-
-```
-sudo sh agency/python/src/aigents_server_start.sh 
+$ git clone git@github.com:singnet/reputation.git
+$ cd reputation
 ```
 
 * Install dependencies in editable/development mode on your local machine
 
 ```bash
-$ sudo bash scripts/install
-```
-
-
-* In order to exit from the current Docker container
-
-```bash
-$ exit
+$ bash scripts/install
 ```
 
 
