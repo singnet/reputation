@@ -5,6 +5,6 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-docker run -t -i reputation
+docker system prune --volumes -f
 
 popd
