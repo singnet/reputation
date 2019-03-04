@@ -23,6 +23,8 @@ ADD . /home/user/reputation
 
 # make user own the reputation folder
 RUN chown -R user:user /home/user/reputation
+RUN chown -R user:user /usr/local/lib/python3.7
+
 
 # color PS1
 RUN mv /home/user/reputation/resources/linuxbuild/.bashrc /home/user/ && \
@@ -33,7 +35,6 @@ RUN bash /home/user/reputation/scripts/install
 
 WORKDIR /home/user/reputation	
 USER user
-
 
 CMD ["/bin/bash"]
 
