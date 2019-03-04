@@ -5,6 +5,6 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-docker build -t reputation -f resources/linuxbuild/Dockerfile .
+docker build --add-host localtest.com:127.0.0.1 -t reputation -f resources/linuxbuild/Dockerfile .
 
 popd

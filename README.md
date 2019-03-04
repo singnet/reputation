@@ -24,9 +24,24 @@ These instructions are intended to facilitate the development and testing of Sin
 ### Prerequisites
 
 * Python/Pip
-* Docker (Optional)
 * Java 6 or later (needed for developments based on Aigents Java)
-* Pandas (needed for native Python developments)
+* Docker (Optional)
+
+### Aigents Server (required)
+
+* Edit hosts file, adding the line with "127.0.0.1 localtest.com"
+
+```
+Mac: /private/etc/hosts
+Linux: /etc/hosts
+Windows: c:\WINDOWS\system32\drivers\etc\hosts 
+```
+
+* Run Aigents Java Server
+
+```
+sh agency/python/src/aigents_server_start.sh 
+```
 
 ### Installing
 
@@ -37,29 +52,12 @@ $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
 
-#### Without Docker
-
 * Install dependencies in editable/development mode on your local machine
 
 ```bash
 $ bash scripts/install
 ```
 
-#### With Docker
-
-* Build and run into an interactive session (requires docker daemon running)
-
-```bash
-$ bash scripts/docker-run
-```
-
-If you run `pwd` the reuslt should be `/home/user/reputation`
-
-* In order to exit from the current Docker container
-
-```bash
-$ exit
-```
 
 ### Testing
 

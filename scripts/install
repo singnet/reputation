@@ -5,6 +5,6 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-pip3 --no-cache-dir install -e .
+pip3 install -e .
 
 popd

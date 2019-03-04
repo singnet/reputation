@@ -21,7 +21,9 @@ setup(
     author='SingularityNET Team',
     description='Reputation Agency',
     install_requires=[
-      'pandas'
+      'pandas',
+      'numpy',
+      'requests'
     ],
     cmdclass={
         'develop': develop,
