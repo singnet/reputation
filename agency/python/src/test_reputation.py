@@ -491,31 +491,60 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		print('Testing '+type(self).__name__+' denomination')
 		rs = self.rs
 		dt2 = datetime.date(2018, 1, 2)
-		self.clear()
+		pr = 10 # product ratio
+		ar = 10 # market ratio
+		debug = False #True
+		if debug:
+			print('1 good buyer')
+			print('2 bad buyer')
+			print('3 good seller, high market ("honey")')
+			print('4 bad seller, high market ("honey")')
+			print('5 good seller, low market ("milk")')
+			print('6 bad seller, low market ("milk")')
+			print('amount ratio = '+str(ar)+', transaction ration = 1, scam ratio = 1, market volume ratio = ' + str(ar) + ', buyers=2, sellers=2')
+		def rate():
+			self.clear()
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':1,'weight':1*ar*pr,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':0,'weight':1*ar*pr,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':5,'value':1,'weight':1*pr,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':0,'weight':1*pr,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':3,'value':0,'weight':1*ar,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':4,'value':1,'weight':1*ar,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':0,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':6,'value':1,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual(rs.update_ranks(dt2), 0)
+			ranks = rs.get_ranks_dict({'date':dt2})
+			self.assertEqual(len(ranks), 4)
+			return ranks
+
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':False}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':1,'weight':3,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':5,'value':0,'weight':3,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':1,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':5,'value':1,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(len(ranks), 2)
-		self.assertEqual(ranks['4'], 100)
-		self.assertEqual(ranks['5'], 0)
-		self.clear()
+		ranks = rate()
+		if debug:
+			print('no denomination, no logratings:')
+			print(ranks)
+		self.assertEqual(ranks, dict({'3': 100.0, '4': 50.0, '5': 50.0, '6': 0.0}))
+		
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True}), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':1,'weight':3,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':5,'value':0,'weight':3,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':1,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':5,'value':1,'weight':1,'time':dt2}]), 0 )
-		self.assertEqual(rs.update_ranks(dt2), 0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['4'], 0)
-		self.assertEqual(ranks['5'], 100)
+		ranks = rate()
+		if debug:
+			print('no denomination, logratings:')
+			print(ranks)
+		self.assertEqual(ranks, dict({'3': 100.0, '4': 58.0, '5': 58.0, '6': 0.0}))
+
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':False,'denomination':True}), 0 )
+		ranks = rate()
+		if debug:
+			print('denomination, no logratings:')
+			print(ranks)
+		self.assertEqual(ranks, {'3': 100.0, '5': 100.0, '4': 0.0, '6': 0.0})
+		
+		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'denomination':True}), 0 )
+		ranks = rate()
+		if debug:
+			print('denomination, logratings:')
+			print(ranks)
+		self.assertEqual(ranks, {'5': 100.0, '3': 88.0, '4': 17.0, '6': 0.0})
+
 
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
         
