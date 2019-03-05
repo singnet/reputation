@@ -5,7 +5,6 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-bash scripts/docker-build
 docker run -t -i reputation
 
 popd
