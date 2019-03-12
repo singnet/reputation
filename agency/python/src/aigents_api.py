@@ -31,7 +31,7 @@ import requests
 from urllib.parse import quote
 
 # Expected Aigents server version 
-version = "1.5.2"
+version = "1.5.4"
 
 # Expected Aigents copyright information
 copyright = " Copyright © 2019 Anton Kolonin, Aigents."

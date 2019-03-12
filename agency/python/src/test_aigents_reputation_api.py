@@ -34,7 +34,7 @@ from aigents_reputation_api import *
 # just import json
 # with open(study_path) as json_file:
 # 	config = json.load(json_file, object_pairs_hook=OrderedDict)
-class TestAigentsAPIReputationService(TestReputationServiceParametersBase,unittest.TestCase):
+class TestAigentsAPIReputationService(TestReputationServiceTemporal,unittest.TestCase):
 
 	@classmethod
 	def setUpClass(cls):
