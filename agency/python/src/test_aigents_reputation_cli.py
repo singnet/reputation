@@ -29,7 +29,7 @@ from test_reputation import *
 from aigents_reputation_cli import *
 
 # Test Command-line-based Aigents Reputation Service wrapper 
-class TestAigentsCLIReputationService(TestReputationServiceParametersBase,unittest.TestCase):
+class TestAigentsCLIReputationService(TestReputationServiceTemporal,unittest.TestCase):
 
 	def setUp(self):
 		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
