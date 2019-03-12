@@ -1,5 +1,5 @@
-name = "reputation_agency"
+name = "agency"
 
-from reputation_agency.python.src.aigents_reputation_api import AigentsAPIReputationService
+from agency.python.src.aigents_reputation_api import AigentsAPIReputationService
 
 

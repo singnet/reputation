@@ -13,7 +13,7 @@ class install(_install):
         _install.run(self)
 
 setup(
-    name='reputation_agency',
+    name='agency',
     version='0.0.1',
     packages=find_packages(),
     url='https://github.com/singnet/reputation',
