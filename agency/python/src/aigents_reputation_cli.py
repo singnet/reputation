@@ -183,7 +183,8 @@ class AigentsCLIReputationService(ReputationServiceBase):
 			+ ' conservatism ' + str(self.parameters['conservatism']) \
 			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
 			+ ' period ' + str(self.parameters['update_period']) \
-			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false')
+			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
+			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
 
