@@ -120,7 +120,8 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
 			+ ' denomination ' + ('true' if self.parameters['denomination'] else 'false') \
-			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false')
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
+			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 
@@ -228,6 +229,6 @@ class AigentsAPIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false'))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') + ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		

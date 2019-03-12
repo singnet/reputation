@@ -546,6 +546,40 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.assertEqual(ranks, {'5': 100.0, '3': 88.0, '4': 17.0, '6': 0.0})
 
 
+class TestReputationServiceTemporal(TestReputationServiceParametersBase):
+#class TestReputationServiceTemporal(object):
+
+	#TODO complete this test
+	def test_unranked(self):
+		print('Testing '+type(self).__name__+' unranked')
+		rs = self.rs
+		rs.set_parameters({'default':0.0,'decayed':0.5,'precision':1,'logratings':False})
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)
+		dt4 = datetime.date(2018, 1, 4)
+		for unrated in [False]:
+		#for unrated in [False,True]:
+			#print('Unrated:',unrated)
+			rs.set_parameters({'unrated':unrated})
+			#print(rs.get_parameters())
+			self.assertEqual( self.rs.clear_ratings(), 0 )
+			self.assertEqual( self.rs.clear_ranks(), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual(rs.update_ranks(dt2),0)
+			ranks = rs.get_ranks_dict({'date':dt2})
+			#print(ranks)
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':4,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual(rs.update_ranks(dt3),0)
+			ranks = rs.get_ranks_dict({'date':dt3})
+			#print(ranks)
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':8,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':10,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual(rs.update_ranks(dt4),0)
+			ranks = rs.get_ranks_dict({'date':dt4})
+			#print(ranks)
+
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
         
 	def test_aggregation(self):
