@@ -29,20 +29,23 @@ from reputation_service_api import *
 from aigents_reputation_api import AigentsAPIReputationService
 
 #TODO use any other Reputation Service here
-#rs = None
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = None
+#rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 
 verbose = False
 days = 10
-consumers = 0.9 
-suppliers = 0.1
-good_range = [1,950]
-bad_range = [951,1000]
+consumers = 0.5
+suppliers = 0.5
+good_range = [1,8] #[1,950]
+bad_range = [9,10] #[951,1000]
 good_transactions = 10
 bad_transactions = 10
+scam_campaign = None # [period,inactive]
 
+"""
+#Trying different AR
 for ar in [1,2,5,10,20]:
 	print('Amount Ratio (AR): '+str(ar))
 	good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
@@ -51,7 +54,6 @@ for ar in [1,2,5,10,20]:
 	print('Bad Agent : '+str(bad_agent))
 	print('No RS, Regular RS, Weighted Rank RS, Denominated Weighted Rank RS:')
 	
-	"""
 	#print('No RS')
 	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, None, verbose)
 	
@@ -66,7 +68,32 @@ for ar in [1,2,5,10,20]:
 	#print('Denominated Weighted Rank RS')
 	rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'denomination':True})
 	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
-	"""
+"""
+
+
+#Trying different SP
+for sp in [10,5,2,1]:
+	print('Scam period (AR): '+str(sp))
+	good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
+	bad_agent = {"range": bad_range, "values": [100,1000], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
+	print('Good Agent: '+str(good_agent))
+	print('Bad Agent : '+str(bad_agent))
+	#print('No RS, Regular RS, Weighted Rank RS, Denominated Weighted Rank RS:')
+	
+	#print('No RS')
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, None, campaign = [sp,0], verbose=False)
+	
+	#print('Regular RS')
+	#rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False})
+	#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+	
+	#print('Weighted Rank RS')
+	#rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'denomination':False})
+	#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+	
+	#print('Denominated Weighted Rank RS')
+	#rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'denomination':True})
+	#reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 
 
 
