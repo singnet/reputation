@@ -26,7 +26,7 @@ Abstract Reputation Service wrapper around
 
 import os
 import subprocess
-from agency.python.src.reputation_api import *
+from reputation.python.src.reputation_api import *
 
 class ReputationServiceBase(RatingService,RankingService):
 

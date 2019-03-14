@@ -10,11 +10,11 @@ Any production use and use other than for experimental purposes is not encourage
 
 ## Contents
 
-* Python [Reputation Agency Service wrapper](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
-* Python [Reputation Agency Service command line tool](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
-* Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_service_api.py) 
-* Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_scenario.py)
-* Python [extended simulation framework](https://github.com/singnet/reputation/tree/master/agency/python/src/snsim)
+* Python [Reputation Agency Service wrapper](https://github.com/singnet/reputation/blob/master/reputation/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
+* Python [Reputation Agency Service command line tool](https://github.com/singnet/reputation/blob/master/reputation/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
+* Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/reputation/python/src/reputation_service_api.py) 
+* Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/reputation/python/src/reputation_scenario.py)
+* Python [extended simulation framework](https://github.com/singnet/reputation/tree/master/reputation/python/src/snsim)
 * Auxiliary [scripts for SigluarityNET Adapter integration](https://github.com/singnet/reputation/tree/master/scripts)
 
 ## Development 
@@ -56,7 +56,7 @@ Windows: c:\WINDOWS\system32\drivers\etc\hosts
 * Run Aigents Java Server
 
 ```
-sh agency/python/src/aigents_server_start.sh 
+sh reputation/python/src/aigents_server_start.sh 
 ```
 
 
