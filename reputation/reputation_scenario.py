@@ -104,6 +104,11 @@ def pick_agent(ranks,list,self,memories = None,bad_agents = None):
 		blacklist = None
 		list = [black for black in list if black != self]
 	picked = list[0] if len(list) == 1 else list[random.randint(0,len(list)-1)]
+
+	#debug
+	#if blacklist is not None:
+	#	print(picked)
+	
 	if blacklist is not None and bad_agents is not None and picked in bad_agents:
 		blacklist.append(picked) #blacklist picked bad ones once picked so do not pick them anymore
 	return picked
@@ -133,7 +138,7 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=True):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,campaign=None):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 
@@ -200,6 +205,28 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=T
 					print('Ranks',ranks)
 			else:
 				ranks = None
+
+			#resetting scam campaign
+			if campaign is not None:
+				campaign_day = day % campaign[0] # campaign.period
+				if campaign_day == 0:
+					if day > 0:
+						if verbose:
+							print('reset scam')
+						scam_generation = day // campaign[0] # campaign.period
+						id_base = len(bad_agents) * scam_generation
+						bad_agents = [i+id_base for i in range(bad_agent['range'][0],bad_agent['range'][1]+1)]
+						bad_suppliers = get_list_fraction(bad_agents,bad_agent['suppliers'],True)
+						bad_consumers = get_list_fraction(bad_agents,bad_agent['consumers'],False)
+						all_suppliers = good_suppliers + bad_suppliers
+					if verbose:
+						print('bad agents:',bad_agents)
+				if campaign_day < campaign[1]: # campaign.active
+					if verbose:
+						print('skip scam')
+					continue
+				if verbose:
+					print('do scam')
 
 			daily_good_to_bad = 0
 			for agent in good_consumers:
