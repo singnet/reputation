@@ -27,7 +27,7 @@ Reputation Service wrapper around Aigents Java-based Command Line Interface
 import sys
 import urllib.parse
 import requests
-from reputation_base_api import *
+from reputation.reputation_base_api import * 
 
 import logging
 logger = logging.getLogger(__name__)	
@@ -90,7 +90,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		except Exception as e:
 			logger.error('request ' + url + ' ' + str(type(e)))
 			print('Specify proper url to Aigents server or run it locally, eg.')
-			print('java -cp ../../bin/Aigents.jar:../../bin/* net.webstructor.agent.Farm store path \'./al_test.txt\', cookie domain localtest.com, console off &')
+			print('java -cp ./bin/Aigents.jar:./bin/* net.webstructor.agent.Farm store path \'./al_test.txt\', cookie domain localtest.com, console off &')
 			print('or')
 			print('sh aigents_server_start.sh')
 			return 'No connection to Aigents, ' + str(type(e))
@@ -120,8 +120,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
 			+ ' denomination ' + ('true' if self.parameters['denomination'] else 'false') \
-			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
-			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
+			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 
@@ -229,6 +228,6 @@ class AigentsAPIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') + ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		

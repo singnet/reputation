@@ -38,7 +38,7 @@ class TestAigentsAPIReputationService(TestReputationServiceTemporal,unittest.Tes
 
 	@classmethod
 	def setUpClass(cls):
-		cmd = 'java -cp ../../bin/Aigents.jar:../../bin/* net.webstructor.agent.Farm store path \'./al_test.txt\', http port 1180, cookie domain localtest.com, console off'
+		cmd = 'java -cp ./bin/Aigents.jar:./bin/* net.webstructor.agent.Farm store path \'./al_test.txt\', http port 1180, cookie domain localtest.com, console off'
 		cls.server_process = subprocess.Popen(cmd.split())
 		#self.server_process = subprocess.Popen(['sh','aigents_server_start.sh'])
 		time.sleep(10)
