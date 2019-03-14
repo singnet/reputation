@@ -32,7 +32,7 @@ from aigents_reputation_cli import *
 class TestAigentsCLIReputationService(TestReputationServiceParametersBase,unittest.TestCase):
 
 	def setUp(self):
-		self.rs = AigentsCLIReputationService('../../bin','./','test',False)
+		self.rs = AigentsCLIReputationService('./bin','./','test',False)
 
 if __name__ == '__main__':
     unittest.main()
