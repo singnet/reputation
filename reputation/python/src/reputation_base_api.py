@@ -26,7 +26,7 @@ Abstract Reputation Service wrapper around
 
 import os
 import subprocess
-from reputation_api import *
+from reputation.reputation_api import *
 
 class ReputationServiceBase(RatingService,RankingService):
 
@@ -47,7 +47,6 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['downrating'] = False # boolean option with True value to translate original explicit rating values in range 0.5-0.0 to negative values in range 0.0 to -1.0 and original values in range 1.0-0.5 to interval 1.0-0.0, respectively
 		self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
 		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
-		self.parameters['unrated'] = False # whether to store default ranks of unrated agents and let them decay 
 
 	def get_ranks_dict(self,filter):
 		ranks_dict = {}

@@ -59,8 +59,8 @@ if len(sys.argv) < 8 or len(sys.argv[1]) < 2 or len(sys.argv[2]) < 2 or len(sys.
 	print('	<decimal_parameter> := (precision | default | conservatism)=<decimal_value>')
 	print('	<boolean_parameter> := (logratings | weighting | fullnorm | verbose)=(True | False)')
 	print('Examples:')
-	print('	python reputation_simulate.py ../../bin testsim ./ transactions10_r_20_0.1.tsv users10.tsv 2018-01-01 2018-01-10')
-	print('	python reputation_simulate.py ../../bin testsim ./ transactions10_r_20_0.1.tsv users10.tsv 2018-01-01 2018-01-10 weighting=True fullnorm=True logratings=False downrating=False precision=0.01 default=0.5 conservatism=0.5 decayed=0.0')
+	print('	python reputation_simulate.py ./bin testsim ./ transactions10_r_20_0.1.tsv users10.tsv 2018-01-01 2018-01-10')
+	print('	python reputation_simulate.py ./bin testsim ./ transactions10_r_20_0.1.tsv users10.tsv 2018-01-01 2018-01-10 weighting=True fullnorm=True logratings=False downrating=False precision=0.01 default=0.5 conservatism=0.5 decayed=0.0')
 	sys.exit()
 
 
