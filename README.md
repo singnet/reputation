@@ -53,13 +53,6 @@ Linux: /etc/hosts
 Windows: c:\WINDOWS\system32\drivers\etc\hosts 
 ```
 
-* Run Aigents Java Server
-
-```
-sh reputation/aigents_server_start.sh 
-```
-
-
 ### Testing
 
 * Launch unit tests 
