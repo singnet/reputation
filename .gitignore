@@ -2,6 +2,11 @@ node_modules
 .DS_Store
 /protos/
 
+test_state/
+testsim/
+testsim_state/
+
+*.tsv
 al_test.txt
 aigents-log-*
 # Byte-compiled / optimized / DLL files

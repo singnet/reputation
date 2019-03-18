@@ -10,11 +10,11 @@ Any production use and use other than for experimental purposes is not encourage
 
 ## Contents
 
-* Python [Reputation Agency Service wrapper](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
-* Python [Reputation Agency Service command line tool](https://github.com/singnet/reputation/blob/master/agency/python/src/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
-* Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_service_api.py) 
-* Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/agency/python/src/reputation_scenario.py)
-* Python [extended simulation framework](https://github.com/singnet/reputation/tree/master/agency/python/src/snsim)
+* Python [Reputation Agency Service wrapper](https://github.com/singnet/reputation/blob/master/reputation/aigents_reputation_api.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
+* Python [Reputation Agency Service command line tool](https://github.com/singnet/reputation/blob/master/reputation/aigents_reputation_cli.py) based on [Aigents Java-based](https://github.com/aigents/aigents-java) reputation engine
+* Python [native implementation of Reputation Agency Service](https://github.com/singnet/reputation/blob/master/reputation/reputation_service_api.py) 
+* Python [simplistic simulation script](https://github.com/singnet/reputation/blob/master/reputation/reputation_scenario.py)
+* Python [extended simulation framework](https://github.com/singnet/reputation-simulation)
 * Auxiliary [scripts for SigluarityNET Adapter integration](https://github.com/singnet/reputation/tree/master/scripts)
 
 ## Development 
@@ -24,9 +24,8 @@ These instructions are intended to facilitate the development and testing of Sin
 ### Prerequisites
 
 * Python/Pip
-* Docker (Optional)
 * Java 6 or later (needed for developments based on Aigents Java)
-* Pandas (needed for native Python developments)
+* Docker (Optional)
 
 ### Installing
 
@@ -37,28 +36,28 @@ $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
 
-#### Without Docker
-
 * Install dependencies in editable/development mode on your local machine
 
 ```bash
 $ bash scripts/install
 ```
 
-#### With Docker
+* NOTICE: If you use **Anaconda** enviroments instead, once inside to install dependencies
 
-* Build and run into an interactive session (requires docker daemon running)
-
-```bash
-$ bash scripts/docker-run
+ ```bash
+$ bash scripts/conda_install
 ```
 
-If you run `pwd` the reuslt should be `/home/user/reputation`
 
-* In order to exit from the current Docker container
 
-```bash
-$ exit
+### Aigents Server (required)
+
+* Edit hosts file, adding the line with "127.0.0.1 localtest.com"
+
+```
+Mac: /private/etc/hosts
+Linux: /etc/hosts
+Windows: c:\WINDOWS\system32\drivers\etc\hosts 
 ```
 
 ### Testing
