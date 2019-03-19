@@ -520,7 +520,6 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     break             
             mys[unique_ids[i]] = sum(amounts)          
             i+=1
-
     if denomination and len(mys) == len(myd):
         for k, v in mys.items():
             mys[k] = v / myd[k]
@@ -537,16 +536,20 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     ### We divide it by max value, as specified. There are different normalizations possible...
     return(mys)
 
-def normalized_differential(mys,normalizedRanks):
+def normalized_differential(mys,normalizedRanks,our_default):
     max_value = max(mys.values(), default=1)
     min_value = min(mys.values(), default=0)
     if max_value==min_value:
-        min_value = max_value - 1
+        min_value = max_value - our_default ### as the solution to issue #157
     for k in mys.keys():
-        if normalizedRanks: ### normalizedRanks is equal to fullnorm.
-            mys[k] = (mys[k]-min_value) /(max_value-min_value)
+        if max_value==min_value:
+            mys[k] = (mys[k]-min_value)
         else:
-            mys[k] = mys[k] /max_value 
+            if normalizedRanks: ### normalizedRanks is equal to fullnorm.
+                mys[k] = (mys[k]-min_value) /(max_value-min_value)
+            else:
+                mys[k] = mys[k] /max_value 
+
     return(mys)
         
 ### Get updated reputations, new calculations of them...
@@ -564,7 +567,7 @@ def rater_reputation(previous_reputations,rater_id,default,liquid=False):
         if (not liquid):
             rater_rep = 1
         else:
-            rater_rep = default * 100              
+            rater_rep = default * 100      
     return(rater_rep)
 
 def normalize_reputation(reputation,normalizedRanks=False):
@@ -574,7 +577,10 @@ def normalize_reputation(reputation,normalizedRanks=False):
         if normalizedRanks: ### normalizedRanks is equal to fullnorm.
             reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
         else:
-            reputation[k] = reputation[k] /max_value
+            if max_value!= 0:
+                reputation[k] = reputation[k] /max_value
+            else:
+                pass
     return(reputation)    
     
 
