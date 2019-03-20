@@ -209,7 +209,7 @@ class PythonReputationService(ReputationServiceBase):
         new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
-        new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm)
+        new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default)
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.decayed,self.conservatism)
         ### Apply normalizedRanks=True AKA "full normalization" to prevent negative ratings on "downrating"
