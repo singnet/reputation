@@ -5,6 +5,6 @@ PARENT_PATH=$(dirname $(cd $(dirname $0); pwd -P))
 
 pushd $PARENT_PATH
 
-pip3 install -e .
+python3 setup.py develop
 
 popd

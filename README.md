@@ -42,7 +42,6 @@ $ cd reputation
 $ bash scripts/install
 ```
 
-
 ### Aigents Server (required)
 
 * Edit hosts file, adding the line with "127.0.0.1 localtest.com"
@@ -52,13 +51,6 @@ Mac: /private/etc/hosts
 Linux: /etc/hosts
 Windows: c:\WINDOWS\system32\drivers\etc\hosts 
 ```
-
-* Run Aigents Java Server
-
-```
-sh reputation/aigents_server_start.sh 
-```
-
 
 ### Testing
 
