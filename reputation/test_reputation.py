@@ -549,9 +549,56 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 #class TestReputationServiceTemporal(object):
 
-	#TODO complete this test
-	def test_unranked(self):
-		print('Testing '+type(self).__name__+' unranked')
+	def test_157(self):
+		"""
+		https://github.com/singnet/reputation/issues/157
+		day 1:
+		N2 gets differential reputation 0 which is stored as initial
+		{'2': 0.0}
+		day 2:
+		N2 gets differential reputation 0 which is blended with previous 0
+		N4 gets differential reputation 0 which is stored as initial
+		{'2': 0.0, '4': 0.0}
+		day 3:
+		N6 gets differential reputation 0 which is stored as initial
+		N8 gets differential reputation 0 which is stored as initial
+		N10 gets differential reputation 0 which is stored as initial
+		N2 appoaches decayed 0.5 with conservativity 0.5 effecting in 0.25 
+		N4 appoaches decayed 0.5 with conservativity 0.5 effecting in 0.25 
+		Normalization brings 0.25 to 100.0
+		{'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}
+		"""
+		print('Testing '+type(self).__name__+' 157')
+		rs = self.rs
+		rs.set_parameters({'default':0.0,'decayed':0.5,'precision':1,'logratings':False})
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)
+		dt4 = datetime.date(2018, 1, 4)
+		for unrated in [False]:
+			#print('Unrated:',unrated)
+			rs.set_parameters({'unrated':unrated})
+			#print(rs.get_parameters())
+			self.assertEqual( self.rs.clear_ratings(), 0 )
+			self.assertEqual( self.rs.clear_ranks(), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual(rs.update_ranks(dt2),0)
+			ranks = rs.get_ranks_dict({'date':dt2})
+			#print(ranks)
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':4,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual(rs.update_ranks(dt3),0)
+			ranks = rs.get_ranks_dict({'date':dt3})
+			#print(ranks)
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':8,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':10,'value':1,'weight':1,'time':dt4}]), 0 )
+			self.assertEqual(rs.update_ranks(dt4),0)
+			ranks = rs.get_ranks_dict({'date':dt4})
+			self.assertEqual(str(ranks),"{'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}")
+			#print(ranks)
+
+	def test_unrated(self):
+		print('Testing '+type(self).__name__+' unrated')
 		rs = self.rs
 		rs.set_parameters({'unrated':True,'default':0.0,'decayed':0.5,'precision':1,'logratings':False,'fullnorm':False})
 		dt2 = datetime.date(2018, 1, 2)
