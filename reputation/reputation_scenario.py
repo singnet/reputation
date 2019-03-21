@@ -207,6 +207,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 				ranks = None
 
 			#resetting scam campaign
+			skip_scam = False
 			if campaign is not None:
 				campaign_day = day % campaign[0] # campaign.period
 				if campaign_day == 0:
@@ -221,10 +222,10 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 						all_suppliers = good_suppliers + bad_suppliers
 					if verbose:
 						print('bad agents:',bad_agents)
-				if campaign_day < campaign[1]: # campaign.active
+				if campaign_day < campaign[1]: # campaign.inactive
 					if verbose:
 						print('skip scam')
-					continue
+					skip_scam = True
 				if verbose:
 					print('do scam')
 
@@ -254,6 +255,9 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 
 			if verbose:
 				print(daily_good_to_bad)
+
+			if skip_scam:
+				continue
 		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
