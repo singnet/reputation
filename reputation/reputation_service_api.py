@@ -96,7 +96,7 @@ class PythonReputationService(ReputationServiceBase):
         if 'decayed' in changes.keys():
             self.decayed = changes['decayed']
         else:
-            self.decayed = 0
+            self.decayed = 0.5
         if 'downrating' in changes.keys():
             self.downrating = changes['downrating']
         else:
@@ -216,7 +216,9 @@ class PythonReputationService(ReputationServiceBase):
         ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
         ### Downratings seem to pass, so I assume this comment is resolved.
-        self.reputation = normalize_reputation(self.reputation,self.downrating)
+        print("reputation:",self.reputation)
+        self.reputation = normalize_reputation(self.reputation,self.fullnorm)
+        print("reputation 2:",self.reputation)
         
         self.all_reputations[mydate] = dict(self.reputation)
         return(0)
