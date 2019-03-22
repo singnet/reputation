@@ -42,14 +42,6 @@ $ cd reputation
 $ bash scripts/install
 ```
 
-* NOTICE: If you use **Anaconda** enviroments instead, once inside to install dependencies
-
- ```bash
-$ bash scripts/conda_install
-```
-
-
-
 ### Aigents Server (required)
 
 * Edit hosts file, adding the line with "127.0.0.1 localtest.com"
