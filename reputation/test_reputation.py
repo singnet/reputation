@@ -544,9 +544,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 			print('denomination, logratings:')
 			print(ranks)
 		self.assertEqual(ranks, {'5': 100.0, '3': 88.0, '4': 17.0, '6': 0.0})
-
-        
-        
 	def test_157(self):
 		"""
 		https://github.com/singnet/reputation/issues/157
@@ -574,7 +571,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		dt4 = datetime.date(2018, 1, 4)
 		for unrated in [False]:
 			#print('Unrated:',unrated)
-			print("abc:",self.rs.clear_ratings())
 			rs.set_parameters({'unrated':unrated})
 			#print(rs.get_parameters())
 			self.assertEqual( self.rs.clear_ratings(), 0 )
@@ -593,63 +589,11 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 			self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':10,'value':1,'weight':1,'time':dt4}]), 0 )
 			self.assertEqual(rs.update_ranks(dt4),0)
 			ranks = rs.get_ranks_dict({'date':dt4})
-			self.assertEqual(str(ranks),"{'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}")
-			#print(ranks)
-            
-    def test_157(self):
-        """
-        https://github.com/singnet/reputation/issues/157
-        day 1:
-        N2 gets differential reputation 0 which is stored as initial
-        {'2': 0.0}
-        day 2:
-        N2 gets differential reputation 0 which is blended with previous 0
-        N4 gets differential reputation 0 which is stored as initial
-        {'2': 0.0, '4': 0.0}
-        day 3:
-        N6 gets differential reputation 0 which is stored as initial
-        N8 gets differential reputation 0 which is stored as initial
-        N10 gets differential reputation 0 which is stored as initial
-        N2 appoaches decayed 0.5 with conservativity 0.5 effecting in 0.25 
-        N4 appoaches decayed 0.5 with conservativity 0.5 effecting in 0.25 
-        Normalization brings 0.25 to 100.0
-        {'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}
-        """
-        print('Testing '+type(self).__name__+' 157')
-        rs = self.rs
-        rs.set_parameters({'default':0.0,'decayed':0.5,'precision':1,'logratings':False})
-        dt2 = datetime.date(2018, 1, 2)
-        dt3 = datetime.date(2018, 1, 3)
-        dt4 = datetime.date(2018, 1, 4)
-        for unrated in [False]:
-            #print('Unrated:',unrated)
-            print("abc:",self.rs.clear_ratings())
-            rs.set_parameters({'unrated':unrated})
-            #print(rs.get_parameters())
-            self.assertEqual( self.rs.clear_ratings(), 0 )
-            self.assertEqual( self.rs.clear_ranks(), 0 )
-            self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt2}]), 0 )
-            self.assertEqual(rs.update_ranks(dt2),0)
-            ranks = rs.get_ranks_dict({'date':dt2})
-            #print(ranks)
-            self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':1,'weight':1,'time':dt3}]), 0 )
-            self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':4,'value':1,'weight':1,'time':dt3}]), 0 )
-            self.assertEqual(rs.update_ranks(dt3),0)
-            ranks = rs.get_ranks_dict({'date':dt3})
-            #print(ranks)
-            self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':1,'weight':1,'time':dt4}]), 0 )
-            self.assertEqual( rs.put_ratings([{'from':3,'type':'rating','to':8,'value':1,'weight':1,'time':dt4}]), 0 )
-            self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':10,'value':1,'weight':1,'time':dt4}]), 0 )
-            self.assertEqual(rs.update_ranks(dt4),0)
-            ranks = rs.get_ranks_dict({'date':dt4})
-            correct_dict = {'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}
-            self.assertDictEqual(ranks,correct_dict)
-            #print(ranks)
+			correct_dict = {'2': 100.0, '4': 100.0, '10': 0.0, '6': 0.0, '8': 0.0}
+			self.assertDictEqual(ranks,correct_dict)
 
 class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 #class TestReputationServiceTemporal(object):
-
-
 
 	def test_unrated(self):
 		print('Testing '+type(self).__name__+' unrated')
@@ -684,6 +628,9 @@ class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 		self.assertEqual(str(ranks),"{'10': 100.0, '11': 100.0, '1': 63.0, '12': 50.0, '2': 38.0, '20': 38.0, '21': 38.0, '3': 25.0, '30': 0.0}")
 		#print(ranks)
 
+        
+        
+        
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
         
 	def test_aggregation(self):

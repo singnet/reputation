@@ -575,10 +575,7 @@ def normalize_reputation(reputation,normalizedRanks=False):
     min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
         if normalizedRanks: ### normalizedRanks is equal to fullnorm.
-            if max_value!=min_value:
-                reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
-            else:
-                pass
+            reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
         else:
             if max_value!= 0:
                 reputation[k] = reputation[k] /max_value
@@ -608,14 +605,11 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
     ### Our current approach of updating reputation each time period. 
     j = 0
     all_keys = set(mys.keys())
-    print("approach_d:",mys,"reputation:",reputation)
     for k  in reputation.keys():
         if k in all_keys:
             reputation[k] = (1-conservativity) * mys[k] + conservativity * reputation[k]
         else:
-            print(k,"and default",default_rep,"reputation[k]",reputation[k])
             reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
-            print(k,"and reputation[k]",reputation[k])
             #reputation[k] = (1-conservativity) * 0 + conservativity * reputation[k]
         j+=1  
     return(reputation)
