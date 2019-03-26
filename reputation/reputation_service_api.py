@@ -36,6 +36,7 @@ class PythonReputationService(ReputationServiceBase):
     ### Setting up the way we do in Anton's recommendation.
     ### update_period is how many days we jump in one period... We can adjust it...
 
+
     def set_parameters(self,changes):
         if 'default' in changes.keys():
             self.default = changes['default']
@@ -147,7 +148,10 @@ class PythonReputationService(ReputationServiceBase):
             self.downrating = changes['downrating']
         else:
             self.downrating = False   
-       
+        if 'unrated' in changes.keys():
+            self.unrated = changes['unrated']
+        else:
+            self.unrated = False   
         return(0)
         
     ### This functions merely displays the parameters.
@@ -155,7 +159,7 @@ class PythonReputationService(ReputationServiceBase):
         return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'use_ratings':self.use_ratings, 'date':self.date,'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination})
+               'use_ratings':self.use_ratings, 'date':self.date,'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -239,7 +243,7 @@ class PythonReputationService(ReputationServiceBase):
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default)
         since = self.date - timedelta(days=self.update_period)
-        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default)
@@ -249,8 +253,7 @@ class PythonReputationService(ReputationServiceBase):
         ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
         ### Downratings seem to pass, so I assume this comment is resolved.
-        self.reputation = normalize_reputation(self.reputation,self.downrating)
-        
+        self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
         self.all_reputations[mydate] = dict(self.reputation)
         return(0)
         
@@ -289,7 +292,7 @@ class PythonReputationService(ReputationServiceBase):
                 result = {}
         all_results = []
         for k in result.keys():
-            all_results.append({'id':k,'rank':round(result[k]*100,0)})  
+            all_results.append({'id':k,'rank':my_round(result[k]*100,0)})  
         return(0,all_results)
     
     def get_ranks_dict(self,times):
@@ -301,7 +304,7 @@ class PythonReputationService(ReputationServiceBase):
             else:
                 result = {}
         for k in result.keys():
-            result[k] = round(result[k]*100,0)    
+            result[k] = my_round(result[k]*100,0)    
         return(result)    
     
     def add_time(self,addition=0):

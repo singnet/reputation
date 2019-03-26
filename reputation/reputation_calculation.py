@@ -35,6 +35,7 @@ import unittest
 import datetime
 import time
 import logging
+import math
 
 
 # reputation_scenario_test
@@ -237,7 +238,15 @@ def downratings(condition,ratings):
         return(ratings)
     else:
         return(ratings)
-
+def my_round(n, ndigits):
+    part = n * 10 ** ndigits
+    delta = part - int(part)
+    # always round "away from 0"
+    if delta >= 0.5 or -0.5 < delta <= 0:
+        part = math.ceil(part)
+    else:
+        part = math.floor(part)
+    return part / (10 ** ndigits)
 def transform_ratings(ratings, logratings):
     if logratings:
         i=0        
@@ -460,7 +469,7 @@ def logratings_precision(rating,lograting,precision,weighting):
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,normalizedRanks=True,weighting=True,denomination=True,
+def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,unrated,normalizedRanks=True,weighting=True,denomination=True,
                                    liquid = False,logratings=False,logranks=True) :
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
@@ -567,10 +576,10 @@ def rater_reputation(previous_reputations,rater_id,default,liquid=False):
         if (not liquid):
             rater_rep = 1
         else:
-            rater_rep = default * 100      
+            rater_rep = default * 100   
     return(rater_rep)
 
-def normalize_reputation(reputation,normalizedRanks=False):
+def normalize_reputation(reputation,new_array,unrated,default1,decay,conservatism,normalizedRanks=False):
     max_value = max(reputation.values(), default=1)
     min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
@@ -581,6 +590,14 @@ def normalize_reputation(reputation,normalizedRanks=False):
                 reputation[k] = reputation[k] /max_value
             else:
                 pass
+    i = 0
+    while i<len(new_array):
+        if unrated:
+            if new_array[i][0] in reputation.keys():
+                pass
+            else:
+                reputation[new_array[i][0]] = (1-conservatism) * default1 + conservatism * decay
+        i+=1
     return(reputation)    
     
 
@@ -603,6 +620,7 @@ def initialize_dict(from_array,to_array):
 
 def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,default_rep,conservativity):
     ### Our current approach of updating reputation each time period. 
+
     j = 0
     all_keys = set(mys.keys())
     for k  in reputation.keys():
