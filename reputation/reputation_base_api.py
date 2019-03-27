@@ -49,6 +49,8 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
 		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
 		self.parameters['unrated'] = False # whether to store default ranks of unrated agents and let them decay 
+		self.parameters['ratings'] = 1.0 # to which extent account contribution of explicit and implicit ratings to reputation
+		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
 
 	def get_ranks_dict(self,filter):
 		ranks_dict = {}

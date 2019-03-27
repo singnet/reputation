@@ -27,9 +27,8 @@ Reputation Service wrapper around Aigents Java-based Command Line Interface
 import sys
 import urllib.parse
 import requests
-#from reputation.reputation_base_api import * 
-#from reputation_base_api import *
 from reputation.reputation_base_api import *
+#from reputation_base_api import *
 
 import logging
 logger = logging.getLogger(__name__)	
@@ -123,6 +122,8 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
 			+ ' denomination ' + ('true' if self.parameters['denomination'] else 'false') \
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
+			+ ' ratings ' + str(self.parameters['ratings']) \
+			+ ' spendings ' + str(self.parameters['spendings']) \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
@@ -231,6 +232,9 @@ class AigentsAPIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') + ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
+			+ ' ratings ' + str(self.parameters['ratings']) \
+			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		
