@@ -52,9 +52,19 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['ratings'] = 1.0 # to which extent account contribution of explicit and implicit ratings to reputation
 		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
 
+	"""
+	Utility wrapper around get_ranks, returns None in case of error, so ranks  = get_ranks_dict(...) should be checked for None, and if it is None, the get_ranks(...) may be used to decipher the error code.
+	Input: filter as dict of the following:
+		date - date to provide the ranks
+		ids - list of ids to retrieve the ranks
+	Output:
+		dictionary of key-value pairs with reputation "ranks" by "id" on success, None on error
+	"""
 	def get_ranks_dict(self,filter):
 		ranks_dict = {}
 		res, ranks = self.get_ranks(filter)
+		if res != 0:
+			return None
 		for rank in ranks:
 			ranks_dict[rank['id']] = rank['rank']
 		return ranks_dict
