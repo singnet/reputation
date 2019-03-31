@@ -30,11 +30,17 @@ from aigents_reputation_api import AigentsAPIReputationService
 
 #TODO use any other Reputation Service here
 rs = None
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False})
 
 verbose = False
+"""
+days = 364
+consumers = 0.9
+suppliers = 0.1
+good_range = [1,9500]
+bad_range = [9501,10000]
 """
 days = 183
 consumers = 0.9
@@ -47,7 +53,7 @@ consumers = 0.5
 suppliers = 0.5
 good_range = [1,8]
 bad_range = [9,10]
-
+"""
 good_transactions = 1
 bad_transactions = 1
 
@@ -77,14 +83,15 @@ for ar in [1,2,5,10,20]:
 	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
 """
 
-
+"""
 #Trying different SP
 good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
 bad_agent = {"range": bad_range, "values": [100,1000], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
 print('Good Agent:',str(good_agent))
 print('Bad Agent :',str(bad_agent))
+for sp in [364,182,92,30]:
 #for sp in [182,92,30,10]:
-for sp in [10,6,4,2]:
+#for sp in [10,6,4,2]:
 	print('Scam period:',str(sp))
 	sip = 0 # 0 or sp/2
 	
@@ -106,6 +113,146 @@ for sp in [10,6,4,2]:
 	print('Burn-aware RS:', end =" ")
 	rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
 	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+"""
+
+#Trying different RS parameters
+good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": bad_range, "values": [100,1000], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
+print('Good Agent:',str(good_agent))
+print('Bad Agent :',str(bad_agent))
+sp = 30
+sip = 0
+
+"""
+# Study SOM - initial 
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':False,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':True,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.1,'spendings':0.9,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+# Study SOM - ratings/spendings
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.1,'spendings':0.9,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.3,'spendings':0.7,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.7,'spendings':0.3,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+# Study SOM - conservatism
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.7})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.99})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+"""
+# Study SOM - default/decayed
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':1.0,'ratings':0.5,'spendings':0.5,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':1.0,'ratings':0.5,'spendings':0.5,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+"""
+# Study TOM+SOM
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':False,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':0.1,'spendings':0.9,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+# Study TOM
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':False,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.5,'decayed':1.0,'ratings':1.0,'spendings':0.0,'conservatism':0.9})
+print(rs.get_parameters(), end=" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, campaign = [sp,sip], verbose=False)
+
+"""
 
 
 #Very-very unhealthy agent environment set
