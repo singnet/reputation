@@ -62,8 +62,9 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		else:
         	#TODO make sure if we can use only one of these
 			output = self.request('my name ' + self.login_email + ', surname ' + self.login_email + ', email ' + self.login_email + '.')
-			assert output == 'What your secret question, secret answer?', 'Expecting secret question, secret answer'
-			output = self.request('my secret question ' + self.secret_question + ', secret answer ' + self.secret_answer + '.')
+			if output == 'What your secret question, secret answer?':
+				assert output == 'What your secret question, secret answer?', 'Expecting secret question, secret answer'
+				output = self.request('my secret question ' + self.secret_question + ', secret answer ' + self.secret_answer + '.')
 			assert output == 'What your ' + self.secret_question + '?', 'Expecting secret question'
 			output = self.request('my ' + self.secret_question + ' ' + self.secret_answer + '.')
 			assert output.split()[0] == 'Ok.', 'Expecting Ok'
