@@ -49,10 +49,22 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['update_period'] = 1 # number of days to update reputation state, considered as observation period for computing incremental reputations
 		self.parameters['aggregation'] = False #TODO support in Aigents, aggregated with weighted average of ratings across the same period
 		self.parameters['unrated'] = False # whether to store default ranks of unrated agents and let them decay 
+		self.parameters['ratings'] = 1.0 # to which extent account contribution of explicit and implicit ratings to reputation
+		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
 
+	"""
+	Utility wrapper around get_ranks, returns None in case of error, so ranks  = get_ranks_dict(...) should be checked for None, and if it is None, the get_ranks(...) may be used to decipher the error code.
+	Input: filter as dict of the following:
+		date - date to provide the ranks
+		ids - list of ids to retrieve the ranks
+	Output:
+		dictionary of key-value pairs with reputation "ranks" by "id" on success, None on error
+	"""
 	def get_ranks_dict(self,filter):
 		ranks_dict = {}
 		res, ranks = self.get_ranks(filter)
+		if res != 0:
+			return None
 		for rank in ranks:
 			ranks_dict[rank['id']] = rank['rank']
 		return ranks_dict

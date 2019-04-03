@@ -27,9 +27,8 @@ Reputation Service wrapper around Aigents Java-based Command Line Interface
 import sys
 import urllib.parse
 import requests
-#from reputation.reputation_base_api import * 
-#from reputation_base_api import *
 from reputation.reputation_base_api import *
+#from reputation_base_api import *
 
 import logging
 logger = logging.getLogger(__name__)	
@@ -63,8 +62,9 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		else:
         	#TODO make sure if we can use only one of these
 			output = self.request('my name ' + self.login_email + ', surname ' + self.login_email + ', email ' + self.login_email + '.')
-			assert output == 'What your secret question, secret answer?', 'Expecting secret question, secret answer'
-			output = self.request('my secret question ' + self.secret_question + ', secret answer ' + self.secret_answer + '.')
+			if output == 'What your secret question, secret answer?':
+				assert output == 'What your secret question, secret answer?', 'Expecting secret question, secret answer'
+				output = self.request('my secret question ' + self.secret_question + ', secret answer ' + self.secret_answer + '.')
 			assert output == 'What your ' + self.secret_question + '?', 'Expecting secret question'
 			output = self.request('my ' + self.secret_question + ' ' + self.secret_answer + '.')
 			assert output.split()[0] == 'Ok.', 'Expecting Ok'
@@ -123,6 +123,8 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' weighting ' + ('true' if self.parameters['weighting'] else 'false') \
 			+ ' denomination ' + ('true' if self.parameters['denomination'] else 'false') \
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
+			+ ' ratings ' + str(self.parameters['ratings']) \
+			+ ' spendings ' + str(self.parameters['spendings']) \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
@@ -231,6 +233,9 @@ class AigentsAPIReputationService(ReputationServiceBase):
 	def update_ranks(self,date):
 		if self.verbose:
 			logger.info( 'update_ranks' + ' ' + str(date) )
-		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') + ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
+		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
+			+ ' ratings ' + str(self.parameters['ratings']) \
+			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		

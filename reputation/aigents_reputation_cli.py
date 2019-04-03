@@ -1,6 +1,6 @@
 # MIT License
 # 
-# Copyright (c) 2018 Stichting SingularityNET
+# Copyright (c) 2018-2019 Stichting SingularityNET
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -184,6 +184,8 @@ class AigentsCLIReputationService(ReputationServiceBase):
 			+ ' liquid ' + ('true' if self.parameters['liquid'] else 'false') \
 			+ ' period ' + str(self.parameters['update_period']) \
 			+ ' downrating ' + ('true' if self.parameters['downrating'] else 'false') \
+			+ ' ratings ' + str(self.parameters['ratings']) \
+			+ ' spendings ' + str(self.parameters['spendings']) \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.ai_command(cmd)
 		return 0 if len(res.strip()) == 0 else 1
