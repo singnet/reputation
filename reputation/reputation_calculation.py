@@ -465,11 +465,11 @@ def logratings_precision(rating,lograting,precision,weighting):
                 #print(rating,precision,'=>',new_rating,new_weight)
 
     new_rating = round(new_rating) #TODO see if we need to keep this rounding which is needed to sync-up with Aigents Java reputation system
-    return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Σj (Fij * Qij * Rjt-1 ) / Σj (Qij)
+    return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Î£j (Fij * Qij * Rjt-1 ) / Î£j (Qij)
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-                                   liquid = False,logratings=False,logranks=True) :
+def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True):
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
     mys = {}
