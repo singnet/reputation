@@ -469,7 +469,6 @@ def logratings_precision(rating,lograting,precision,weighting):
 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
-def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,unrated,normalizedRanks=True,weighting=True,denomination=True,
                                    liquid = False,logratings=False,logranks=True) :
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id.
@@ -584,7 +583,10 @@ def normalize_reputation(reputation,new_array,unrated,default1,decay,conservatis
     min_value = min(reputation.values(), default=0)
     for k in reputation.keys():
         if normalizedRanks: ### normalizedRanks is equal to fullnorm.
-            reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
+            if max_value!=min_value:
+                reputation[k] = (reputation[k]-min_value) /(max_value-min_value)
+            else:
+                pass
         else:
             if max_value!= 0:
                 reputation[k] = reputation[k] /max_value
