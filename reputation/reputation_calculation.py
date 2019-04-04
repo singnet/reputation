@@ -544,11 +544,20 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     ### We divide it by max value, as specified. There are different normalizations possible...
     return(mys)
 
-def normalized_differential(mys,normalizedRanks,our_default):
+def normalized_differential(raw,normalizedRanks,our_default,log=True):
+    if log:
+        mys = {}
+        for k in raw.keys():
+        	v = raw[k]
+        	# f = v < 0 ? -log10(1 - v) : log10(1 + v)
+        	mys[k] = -np.log10(1 - v) if v < 0 else np.log10(1 + v)
+    else:
+        mys = raw
     max_value = max(mys.values(), default=1)
     min_value = min(mys.values(), default=0)
     if max_value==min_value:
         min_value = max_value - our_default ### as the solution to issue #157
+    #print(normalizedRanks,min_value,max_value)
     for k in mys.keys():
         if max_value==min_value:
             mys[k] = (mys[k]-min_value)
