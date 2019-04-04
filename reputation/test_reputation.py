@@ -26,7 +26,8 @@ import unittest
 import datetime
 import time
 import logging
-
+import pandas as pd
+import numpy as np
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -703,5 +704,63 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'],68)    
+	def test_put_ratings(self):
+		print('Testing '+type(self).__name__+' put_ratings')
+		rs = self.rs        
+		def get_data_in():
+			transactions = pd.read_csv('issue1.tsv',header = None,sep="\t") 
 
+			transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
+			                        'input','tags','format','block','parent']
+			from1 = transactions['from']
+			type1 = transactions['type']
+			to1 = transactions['to']
+			value1 = transactions['value']
+			time1 = transactions['Time']
+			my_time = transactions['Time']
+			dates = []
+			## Convert dates;
+			i = 0
+			while i<len(my_time):
+			    dates.append(datetime.datetime.strptime(datetime.datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
+			    i+=1
+
+			our_ratings = []
+			i = 0
+			while i<len(transactions):
+			    #our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
+			    #                   'value':value1[i],'weight':'NaN','time':dates[i]})
+			    our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
+			                       'value':value1[i],'time':dates[i].date()})
+			    i+=1
+
+			return(our_ratings,dates)
+		rs.set_parameters({
+		  "precision": 0.01,
+		  "default": 0.5,
+		  "conservatism": 0.5,
+		  "fullnorm": True,
+		  "weighting": True,
+		  "logratings": False,
+		  "decayed": 0.5,
+		  "liquid": False,
+		  "logranks": False,
+		  "downrating": False,
+		  "update_period": 1,
+		  "aggregation": False,
+		  "denomination": False,
+		  "unrated": False })
+		our_ratings, dates = get_data_in()
+		dates1 = np.unique(dates)
+		num_days = len(np.unique(dates))
+		
+		for k in our_ratings:
+		    rs.put_ratings([k])
+		rs.update_ranks(dates1[0].date())
+		ranks = rs.get_ranks_dict({'date':dates1[0].date()})
+		self.assertEqual(len(rs.get_ratings({'ids':['0','1','2'],'since':datetime.date(2017, 1, 1),'until':datetime.date(2018, 1, 2)})[1]),265)
+		### Why 265? If we look at all the transactions in issue1.tsv, we can see there are 582 of them. If we filter
+		### to only those that are directed to agent 0,1 or 2, we get 265 transactions.
+		self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 34.0, '3': 63.0, '4': 74.0, '0': 42.0})
+		### About the second assetEqual - not certain if it's correct, but this is what Python rep system returns.
 	#TODO Test self.parameters['logranks'] after when implemented:
