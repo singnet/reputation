@@ -361,6 +361,7 @@ class PythonReputationService(ReputationServiceBase):
         params = {'default':0.5, 'conservatism': 0.5, 'precision': 0.01, 'weighting': True, 'denomination': False, 'fullnorm': True,
          'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': True, 'update_period': 1,
          'use_ratings': True, 'start_date': datetime.date(2018, 1, 1),'decayed':0.0}
+        self.ratings = {}
         self.reputation = {}
         self.all_reputations = {}
         self.set_parameters(params)
