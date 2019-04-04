@@ -721,9 +721,10 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		def get_data_in():
 			#transactions = pd.read_csv('./testdata/issue1.tsv',header = None,sep="\t") 
 			
-			#for 10 transactions in issue1.tsv results are the same
-			#for 25 transactions in issue1.tsv results are different
-			transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
+			# The data in issue1_25.tsv have issue #171
+			#transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
+			
+			transactions = pd.read_csv('./testdata/issue1_16cleaned.tsv',header = None,sep="\t") 
 
 			transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
 			                        'input','tags','format','block','parent']
@@ -780,12 +781,12 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		#Let us ignore that for now, may fix later in #192 . 
 		#ratings_cnt = len(rs.get_ratings({'ids':['0','1','2'],'since':datetime.date(2017, 1, 1),'until':datetime.date(2018, 1, 2)})[1])
 		ratings_cnt = 0
-		ratings_cnt += len(rs.get_ratings({'ids':['0'],'since':date1,'until':date1})[1]);
+		ratings_cnt += len(rs.get_ratings({'ids':['50'],'since':date1,'until':date1})[1]);
 		ratings_cnt += len(rs.get_ratings({'ids':['1'],'since':date1,'until':date1})[1]);
 		ratings_cnt += len(rs.get_ratings({'ids':['2'],'since':date1,'until':date1})[1]);
 
-		print(ratings_cnt)
-		print(ranks)
+		#print(ratings_cnt)
+		#print(ranks)
 		
 		### The following applies to ./testdata/issue1.tsv
 		### Why 265? If we look at all the transactions in issue1.tsv, we can see there are 582 of them. If we filter
@@ -795,9 +796,24 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		### About the second assertEqual - not certain if it's correct, but this is what Python rep system returns.
 
 		### The following applies to ./testdata/issue1_25.tsv
-		self.assertEqual(ratings_cnt,20)
+		#self.assertEqual(ratings_cnt,25)
 		#self.assertDictEqual(ranks,{'50': 100.0, '1': 43.0, '2': 33.0}) # Java
-		self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 36.0}) # Python
+		#self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 36.0}) # Python
+		
+		### The following applies to ./testdata/issue1_16cleaed.tsv
+		self.assertEqual(ratings_cnt,16)
+		
+		# Java
+		#differential: {2=600.0, 1=500.0, 50=400.0}
+		#normalized: {2=100.0, 1=55.02378567291773, 50=0.0}
+		#blended: {2=75.0, 1=52.51189283645887, 50=25.0}
+		#normalized: {2=100.0, 1=70.0158571152785, 50=33.33333333333333}
+		#self.assertDictEqual(ranks,{'2': 100.0, '1': 70.0, '50': 33.0})
+		
+		# Python
+		#differential: {'2': 600.0, '50': 400.0, '1': 500.0}
+		#normalized: {'2': 1.0, '50': 0.0, '1': 0.5}
+		self.assertDictEqual(ranks,{'2': 100.0, '50': 33.0, '1': 67.0}) # Python
 		
 
 	#TODO Test self.parameters['logranks'] after when implemented:
