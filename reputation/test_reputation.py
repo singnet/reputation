@@ -703,7 +703,8 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.update_ranks(dt2),0)
 
 		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'],68)    
+		self.assertEqual(ranks['1'],68)
+		    
 	def test_put_ratings(self):
 		print('Testing '+type(self).__name__+' put_ratings')
 		rs = self.rs        
