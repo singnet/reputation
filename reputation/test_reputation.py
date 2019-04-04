@@ -704,12 +704,26 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'],68)
+
+
+class TestReputationServiceDebug(TestReputationServiceAdvanced):
+#class TestReputationServiceDebug(object):
 		    
 	def test_put_ratings(self):
 		print('Testing '+type(self).__name__+' put_ratings')
-		rs = self.rs        
+		rs = self.rs
+		
+		#RS must be persistent. If Python RS coes not keep the data, it is something that we will have to fix in the future.
+		#But Aigents RS is persistent, so it is a must to clear data at every run.  
+		rs.clear_ranks()
+		rs.clear_ratings()
+		
 		def get_data_in():
-			transactions = pd.read_csv('issue1.tsv',header = None,sep="\t") 
+			#transactions = pd.read_csv('./testdata/issue1.tsv',header = None,sep="\t") 
+			
+			#for 10 transactions in issue1.tsv results are the same
+			#for 25 transactions in issue1.tsv results are different
+			transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
 
 			transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
 			                        'input','tags','format','block','parent']
@@ -757,11 +771,33 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		
 		for k in our_ratings:
 		    rs.put_ratings([k])
-		rs.update_ranks(dates1[0].date())
-		ranks = rs.get_ranks_dict({'date':dates1[0].date()})
-		self.assertEqual(len(rs.get_ratings({'ids':['0','1','2'],'since':datetime.date(2017, 1, 1),'until':datetime.date(2018, 1, 2)})[1]),265)
+		
+		date1 = dates1[0].date()
+		rs.update_ranks(date1)
+		ranks = rs.get_ranks_dict({'date':date1})
+		
+		#Current Aigents Java API for get_ratings is underimplemented, so it can accept only one id in the filter.
+		#Let us ignore that for now, may fix later in #192 . 
+		#ratings_cnt = len(rs.get_ratings({'ids':['0','1','2'],'since':datetime.date(2017, 1, 1),'until':datetime.date(2018, 1, 2)})[1])
+		ratings_cnt = 0
+		ratings_cnt += len(rs.get_ratings({'ids':['0'],'since':date1,'until':date1})[1]);
+		ratings_cnt += len(rs.get_ratings({'ids':['1'],'since':date1,'until':date1})[1]);
+		ratings_cnt += len(rs.get_ratings({'ids':['2'],'since':date1,'until':date1})[1]);
+
+		print(ratings_cnt)
+		print(ranks)
+		
+		### The following applies to ./testdata/issue1.tsv
 		### Why 265? If we look at all the transactions in issue1.tsv, we can see there are 582 of them. If we filter
+		#self.assertEqual(ratings_cnt,265)
 		### to only those that are directed to agent 0,1 or 2, we get 265 transactions.
-		self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 34.0, '3': 63.0, '4': 74.0, '0': 42.0})
-		### About the second assetEqual - not certain if it's correct, but this is what Python rep system returns.
+		#self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 34.0, '3': 63.0, '4': 74.0, '0': 42.0})
+		### About the second assertEqual - not certain if it's correct, but this is what Python rep system returns.
+
+		### The following applies to ./testdata/issue1_25.tsv
+		self.assertEqual(ratings_cnt,20)
+		#self.assertDictEqual(ranks,{'50': 100.0, '1': 43.0, '2': 33.0}) # Java
+		self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 36.0}) # Python
+		
+
 	#TODO Test self.parameters['logranks'] after when implemented:
