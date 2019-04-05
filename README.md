@@ -36,6 +36,13 @@ $ git clone git@github.com:singnet/reputation.git
 $ cd reputation
 ```
 
+In case there are problems with the script above, one can try a more stable http approach:
+
+```bash
+$ git clone https://github.com/singnet/reputation.git
+$ cd reputation
+```
+
 * Install dependencies in editable/development mode on your local machine
 
 ```bash
