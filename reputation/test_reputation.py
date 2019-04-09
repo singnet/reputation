@@ -678,37 +678,7 @@ class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 		#print(ranks3)
 		self.assertDictEqual(ranks3,{'2': 100.0, '1': 67.0, '4': 67.0, '6': 67.0, '3': 33.0, '5': 33.0})
 
-
-class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
-    
-    #TODO move to base tests once supported in other RS API-s
-	def test_aggregation(self):
-		print('Testing '+type(self).__name__+' aggregation')
-		rs = self.rs
-		rs.clear_ratings()
-		self.clear()
-		dt2 = datetime.date(2018, 1, 2)
-		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
-		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
-		self.assertEqual(rs.update_ranks(dt2),0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'],60)
-		self.clear()
-		rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':True,'fullnorm':False})
-		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
-		self.assertEqual(rs.update_ranks(dt2),0)
-
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'],68)
-
-
-class TestReputationServiceDebug(TestReputationServiceAdvanced):
-#class TestReputationServiceDebug(object):
-		    
+        
 	def test_put_ratings(self):
 		print('Testing '+type(self).__name__+' put_ratings')
 		rs = self.rs
@@ -750,7 +720,7 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 			                       'value':value1[i],'time':dates[i].date()})
 			    i+=1
 
-			return(our_ratings,dates)
+			return(our_ratings,dates)        
 		rs.set_parameters({
 		  "precision": 0.01,
 		  "default": 0.5,
@@ -760,7 +730,7 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		  "logratings": False,
 		  "decayed": 0.5,
 		  "liquid": False,
-		  "logranks": False,
+		  "logranks": True,
 		  "downrating": False,
 		  "update_period": 1,
 		  "aggregation": False,
@@ -775,32 +745,11 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		
 		date1 = dates1[0].date()
 		rs.update_ranks(date1)
-		ranks = rs.get_ranks_dict({'date':date1})
-		
-		#Current Aigents Java API for get_ratings is underimplemented, so it can accept only one id in the filter.
-		#Let us ignore that for now, may fix later in #192 . 
-		#ratings_cnt = len(rs.get_ratings({'ids':['0','1','2'],'since':datetime.date(2017, 1, 1),'until':datetime.date(2018, 1, 2)})[1])
+		ranks = rs.get_ranks_dict({'date':date1})        
 		ratings_cnt = 0
 		ratings_cnt += len(rs.get_ratings({'ids':['50'],'since':date1,'until':date1})[1]);
 		ratings_cnt += len(rs.get_ratings({'ids':['1'],'since':date1,'until':date1})[1]);
-		ratings_cnt += len(rs.get_ratings({'ids':['2'],'since':date1,'until':date1})[1]);
-
-		#print(ratings_cnt)
-		#print(ranks)
-		
-		### The following applies to ./testdata/issue1.tsv
-		### Why 265? If we look at all the transactions in issue1.tsv, we can see there are 582 of them. If we filter
-		#self.assertEqual(ratings_cnt,265)
-		### to only those that are directed to agent 0,1 or 2, we get 265 transactions.
-		#self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 34.0, '3': 63.0, '4': 74.0, '0': 42.0})
-		### About the second assertEqual - not certain if it's correct, but this is what Python rep system returns.
-
-		### The following applies to ./testdata/issue1_25.tsv
-		#self.assertEqual(ratings_cnt,25)
-		#self.assertDictEqual(ranks,{'50': 100.0, '1': 43.0, '2': 33.0}) # Java
-		#self.assertDictEqual(ranks,{'2': 33.0, '50': 100.0, '1': 36.0}) # Python
-		
-		### The following applies to ./testdata/issue1_16cleaed.tsv
+		ratings_cnt += len(rs.get_ratings({'ids':['2'],'since':date1,'until':date1})[1]);            
 		self.assertEqual(ratings_cnt,16)
 		
 		# Java
@@ -813,7 +762,41 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		# Python
 		#differential: {'2': 600.0, '50': 400.0, '1': 500.0}
 		#normalized: {'2': 1.0, '50': 0.0, '1': 0.5}
-		self.assertDictEqual(ranks,{'2': 100.0, '50': 33.0, '1': 67.0}) # Python
-		
+		self.assertDictEqual(ranks,{'2': 100.0, '1': 70.0, '50': 33.0})
+        
+        
+        
 
-	#TODO Test self.parameters['logranks'] after when implemented:
+class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
+    
+    #TODO move to base tests once supported in other RS API-s
+	def test_aggregation(self):
+		print('Testing '+type(self).__name__+' aggregation')
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		dt2 = datetime.date(2018, 1, 2)
+		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],60)
+		self.clear()
+		rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':True,'fullnorm':False})
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],68)
+
+        
+        
+
+class TestReputationServiceDebug(TestReputationServiceAdvanced):
+#class TestReputationServiceDebug(object):
+		pass
+
