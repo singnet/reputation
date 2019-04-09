@@ -626,59 +626,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		ranks = rs.get_ranks_dict({'date':dt4})
 		correct_dict = {'10': 100.0, '11': 100.0, '1': 63.0, '12': 50.0, '2': 38.0, '20': 38.0, '21': 38.0, '3': 25.0, '30': 0.0}
 		self.assertDictEqual(ranks,correct_dict)
-
-
-class TestReputationServiceTemporal(TestReputationServiceParametersBase):
-#class TestReputationServiceTemporal(object):
-
-	def test_spending(self):
-		print('Testing '+type(self).__name__+' spending')
-		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
-		def rate():
-			self.assertEqual( rs.clear_ratings(), 0 )
-			self.assertEqual( rs.clear_ranks(), 0 )
-			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':1,'weight':1,'time':dt2}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':3,'value':0,'weight':10,'time':dt2}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':4,'value':1,'weight':10,'time':dt2}]), 0 )
-			self.assertEqual(rs.update_ranks(dt2),0)
-			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':5,'value':1,'weight':1,'time':dt3}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':0,'weight':1,'time':dt3}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':0,'weight':1,'time':dt3}]), 0 )
-			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':6,'value':1,'weight':1,'time':dt3}]), 0 )
-			self.assertEqual(rs.update_ranks(dt3),0)
-
-		#test with no SOM (Proof-of-Reputation)
-		rs.set_parameters({'default':0.5,'decayed':0.0,'ratings':1.0,'spendings':0.0})
-		rate()
-		ranks2 = rs.get_ranks_dict({'date':dt2})
-		#print(ranks2)
-		ranks3 = rs.get_ranks_dict({'date':dt3})
-		#print(ranks3)
-		self.assertDictEqual(ranks3,{'5': 100.0, '6': 100.0, '4': 67.0, '3': 22.0})
-
-		#test with SOM only (Proof-of-Burn)
-		rs.set_parameters({'default':0.0,'decayed':0.0,'ratings':0.0,'spendings':1.0})
-		rate()
-		ranks2 = rs.get_ranks_dict({'date':dt2})
-		#print(ranks2)
-		ranks3 = rs.get_ranks_dict({'date':dt3})
-		#print(ranks3)
-		self.assertDictEqual(ranks3,{'2': 100.0, '1': 50.0, '3': 0.0, '4': 0.0, '5': 0.0, '6': 0.0})
-
-		#test with Liquid SOM (Proof-of-Burn + Proof-of-Reputation)
-		rs.set_parameters({'default':0.5,'decayed':0.0,'ratings':0.5,'spendings':0.5})
-		rate()
-		ranks2 = rs.get_ranks_dict({'date':dt2})
-		#print(ranks2)
-		ranks3 = rs.get_ranks_dict({'date':dt3})
-		#print(ranks3)
-		self.assertDictEqual(ranks3,{'2': 100.0, '1': 67.0, '4': 67.0, '6': 67.0, '3': 33.0, '5': 33.0})
-
-        
 	def test_put_ratings(self):
 		print('Testing '+type(self).__name__+' put_ratings')
 		rs = self.rs
@@ -763,6 +710,62 @@ class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 		#differential: {'2': 600.0, '50': 400.0, '1': 500.0}
 		#normalized: {'2': 1.0, '50': 0.0, '1': 0.5}
 		self.assertDictEqual(ranks,{'2': 100.0, '1': 70.0, '50': 33.0})
+        
+        
+        
+
+class TestReputationServiceTemporal(TestReputationServiceParametersBase):
+#class TestReputationServiceTemporal(object):
+
+	def test_spending(self):
+		print('Testing '+type(self).__name__+' spending')
+		rs = self.rs
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)
+		dt4 = datetime.date(2018, 1, 4)
+		def rate():
+			self.assertEqual( rs.clear_ratings(), 0 )
+			self.assertEqual( rs.clear_ranks(), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':3,'value':1,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':4,'value':0,'weight':1,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':3,'value':0,'weight':10,'time':dt2}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':4,'value':1,'weight':10,'time':dt2}]), 0 )
+			self.assertEqual(rs.update_ranks(dt2),0)
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':5,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':6,'value':0,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':5,'value':0,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual( rs.put_ratings([{'from':2,'type':'rating','to':6,'value':1,'weight':1,'time':dt3}]), 0 )
+			self.assertEqual(rs.update_ranks(dt3),0)
+
+		#test with no SOM (Proof-of-Reputation)
+		rs.set_parameters({'default':0.5,'decayed':0.0,'ratings':1.0,'spendings':0.0})
+		rate()
+		ranks2 = rs.get_ranks_dict({'date':dt2})
+		#print(ranks2)
+		ranks3 = rs.get_ranks_dict({'date':dt3})
+		#print(ranks3)
+		self.assertDictEqual(ranks3,{'5': 100.0, '6': 100.0, '4': 67.0, '3': 22.0})
+
+		#test with SOM only (Proof-of-Burn)
+		rs.set_parameters({'default':0.0,'decayed':0.0,'ratings':0.0,'spendings':1.0})
+		rate()
+		ranks2 = rs.get_ranks_dict({'date':dt2})
+		#print(ranks2)
+		ranks3 = rs.get_ranks_dict({'date':dt3})
+		#print(ranks3)
+		self.assertDictEqual(ranks3,{'2': 100.0, '1': 50.0, '3': 0.0, '4': 0.0, '5': 0.0, '6': 0.0})
+
+		#test with Liquid SOM (Proof-of-Burn + Proof-of-Reputation)
+		rs.set_parameters({'default':0.5,'decayed':0.0,'ratings':0.5,'spendings':0.5})
+		rate()
+		ranks2 = rs.get_ranks_dict({'date':dt2})
+		#print(ranks2)
+		ranks3 = rs.get_ranks_dict({'date':dt3})
+		#print(ranks3)
+		self.assertDictEqual(ranks3,{'2': 100.0, '1': 67.0, '4': 67.0, '6': 67.0, '3': 33.0, '5': 33.0})
+
+        
+
         
         
         
