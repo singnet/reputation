@@ -31,6 +31,15 @@ import numpy as np
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
+def print_dict_sorted(d):
+	first = True
+	print("{",end="")
+	for key, value in sorted(d.items(), key=lambda x: x[0]): 
+		template = "{}: {}" if first else ", {}:{}"
+		print(template.format(key, value),end="")
+		first = False
+	print("}")
+
 class TestReputationServiceBase(object):
 
 	def test_base(self):
@@ -801,6 +810,8 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 		def test_roundings(self):
 			print('Testing '+type(self).__name__+' roundings')
 			rs = self.rs
+			rs.clear_ranks()
+			rs.clear_ratings()
 			transactions = pd.read_csv('./testdata/problematic_transactions2.csv') 
 			from1 = transactions['from']
 			type1 = transactions['type']
@@ -834,11 +845,14 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 			i+=1
 			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
 			ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+			
+			#print_dict_sorted(ranks);
 			self.assertDictEqual(ranks,{'2': 87.0, '3': 29.0, '4': 24.0, '9': 100.0, '5': 72.0, '6': 72.0, '7': 72.0, '8': 72.0, '10': 72.0})        
+
 			### Note, the reason why Python and Java differ is because Java looks at above numbers and makes calculations on them.
 			### Python however, has more exact numbers in the background and considers those only as roundings.
-			### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
 			### 
+			### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
 			i+=1
 			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
 			ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
@@ -847,5 +861,7 @@ class TestReputationServiceDebug(TestReputationServiceAdvanced):
 			### differential (normalized): {'2': 0.0, '9': 1.0}
 			### Once we update it is in Java (for '2': 44 = 87/2) and Python round(0.4330*100=43). Similar with ID '3'
 			### We divide by 2 because it decays towards 0 each time with conservatism=0.5
+
+			#print_dict_sorted(ranks);
 			self.assertDictEqual(ranks,{'2': 43.0, '3': 39.0, '4': 37.0, '9': 100.0, '5': 61.0, '6': 61.0, '7': 61.0, '8': 61.0, '10': 61.0})
 
