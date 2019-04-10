@@ -237,7 +237,6 @@ class PythonReputationService(ReputationServiceBase):
             if (self.current_ratings[0]['type']=="payment" and self.downrating==True):
                 print("if we only have payments, we have no ratings. Therefore downratings cannot be True. Setting them to False")
                 self.downrating=False
-        
         array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
                                                                              self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting)  
         self.first_occurance = first_occurance
@@ -257,6 +256,9 @@ class PythonReputationService(ReputationServiceBase):
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
         ### Downratings seem to pass, so I assume this comment is resolved.
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
+        ### round reputations:
+        for k in self.reputation.keys():
+            self.reputation[k] = my_round(self.reputation[k],2)
         self.all_reputations[mydate] = dict(self.reputation)
         return(0)
         
