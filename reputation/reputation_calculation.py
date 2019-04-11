@@ -507,7 +507,7 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     #no need for denomination by sum of weights in such case 
             mys[unique_ids[i]] = sum(amounts)
             if len(denominators) > 0:
-            	myd[unique_ids[i]] = sum(denominators)
+                myd[unique_ids[i]] = sum(denominators)
 #
             i+=1
     else:
@@ -550,7 +550,8 @@ def normalized_differential(raw,normalizedRanks,our_default,log=True):
         for k in raw.keys():
         	v = raw[k]
         	# f = v < 0 ? -log10(1 - v) : log10(1 + v)
-        	mys[k] = -np.log10(1 - v) if v < 0 else np.log10(1 + v)
+        	mys[k] = -np.log10(1 - v) if v < 0 else np.log10(1 + v) ### This is already done in line 540.
+            ### Doing it again will make a double log.
     else:
         mys = raw
     max_value = max(mys.values(), default=1)
@@ -607,7 +608,7 @@ def normalize_reputation(reputation,new_array,unrated,default1,decay,conservatis
             if new_array[i][0] in reputation.keys():
                 pass
             else:
-                reputation[new_array[i][0]] = (1-conservatism) * default1 + conservatism * decay
+                reputation[new_array[i][0]] = conservatism * default1 + (1-conservatism) * decay
         i+=1
     return(reputation)    
     
@@ -631,13 +632,13 @@ def initialize_dict(from_array,to_array):
 
 def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,default_rep,conservativity):
     ### Our current approach of updating reputation each time period. 
-
     j = 0
     all_keys = set(mys.keys())
     for k  in reputation.keys():
         if k in all_keys:
             reputation[k] = (1-conservativity) * mys[k] + conservativity * reputation[k]
         else:
+            
             reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
             #reputation[k] = (1-conservativity) * 0 + conservativity * reputation[k]
         j+=1  
