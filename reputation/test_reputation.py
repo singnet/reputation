@@ -31,15 +31,6 @@ import numpy as np
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-def print_dict_sorted(d):
-	first = True
-	print("{",end="")
-	for key, value in sorted(d.items(), key=lambda x: x[0]): 
-		template = "{}: {}" if first else ", {}:{}"
-		print(template.format(key, value),end="")
-		first = False
-	print("}")
-
 class TestReputationServiceBase(object):
 
 	def test_base(self):
@@ -716,6 +707,64 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		#differential: {'2': 600.0, '50': 400.0, '1': 500.0}
 		#normalized: {'2': 1.0, '50': 0.0, '1': 0.5}
 		self.assertDictEqual(ranks,{'2': 100.0, '1': 70.0, '50': 33.0})
+	def test_roundings(self):
+		print('Testing '+type(self).__name__+' roundings')
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		rs.clear_ranks()
+		transactions = pd.read_csv('./testdata/problematic_transactions2.csv') 
+		from1 = transactions['from']
+		type1 = transactions['type']
+		to1 = transactions['to']
+		value1 = transactions['value']
+		time1 = transactions['time']
+		my_time = transactions['time']
+		weight = transactions['weight']        
+		dates = []
+		## Convert dates;
+		i = 0
+		while i<len(my_time):
+			dates.append(datetime.datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'))
+			i+=1
+		dates1 = np.unique(dates)
+		our_ratings = []
+		i = 0
+		while i<len(transactions):
+			our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
+		                       'value':value1[i],'weight':weight[i],'time':datetime.datetime.strptime(dates[i], '%Y-%m-%d').date()})
+			i+=1
+		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+
+		num_days = len(np.unique(dates))
+		for k in our_ratings:
+			rs.put_ratings([k])
+		i = 0
+		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		i+=1
+		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		i+=1
+		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		self.assertDictEqual(ranks,{'2': 87.0, '3': 29.0, '4': 24.0, '9': 100.0, '5': 72.0, '6': 72.0, '7': 72.0, '8': 72.0, '10': 72.0})        
+		### Note, the reason why Python and Java differ is because Java looks at above numbers and makes calculations on them.
+		### Python however, has more exact numbers in the background and considers those only as roundings.
+		### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
+		### 
+		i+=1
+		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		### Differential is 0 for 2 and 1 for 9. So, 2 and all others except maybe 9 decay toward 0 for 50% weight.
+		### differential (non-normalized): {'2': 1.7285559067530614, '9': 1.9003277382090908}
+		### differential (normalized): {'2': 0.0, '9': 1.0}
+		### Once we update it is in Java (for '2': 44 = 87/2) and Python round(0.4330*100=43). Similar with ID '3'
+		### We divide by 2 because it decays towards 0 each time with conservatism=0.5
+		self.assertDictEqual(ranks,{'2': 44.0, '3': 40.0, '4': 37.0, '9': 100.0, '5': 61.0, '6': 61.0, '7': 61.0, '8': 61.0, '10': 61.0})
+		i+=1
+		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		### Another layer of tests. It is just to be sure about everything.
+		self.assertDictEqual(ranks,{'2': 96.0, '3': 87.0, '4': 58.0, '9': 100.0, '5': 74.0, '6': 74.0, '7': 74.0, '8': 74.0, '10': 74.0, '11': 0.0, '12': 25.0})  
         
         
         
@@ -807,61 +856,4 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 
 class TestReputationServiceDebug(TestReputationServiceAdvanced):
 #class TestReputationServiceDebug(object):
-		def test_roundings(self):
-			print('Testing '+type(self).__name__+' roundings')
-			rs = self.rs
-			rs.clear_ranks()
-			rs.clear_ratings()
-			transactions = pd.read_csv('./testdata/problematic_transactions2.csv') 
-			from1 = transactions['from']
-			type1 = transactions['type']
-			to1 = transactions['to']
-			value1 = transactions['value']
-			time1 = transactions['time']
-			my_time = transactions['time']
-			weight = transactions['weight']        
-			dates = []
-			## Convert dates;
-			i = 0
-			while i<len(my_time):
-				dates.append(datetime.datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'))
-				i+=1
-			dates1 = np.unique(dates)
-			our_ratings = []
-			i = 0
-			while i<len(transactions):
-				our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-			                       'value':value1[i],'weight':weight[i],'time':datetime.datetime.strptime(dates[i], '%Y-%m-%d').date()})
-				i+=1
-			rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
-	
-			num_days = len(np.unique(dates))
-			for k in our_ratings:
-				rs.put_ratings([k])
-			i = 0
-			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-			i+=1
-			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-			i+=1
-			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-			ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
-			
-			#print_dict_sorted(ranks);
-			self.assertDictEqual(ranks,{'2': 87.0, '3': 29.0, '4': 24.0, '9': 100.0, '5': 72.0, '6': 72.0, '7': 72.0, '8': 72.0, '10': 72.0})        
-
-			### Note, the reason why Python and Java differ is because Java looks at above numbers and makes calculations on them.
-			### Python however, has more exact numbers in the background and considers those only as roundings.
-			### 
-			### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
-			i+=1
-			rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-			ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
-			### Differential is 0 for 2 and 1 for 9. So, 2 and all others except maybe 9 decay toward 0 for 50% weight.
-			### differential (non-normalized): {'2': 1.7285559067530614, '9': 1.9003277382090908}
-			### differential (normalized): {'2': 0.0, '9': 1.0}
-			### Once we update it is in Java (for '2': 44 = 87/2) and Python round(0.4330*100=43). Similar with ID '3'
-			### We divide by 2 because it decays towards 0 each time with conservatism=0.5
-
-			#print_dict_sorted(ranks);
-			self.assertDictEqual(ranks,{'2': 43.0, '3': 39.0, '4': 37.0, '9': 100.0, '5': 61.0, '6': 61.0, '7': 61.0, '8': 61.0, '10': 61.0})
-
+	pass
