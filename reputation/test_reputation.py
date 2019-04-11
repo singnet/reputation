@@ -31,6 +31,15 @@ import numpy as np
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
+def print_dict_sorted(d):
+	first = True
+	print("{",end="")
+	for key, value in sorted(d.items(), key=lambda x: x[0]): 
+		template = "{}: {}" if first else ", {}:{}"
+		print(template.format(key, value),end="")
+		first = False
+	print("}")
+
 class TestReputationServiceBase(object):
 
 	def test_base(self):
