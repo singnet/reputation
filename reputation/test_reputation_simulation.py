@@ -40,7 +40,7 @@ class TestReputationSimulationBase(object):
 		#Step 1 - generate simulated data
 		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 		bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
-		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, None, False)
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, True, None, False, silent=True)
 		#Step 2 - process simulated with reputaion engine in batch mode, grab results and check them
 		cmd = 'python reputation_simulate.py ./bin testsim ./ transactions10_r_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logratings=False weighting=True fullnorm=True default=0.5'
 		r = subprocess.check_output(cmd,shell=True)
@@ -54,7 +54,7 @@ class TestReputationSimulationBase(object):
 		#Step 1 - generate simulated data
 		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 		bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
-		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, None, False)
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 10, False, None, False, silent=True)
 		#Step 2 - process simulated with reputaion engine in batch mode, grab results and check them
 		cmd = 'python reputation_simulate.py ./bin testsim ./ transactions10_p_100_0.1.tsv users10.tsv 2018-01-01 2018-01-10 logratings=False weighting=True fullnorm=True default=0.5'
 		r = subprocess.check_output(cmd,shell=True)
@@ -69,7 +69,7 @@ class TestReputationSimulationBase(object):
 		#Step 1 - generate simulated data with reputation feedback
 		good_agent = {"range": [1,8], "values": [100,1000], "transactions": 10, "suppliers": 1, "consumers": 1}
 		bad_agent = {"range": [9,10], "values": [1,10], "transactions": 100, "suppliers": 1, "consumers": 1}
-		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 3, True, self.rs, False)
+		reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), 3, True, self.rs, False, silent=True)
 		#Step 2 - check reputations
 		r1 = self.rs.get_ranks_dict({'date':datetime.date(2018, 1, 1)})
 		r2 = self.rs.get_ranks_dict({'date':datetime.date(2018, 1, 2)})
