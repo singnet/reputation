@@ -27,8 +27,7 @@ import unittest
 from test_reputation import *
 from reputation_service_api import *
 
-#class TestPythonReputationService(TestReputationServiceDebug,unittest.TestCase):
-class TestPythonReputationService(TestReputationServiceDebug,unittest.TestCase):
+class TestPythonReputationService(unittest.TestCase,TestReputationServiceDebug,TestReputationServiceAdvanced):
     def setUp(self):
         self.rs = PythonReputationService()
         params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1, 'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
