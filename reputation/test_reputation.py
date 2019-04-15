@@ -42,8 +42,13 @@ def print_dict_sorted(d):
 
 class TestReputationServiceBase(object):
 
+	def clear(self):
+		self.assertEqual( self.rs.clear_ratings(), 0 )
+		self.assertEqual( self.rs.clear_ranks(), 0 )
+
 	def test_base(self):
 		print('Testing '+type(self).__name__+' base')
+		self.clear()
 		rs = self.rs
 		
 		#check default parameters
@@ -119,7 +124,6 @@ class TestReputationServiceBase(object):
 		result, ranks = rs.get_ranks({'date':dt2})
 		self.assertEqual(result, 0)
 		self.assertEqual(len(ranks), 0)
-
 		self.assertEqual(rs.update_ranks(dt2), 0)
 
 		result, ranks = rs.get_ranks({'date':dt2})
@@ -134,10 +138,6 @@ class TestReputationServiceBase(object):
 
 
 class TestReputationServiceParametersBase(TestReputationServiceBase):
-
-	def clear(self):
-		self.assertEqual( self.rs.clear_ratings(), 0 )
-		self.assertEqual( self.rs.clear_ranks(), 0 )
 
 	def rate_3_days(self,dt1,dt2,dt3,verbose=False):
 		rs = self.rs
@@ -345,14 +345,13 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs = self.rs
 		dt1 = datetime.date(2018, 1, 1)
 		dt2 = datetime.date(2018, 1, 2)
-		#print('=================')
-		#input()
 		self.clear()
-		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True,'denomination':True}), 0 )
+		#TODO update test to [0.0,1.0] rage of ratings to be consistent with dowratings!
+		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True,'denomination':True,'unrated':False}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':'1','rank':90},{'id':'2','rank':90},{'id':'3','rank':10},{'id':'4','rank':10}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 100,'weight':10,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':   0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
-		self.assertEqual( rs.put_ratings([{'from':'3','type':'rating','to':'4','value': 100,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 100.0,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':   0.0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
+		self.assertEqual( rs.put_ratings([{'from':'3','type':'rating','to':'4','value': 100.0,'weight':10,'time':dt2}]), 0 )
 		"""
 		Here is the explanation of the expected math
 		old:
@@ -387,6 +386,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		"""
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
+		#print(ranks)
+		#input("      - Press Enter -")
 		self.assertEqual(len(ranks), 4)
 		self.assertEqual(ranks['1'], 74)
 		self.assertEqual(ranks['2'], 100)
@@ -396,14 +397,33 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.clear()
 		self.assertEqual( rs.set_parameters({'downrating':True, 'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':'1','rank':90},{'id':'2','rank':90},{'id':'3','rank':10},{'id':'4','rank':10}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 100,'weight':10,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':   0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
-		self.assertEqual( rs.put_ratings([{'from':'3','type':'rating','to':'4','value': 100,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'2','value': 1.0,'weight':10,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value': 0.0,'weight':10,'time':dt2}]), 0 ) # downrating, in fact
+		self.assertEqual( rs.put_ratings([{'from':'3','type':'rating','to':'4','value': 1.0,'weight':10,'time':dt2}]), 0 )
 		self.assertEqual(rs.update_ranks(dt2), 0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		#print(ranks)
 		self.assertEqual(len(ranks), 4)
 		self.assertEqual(ranks['4'], 0)
+
+	def test_downratings2(self):
+		print('Testing '+type(self).__name__+' downratings2') 
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		rs.clear_ranks()
+		dt1 = datetime.date(2017, 12, 31)
+		rs.set_parameters({'fullnorm':True,'weighting':True ,'logranks':True,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+		self.assertEqual( rs.put_ranks(dt1,[{'id':2,'rank':0},{'id':3,'rank':0},{'id':4,'rank':0},{'id':5,'rank':25},{'id':6,'rank':25},{'id':7,'rank':25},{'id':8,'rank':25},{'id':9,'rank':0},{'id':10,'rank':25}]), 0 )
+		dt2 = datetime.date(2018, 1, 1)
+		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':4,'value':0.25,'weight':543,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':4,'value':0.5,'weight':372,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':9,'value':0.0,'weight':204,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':8,'type':'rating','to':3,'value':0.25,'weight':131,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':126,'time':dt2}]), 0 )
+		rs.update_ranks(dt2)
+		ranks = rs.get_ranks_dict({'date':dt2}) 
+		self.assertDictEqual(ranks,{'2': 50.0, '3': 52.0, '4': 100.0, '9': 0.0, '5': 75.0, '6': 75.0, '7': 75.0, '8': 75.0, '10': 75.0})
 
 	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
 	def test_fullnorm(self):
@@ -849,11 +869,6 @@ class TestReputationServiceTemporal(TestReputationServiceParametersBase):
 		#print(ranks3)
 		self.assertDictEqual(ranks3,{'2': 100.0, '1': 67.0, '4': 67.0, '6': 67.0, '3': 33.0, '5': 33.0})
 
-        
-
-        
-        
-        
 
 class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
     
@@ -881,36 +896,8 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'],68)
 
-        
-        
 
-class TestReputationServiceDebug(TestReputationServiceAdvanced):
-#class TestReputationServiceDebug(object):
-	def test_downratings2(self):
-		print('Testing '+type(self).__name__+' downratings2') 
-		rs = self.rs
-		rs.clear_ratings()
-		self.clear()
-		rs.clear_ranks()
-		dt1 = datetime.date(2017, 12, 31)
-		rs.set_parameters({'fullnorm':True,'weighting':True ,'logranks':True,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
-		self.assertEqual( rs.put_ranks(dt1,[{'id':2,'rank':0},{'id':3,'rank':0},{'id':4,'rank':0},{'id':5,'rank':25},{'id':6,'rank':25},{'id':7,'rank':25},{'id':8,'rank':25},{'id':9,'rank':0},{'id':10,'rank':25}]), 0 )
-		dt2 = datetime.date(2018, 1, 1)
-		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':4,'value':0.25,'weight':543,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':4,'value':0.5,'weight':372,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':9,'value':0.0,'weight':204,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':8,'type':'rating','to':3,'value':0.25,'weight':131,'time':dt2}]), 0 )
-		self.assertEqual( rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':126,'time':dt2}]), 0 )
-		rs.update_ranks(dt2)
-		ranks = rs.get_ranks_dict({'date':dt2}) 
-		self.assertDictEqual(ranks,{'2': 50.0, '3': 52.0, '4': 100.0, '9': 0.0, '5': 75.0, '6': 75.0, '7': 75.0, '8': 75.0, '10': 75.0})        
-		
-		        
-		        
-		        
-		rs.clear_ratings()
-		self.clear()
-		rs.clear_ranks()         
+class TestReputationServiceDebug(object):
 
-        
-       
+	#TODO more tests?
+	pass

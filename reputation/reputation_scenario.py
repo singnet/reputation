@@ -138,7 +138,7 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,campaign=None):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,campaign=None,silent=False):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 
@@ -285,4 +285,5 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 	def ratio_str(x,y):
 		return 'INF' if y == 0 else x/y
 		
-	#print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad:',actual_good_to_bad_volume,'Good/Bad:',ratio_str(actual_good_volume,actual_bad_volume),'Bad/Good_to_Bad:',ratio_str(actual_bad_volume,actual_good_to_bad_volume),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume))
+	if silent is not True:
+		print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad:',actual_good_to_bad_volume,'Good/Bad:',ratio_str(actual_good_volume,actual_bad_volume),'Bad/Good_to_Bad:',ratio_str(actual_bad_volume,actual_good_to_bad_volume),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume))
