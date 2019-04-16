@@ -152,6 +152,14 @@ class PythonReputationService(ReputationServiceBase):
             self.unrated = changes['unrated']
         else:
             self.unrated = False   
+        if 'spendings' in changes.keys():
+            self.spendings = changes['spendings']
+        else:
+            self.spendings = 0.0   
+        if 'ratings' in changes.keys():
+            self.ratings_param = changes['ratings']
+        else:
+            self.ratings_param = 1.0               
         return(0)
         
     ### This functions merely displays the parameters.
@@ -159,7 +167,7 @@ class PythonReputationService(ReputationServiceBase):
         return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'use_ratings':self.use_ratings,'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated})
+               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -240,21 +248,40 @@ class PythonReputationService(ReputationServiceBase):
         array1 , dates_array, to_array, first_occurance = reputation_calc_p1(self.current_ratings,self.first_occurance,self.precision,
                                                                              self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting)  
         self.first_occurance = first_occurance
-        self.reputation = update_reputation(self.reputation,array1,self.default)
+        self.reputation = update_reputation(self.reputation,array1,self.default,self.spendings)
         since = self.date - timedelta(days=self.update_period)
+        if self.spendings>0:
+            spendings_dict = spending_based(array1,dict(),self.logratings,self.precision,self.weighting)
+            spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)        
+        
         new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
         ### And then update reputation.
         ### In our case we take approach c.
         #print(new_reputation)
         #TODO figure out why log=True causes other 6 tests to fail
-        new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,log=False)
-        #print(new_reputation)
+        new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)
+        if self.spendings>0:
+            updated_differential = dict()
+            unique_keys = list(new_reputation.keys())
+            for k in spendings_dict.keys():
+                if not k in unique_keys:
+                    unique_keys.append(k)
+            for k in unique_keys:
+                if (k in new_reputation.keys()) and (k in spendings_dict.keys()):
+                    updated_differential[k] = (self.ratings_param * new_reputation[k] + self.spendings * spendings_dict[k])/ (self.spendings + self.ratings_param)
+                if (k in new_reputation.keys()) and (k not in spendings_dict.keys()): 
+                    updated_differential[k] = (self.ratings_param * new_reputation[k])/ (self.spendings + self.ratings_param)
+                if (k not in new_reputation.keys()) and (k in spendings_dict.keys()): 
+                    updated_differential[k] = (self.spendings * spendings_dict[k])/ (self.spendings + self.ratings_param)
+            new_reputation = updated_differential
+            
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.decayed,self.conservatism)
         ### Apply normalizedRanks=True AKA "full normalization" to prevent negative ratings on "downrating"
         ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
         ### Downratings seem to pass, so I assume this comment is resolved.
+        
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
         ### round reputations:
         for k in self.reputation.keys():
