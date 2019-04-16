@@ -516,8 +516,9 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1
                     #no need for denomination by sum of weights in such case 
             mys[unique_ids[i]] = sum(amounts)
-            if len(denominators) > 0:
-                myd[unique_ids[i]] = sum(denominators)
+            if weighting:
+                if len(denominators) > 0:
+                    myd[unique_ids[i]] = sum(denominators)
 #
             i+=1
     else:
@@ -538,9 +539,11 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                     break             
             mys[unique_ids[i]] = sum(amounts)          
             i+=1
-    if denomination and len(mys) == len(myd):
-        for k, v in mys.items():
-            mys[k] = v / myd[k]
+    #print("calculation",mys)
+    if weighting:
+        if denomination and len(mys) == len(myd):
+            for k, v in mys.items():
+                mys[k] = v / myd[k]
 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
