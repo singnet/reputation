@@ -408,7 +408,7 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
         to_array = to_array2
     return(new_array,dates_array,to_array,first_occurance)
 ### Get new reputations in case we do not yet have the old ones.
-def update_reputation(reputation,new_array,default_reputation):
+def update_reputation(reputation,new_array,default_reputation,spendings):
     i = 0
     new_ids = []
     while i<len(new_array):
@@ -419,8 +419,18 @@ def update_reputation(reputation,new_array,default_reputation):
         else:
             new_ids.append(new_array[i][1])
             reputation[new_array[i][1]] = default_reputation
+            
+        if spendings>0:
+            if new_array[i][0] in reputation:
+                pass
+            else:
+                new_ids.append(new_array[i][0])
+                reputation[new_array[i][0]] = default_reputation
+            
         i+=1
+        
     return(reputation)
+
 
 
 def logratings_precision(rating,lograting,precision,weighting):
@@ -544,21 +554,13 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     ### We divide it by max value, as specified. There are different normalizations possible...
     return(mys)
 
-def normalized_differential(raw,normalizedRanks,our_default,log=True):
-    if log:
-        mys = {}
-        for k in raw.keys():
-        	v = raw[k]
-        	# f = v < 0 ? -log10(1 - v) : log10(1 + v)
-        	mys[k] = -np.log10(1 - v) if v < 0 else np.log10(1 + v) ### This is already done in line 540.
-            ### Doing it again will make a double log.
-    else:
-        mys = raw
+def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
     max_value = max(mys.values(), default=1)
     min_value = min(mys.values(), default=0)
     if max_value==min_value:
         min_value = max_value - our_default ### as the solution to issue #157
-    #print(normalizedRanks,min_value,max_value)
+        if min_value==max_value and spendings>0:
+            min_value = max_value - 1 ### A bit bad approach to solving this problem. TODO: recheck
     for k in mys.keys():
         if max_value==min_value:
             mys[k] = (mys[k]-min_value)
@@ -568,8 +570,8 @@ def normalized_differential(raw,normalizedRanks,our_default,log=True):
             else:
                 mys[k] = mys[k] /max_value 
 
-    return(mys)
-        
+    return(mys)   
+ 
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
 
@@ -644,6 +646,18 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
         j+=1  
     return(reputation)
 
+
+
+
+def spending_based(transactions,som_dict,logratings,precision,weighting):
+    i=0
+    while i<len(transactions):
+        if transactions[i][0] in som_dict.keys():
+            som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+        else:
+            som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[1]
+        i+=1
+    return(som_dict)
 
 
 def where(to_array,the_id):
