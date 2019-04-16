@@ -560,6 +560,8 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
 def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
     max_value = max(mys.values(), default=1)
     min_value = min(mys.values(), default=0)
+    if max_value==0: #normalized zeroes are just zeroes
+    	return(mys)
     if max_value==min_value:
         min_value = max_value - our_default ### as the solution to issue #157
         if min_value==max_value and spendings>0:

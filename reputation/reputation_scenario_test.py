@@ -41,8 +41,8 @@ def dict_sorted(d):
 
 #TODO use any other Reputation Service here
 rs = None
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-#rs = PythonReputationService()
+#rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs = PythonReputationService()
 if rs is not None:
     rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'logranks':True})
 
@@ -54,7 +54,7 @@ consumers = 0.9
 suppliers = 0.1
 good_range = [1,9500]
 bad_range = [9501,10000]
-"""
+
 days = 183
 consumers = 0.9
 suppliers = 0.1
@@ -66,7 +66,7 @@ consumers = 0.5
 suppliers = 0.5
 good_range = [1,8]
 bad_range = [9,10]
-"""
+
 good_transactions = 1
 bad_transactions = 1
 
@@ -134,8 +134,8 @@ good_agent = {"range": good_range, "values": [100,1000], "transactions": good_tr
 bad_agent = {"range": bad_range, "values": [100,1000], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
 print('Good Agent:',str(good_agent))
 print('Bad Agent :',str(bad_agent))
-sp = 30
-sip = sp/2
+sp = 4 # 30
+sip = 0 # sp/2
 
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, None, campaign = [sp,sip], verbose=False)
 

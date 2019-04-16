@@ -168,7 +168,7 @@ class PythonReputationService(ReputationServiceBase):
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
                'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated,
-               'spendings':self.spendings,'ratings':self.ratings})
+               'spendings':self.spendings,'ratings':self.ratings_param})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -297,6 +297,7 @@ class PythonReputationService(ReputationServiceBase):
         
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
         ### round reputations:
+        # print('rounding',self.reputation)
         for k in self.reputation.keys():
             self.reputation[k] = my_round(self.reputation[k],2)
         self.all_reputations[mydate] = dict(self.reputation)
