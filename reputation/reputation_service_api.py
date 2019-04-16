@@ -167,7 +167,8 @@ class PythonReputationService(ReputationServiceBase):
         return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated})
+               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated,
+               'spendings':self.spendings,'ratings':self.ratings_param})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -254,12 +255,24 @@ class PythonReputationService(ReputationServiceBase):
             spendings_dict = spending_based(array1,dict(),self.logratings,self.precision,self.weighting)
             spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)        
         
-        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        #print('update_reputation',self.reputation)
+        
+        ###TODO Ok, we have the reputation computed above! Why do we need to do the calculate_new_reputation over again!!!???
+        ### @akolonin: hack to avoid apparent redundancy 
+        if self.weighting:
+            new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        else:
+            new_reputation = self.reputation
+
         ### And then update reputation.
         ### In our case we take approach c.
-        #print(new_reputation)
+        
+        #print('calculate_new_reputation',new_reputation)
+        
         #TODO figure out why log=True causes other 6 tests to fail
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)
+ 
+ 
         if self.spendings>0:
             updated_differential = dict()
             unique_keys = list(new_reputation.keys())
@@ -284,6 +297,7 @@ class PythonReputationService(ReputationServiceBase):
         
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
         ### round reputations:
+        # print('rounding',self.reputation)
         for k in self.reputation.keys():
             self.reputation[k] = my_round(self.reputation[k],2)
         self.all_reputations[mydate] = dict(self.reputation)
