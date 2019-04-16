@@ -167,7 +167,8 @@ class PythonReputationService(ReputationServiceBase):
         return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
                'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
                'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated})
+               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated,
+               'spendings':self.spendings,'ratings':self.ratings})
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
