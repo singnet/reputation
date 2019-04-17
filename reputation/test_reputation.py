@@ -902,6 +902,7 @@ class TestReputationServiceDebug(object):
 		self.assertEqual( self.rs.clear_ranks(), 0 )
 		
 	def test_spendings_normalization(self):
+		print('Testing '+type(self).__name__+' spendings_normalization')
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
@@ -914,5 +915,5 @@ class TestReputationServiceDebug(object):
 		self.assertEqual(rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':129,'time':dt2}]),0)
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
-		print_dict_sorted(ranks)
-		#self.assertDictEqual(ranks,{'2': 0.0, '5': 100.0, '3': 0.0, '6': 16.0, '4': 0.0, '7': 82.0, '8': 12.0, '9': 0.0, '10': 0.0})
+		#print_dict_sorted(ranks)
+		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':100.0, '6':32.0, '7':91.0, '8':25.0, '9':0.0})
