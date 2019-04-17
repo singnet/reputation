@@ -558,6 +558,9 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     return(mys)
 
 def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
+    if log:
+        for k in mys.keys():
+            mys[k] = -np.log10(1 - mys[k]) if mys[k] < 0 else np.log10(1 + mys[k])
     max_value = max(mys.values(), default=1)
     min_value = min(mys.values(), default=0)
     if max_value==0: #normalized zeroes are just zeroes

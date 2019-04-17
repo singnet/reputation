@@ -890,25 +890,30 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertEqual(ranks['1'],68)
+
+		
+class TestReputationServiceDebug(object):
+	#TODO more tests?
+	#TODO more tests?
+	#pass
+	
+	def clear(self):
+		self.assertEqual( self.rs.clear_ratings(), 0 )
+		self.assertEqual( self.rs.clear_ranks(), 0 )
+		
 	def test_spendings_normalization(self):
+		print('Testing '+type(self).__name__+' spendings_normalization')
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
 		dt2 = datetime.date(2018, 1, 2)
+		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.5})
 		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':6,'type':'rating','to':3,'value':1,'weight':220,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':7,'type':'rating','to':4,'value':1,'weight':583,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':8,'type':'rating','to':2,'value':1,'weight':196,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':129,'time':dt2}]),0)
-		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.5})
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertDictEqual(ranks,{'2': 0.0, '5': 100.0, '3': 0.0, '6': 16.0, '4': 0.0, '7': 82.0, '8': 12.0, '9': 0.0, '10': 0.0})
-		rs.clear_ratings()
-		rs.clear_ranks()  
-		self.clear()  
-
-class TestReputationServiceDebug(object):
-	#TODO more tests?
-	#TODO more tests?
-	pass
+		#print_dict_sorted(ranks)
+		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':100.0, '6':32.0, '7':91.0, '8':25.0, '9':0.0})

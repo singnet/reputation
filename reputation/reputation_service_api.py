@@ -250,13 +250,17 @@ class PythonReputationService(ReputationServiceBase):
                                                                              self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting)  
         self.first_occurance = first_occurance
         self.reputation = update_reputation(self.reputation,array1,self.default,self.spendings)
+
+        #print('update_reputation',self.reputation)
+        
         since = self.date - timedelta(days=self.update_period)
         if self.spendings>0:
             spendings_dict = spending_based(array1,dict(),self.logratings,self.precision,self.weighting)
-            spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)        
-        
-        #print('update_reputation',self.reputation)
-        
+            #print('unnormalized spendings',spendings_dict)
+            #we are good thus far...
+            spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=self.logranks)       
+            #print('normalized spendings',spendings_dict)
+
         ###TODO Ok, we have the reputation computed above! Why do we need to do the calculate_new_reputation over again!!!???
         ### @akolonin: hack to avoid apparent redundancy 
         if self.weighting:
@@ -272,6 +276,7 @@ class PythonReputationService(ReputationServiceBase):
         #TODO figure out why log=True causes other 6 tests to fail
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)
  
+        #print('normalized_differential',new_reputation)
  
         if self.spendings>0:
             updated_differential = dict()
@@ -287,6 +292,8 @@ class PythonReputationService(ReputationServiceBase):
                 if (k not in new_reputation.keys()) and (k in spendings_dict.keys()): 
                     updated_differential[k] = (self.spendings * spendings_dict[k])/ (self.spendings + self.ratings_param)
             new_reputation = updated_differential
+
+        #print('blended_spendings',new_reputation)
             
         self.reputation = update_reputation_approach_d(self.first_occurance,self.reputation,new_reputation,since,
                                                        self.date, self.decayed,self.conservatism)
