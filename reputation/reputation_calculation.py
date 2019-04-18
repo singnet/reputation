@@ -356,47 +356,32 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
     i = 0
     to_array = np.array(to_array)
     ### Formula differs based on conditions. If ratings are included, formula includes ratings, then there are weights, etc.
-    if rating:
-        while i<len(unique_ids):
-            amounts = []
-            denominators = []
-            ### Here we get log transformation of each amount value. 
-            get_subset = np.where(to_array==unique_ids[i])[0]
-            for k in get_subset:
-                if weighting:
-                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
-                    #print(unique_ids[i],new_rating,new_weight)
-                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
-                    if denomination and new_weight is not None:
-                    	denominators.append(new_weight) # denomination by sum of weights in such case
-                else:
-                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
-                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1
-                    #no need for denomination by sum of weights in such case 
-            mys[unique_ids[i]] = sum(amounts)
+    
+    ### Quite a bit of redundant code. Previously: if rating:...
+    ### However, rating is always True, so no if statement needed.
+    while i<len(unique_ids):
+        amounts = []
+        denominators = []
+        ### Here we get log transformation of each amount value. 
+        get_subset = np.where(to_array==unique_ids[i])[0]
+        for k in get_subset:
             if weighting:
-                if len(denominators) > 0:
-                    myd[unique_ids[i]] = sum(denominators)
+                new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
+
+                amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
+                if denomination and new_weight is not None:
+                	denominators.append(new_weight) # denomination by sum of weights in such case
+            else:
+                new_rating, new_weight = weight_calc(new_array[k],logratings,None,weighting) ## If we don't have
+                ### weighting, precision is not needed (will default to 1 and effectively do nothing).
+                amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1
+                #no need for denomination by sum of weights in such case 
+        mys[unique_ids[i]] = sum(amounts)
+        if weighting:
+            if len(denominators) > 0:
+                myd[unique_ids[i]] = sum(denominators)
 #
-            i+=1
-    else:
-        while i<len(unique_ids):
-            amounts = []
-            ### Here we get log transformation of each amount value.    
-            get_subset = np.where(to_array==unique_ids[i])[0]
-            k=0 
-            for k in get_subset:
-                if weighting:
-                    #TODO if there is no rating, how can we have weghing here?
-                    new_rating, new_weight = weight_calc(new_array[k],logratings,precision)
-                    amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
-                else:
-                    amounts.append(rater_reputation(reputation,new_array[k][0],default,liquid=liquid))###*100*precision**-1
-                    
-                if k==len(to_array)-1:
-                    break             
-            mys[unique_ids[i]] = sum(amounts)          
-            i+=1
+        i+=1    
     #print("calculation",mys)
     if weighting:
         if denomination and len(mys) == len(myd):
@@ -405,7 +390,8 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5
-    if logranks:
+    if logranks: ### since we are currently on this issue and it's being unresolved I decided to leave it like this.
+        # but otherwise, I believe it should be: if logranks and weighting:
         for k in mys.keys():
             if mys[k]<0:
                 mys[k] = -np.log10(1 - mys[k])
