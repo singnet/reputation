@@ -294,7 +294,8 @@ def update_reputation(reputation,new_array,default_reputation,spendings):
 def logratings_precision(rating,lograting,precision,weighting):
     new_weight = None # assume no weight computed by default
     if not weighting:
-        rating[2] = None
+        #rating[2] = None
+        return(rating[3],None)
     if lograting:
         if rating[2] == None:
             if precision==None:
@@ -313,7 +314,6 @@ def logratings_precision(rating,lograting,precision,weighting):
                 else:
                     new_weight = np.log10(1+ rating[2]/precision)
                 new_rating = round(new_weight * rating[3])
-                #print(rating,precision,'=>',new_rating,new_weight)
     else:
         if precision==None:
             precision=1
@@ -365,12 +365,15 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
             for k in get_subset:
                 if weighting:
                     new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
+                    #print("WW new_rating, new_weight",new_rating, new_weight)
                     #print(unique_ids[i],new_rating,new_weight)
                     amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))
                     if denomination and new_weight is not None:
                     	denominators.append(new_weight) # denomination by sum of weights in such case
                 else:
                     new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
+                    new_rating = my_round(new_rating,0)
+                    #print("NW new_rating, new_weight",new_rating, new_weight)
                     amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid=liquid))#*100*precision**-1
                     #no need for denomination by sum of weights in such case 
             mys[unique_ids[i]] = sum(amounts)
