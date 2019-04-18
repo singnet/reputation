@@ -313,7 +313,7 @@ def logratings_precision(rating,lograting,precision,weighting):
                     new_weight = np.log10(1+ rating[2])
                 else:
                     new_weight = np.log10(1+ rating[2]/precision)
-                new_rating = round(new_weight * rating[3])
+                new_rating = my_round(new_weight * rating[3],0)
     else:
         if precision==None:
             precision=1
@@ -332,7 +332,7 @@ def logratings_precision(rating,lograting,precision,weighting):
                 new_rating = rating[3] * new_weight
                 #print(rating,precision,'=>',new_rating,new_weight)
 
-    new_rating = round(new_rating) #TODO see if we need to keep this rounding which is needed to sync-up with Aigents Java reputation system
+    new_rating = my_round(new_rating,0) #TODO see if we need to keep this rounding which is needed to sync-up with Aigents Java reputation system
     return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Î£j (Fij * Qij * Rjt-1 ) / Î£j (Qij)
 
 ### Get updated reputations, new calculations of them...
@@ -553,4 +553,4 @@ def avg_rep_calculate(avg_reputation,new_reputation,multiplier):
             avg_reputation[k] = avg_reputation[k] + new_reputation[k] * multiplier
         else:
             pass
-return(avg_reputation)
+    return(avg_reputation)
