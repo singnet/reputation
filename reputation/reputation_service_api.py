@@ -23,9 +23,9 @@
 # Reputation Service API, including Rating Service and Ranking Service
 
 import abc
-from reputation_service_api import *
-from reputation_calculation import *
-from reputation_base_api import *
+from reputation.reputation_service_api import *
+from reputation.reputation_calculation import *
+from reputation.reputation_base_api import *
 
 """
 Reputation Service native implementation in Python
