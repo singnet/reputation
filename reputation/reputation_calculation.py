@@ -70,17 +70,13 @@ def days_between(d1, d2):
 
 def downratings(condition,ratings):
     if condition:
-    	### it is expected current_max to be 100 (or 1.0 on 100% scale)
-        current_max = 0
+    	### it is expected current_max to be 1.
+        current_max = 1### Note that maximum is set to 1 as per documentation. We do not allow 
+        ### values higher than 1.
         i = 0
         while i<len(ratings):
-            #if (ratings[i]['weight']>1 or ratings[i]['weight']<0):
-            #    pass
-            #else:
-            #
             if ratings[i]['value']>current_max:
-                current_max = ratings[i]['value']
-                #return(ratings)
+                raise ValueError("Downratings are not on the scale of 0 to 1, as required.")
             i+=1
         
         i=0
@@ -96,6 +92,7 @@ def downratings(condition,ratings):
         return(ratings)
     else:
         return(ratings)
+    
 def my_round(n, ndigits):
     part = n * 10 ** ndigits
     delta = part - int(part)
