@@ -424,6 +424,25 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.update_ranks(dt2)
 		ranks = rs.get_ranks_dict({'date':dt2}) 
 		self.assertDictEqual(ranks,{'2': 50.0, '3': 52.0, '4': 100.0, '9': 0.0, '5': 75.0, '6': 75.0, '7': 75.0, '8': 75.0, '10': 75.0})
+        
+	def test_downratings3(self):
+		print('Testing '+type(self).__name__+' downratings2') 
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		rs.clear_ranks()
+		dt1 = datetime.date(2017, 12, 31)
+		rs.set_parameters({'fullnorm':True,'weighting':True ,'logranks':True,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+		self.assertEqual( rs.put_ranks(dt1,[{'id':2,'rank':0},{'id':3,'rank':0},{'id':4,'rank':0},{'id':5,'rank':25},{'id':6,'rank':25},{'id':7,'rank':25},{'id':8,'rank':25},{'id':9,'rank':0},{'id':10,'rank':25}]), 0 )
+		dt2 = datetime.date(2018, 1, 1)
+		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':4,'value':0.25,'weight':543,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':4,'value':0.5,'weight':372,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':9,'value':0.0,'weight':204,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':8,'type':'rating','to':3,'value':0.25,'weight':131,'time':dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from':10,'type':'rating','to':9,'value':0.5,'weight':126,'time':dt2}]), 0 )
+		rs.update_ranks(dt2)
+		ranks = rs.get_ranks_dict({'date':dt2}) 
+		self.assertDictEqual(ranks,{'4': 100.0, '10': 75.0, '5': 75.0, '6': 75.0, '7': 75.0, '8': 75.0, '3': 55.0, '2': 50.0, '9': 0.0})               
 
 	#self.parameters['fullnorm'] = True # full-scale normalization of incremental ratings
 	def test_fullnorm(self):
