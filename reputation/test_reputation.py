@@ -921,6 +921,7 @@ class TestReputationServiceDebug(object):
 		self.assertEqual( self.rs.clear_ranks(), 0 )
 		
 	def test_spendings_normalization(self):
+        ###before implementing, please check reputation_calculation.py, line 399. This likely uses logranks twice and might be wrong.
 		print('Testing '+type(self).__name__+' spendings_normalization')
 		rs = self.rs
 		rs.clear_ratings()
