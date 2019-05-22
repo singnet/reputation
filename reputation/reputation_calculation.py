@@ -137,16 +137,21 @@ def weight_calc(value,lograting,precision,weighting):
 ### to be used in the future.
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
 ### need_occurance=False.
-def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation=False,need_occurance=False,
-                       logratings=False,downrating=False,weighting=True):
+def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=False,need_occurance=False,
+                       logratings=False,downrating=False,weighting=True,rater_bias = None):
     ### need_occurance is set to false by default and might even be removed for good. It was made in order to
     ### facilitate some other approaches towards updating rankings, which we decided not to use in the end.
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
-    ### Now we will just store the first occurance of each account in a dictionary (first_occurance).
+    ### Now we will just store the first occurance of each account in a dictionary.
     ##  Inputs are dictionaries, arrays and True/False statements.
     ### We change the subeset that is incoming in order to put downratings transformation.
     new_subset = downratings(downrating,new_subset)
+    if rater_bias != None:
+        rater_bias = update_biases(rater_bias,new_subset,conservatism)
+        new_subset = fix_rater_bias(new_subset,rater_bias)
+            
     i=0
+    
     new_array = []
     israting = True
     while i<len(new_subset):
@@ -247,7 +252,7 @@ def reputation_calc_p1(new_subset,first_occurance,precision,temporal_aggregation
             i+=1
         new_array = new_array2
         to_array = to_array2
-    return(new_array,dates_array,to_array,first_occurance)
+    return(new_array,dates_array,to_array,rater_bias)
 ### Get new reputations in case we do not yet have the old ones.
 def update_reputation(reputation,new_array,default_reputation,spendings):
     i = 0
@@ -319,6 +324,58 @@ def logratings_precision(rating,lograting,precision,weighting):
     new_rating = my_round(new_rating,0) 
     return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Î£j (Fij * Qij * Rjt-1 ) / Î£j (Qij)
 
+def update_biases(previous_bias,new_arrays, conservatism):
+    all_rating = dict()
+    i = 0
+    while i<len(new_arrays):
+        if new_arrays[i]['from'] in all_rating.keys():
+            all_rating[new_arrays[i]['from']].append(new_arrays[i]['value'])
+        else:
+            all_rating[new_arrays[i]['from']] = [new_arrays[i]['value']]
+        i+=1
+    averages = dict()
+    for k in all_rating.keys():
+        averages[k] = np.mean(all_rating[k])
+    unique_ids = []
+    for k in averages.keys():
+        if k in unique_ids:
+            pass
+        else:
+            unique_ids.append(k)
+    for k in previous_bias.keys():
+        if k in unique_ids:
+            pass
+        else:
+            unique_ids.append(k)
+    for k in averages.keys():
+        if k in unique_ids:
+            pass
+        else:
+            unique_ids.append(k)
+        
+        
+    new_bias = dict()
+    for k in unique_ids:
+        if k in averages.keys() and previous_bias.keys():
+            new_bias[k] = averages[k] * (1-conservatism) + conservatism * previous_bias[k]
+        else:
+            if k in averages.keys():
+                new_bias[k] = averages[k] * (1-conservatism) + conservatism ### This is how we are supposed to 
+                ### treat first customer based on the https://docs.google.com/document/d/1-O7avb_zJKvCXRvD0FmvyoVZdSmkDMlXRB5wsavpSAM/edit#
+            if k in previous_bias.keys():
+                new_bias[k] = previous_bias[k]
+                
+    return(new_bias)
+
+
+def fix_rater_bias(new_array,biases):
+    i = 0
+    while i<len(new_array):
+        new_array[i]['value'] = new_array[i]['value']/max(biases[new_array[i]['from']],0.01)
+        i+=1
+    
+    return (new_array)
+
 ### Get updated reputations, new calculations of them...
 ### We calculate differential here.
 def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True):
@@ -385,7 +442,6 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                 mys[k] = -np.log10(1 - mys[k])
             else:
                 mys[k] = np.log10(1 + mys[k])
-    
     return(mys)
 
 ### normalizing differential.
