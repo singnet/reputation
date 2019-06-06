@@ -52,13 +52,13 @@ if rs is not None:
 #TODO eliminate:
 good_transactions = 1
 bad_transactions = 1
+plro = 100 # probability of leaving a rating organically  
 
-
-days = 10
+days = 50
 
 # 100 buyers = 100 products
 consumers = 0.5
-suppliers = 0.5
+products = 0.5
 
 # good/bad 1:1
 #good_range = [1,8]
@@ -70,19 +70,27 @@ suppliers = 0.5
 good_range = [1,8]
 bad_range = [9,12]
 
-good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": bad_range, "qualities":[0.0,0.25], "values": [1,10], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
+good_range = [1,80]
+bad_range = [91,120]
+
+
+good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "transactions": good_transactions, "suppliers": products, "consumers": consumers}
+bad_agent = {"range": bad_range, "qualities":[0.0,0.25], "transactions": bad_transactions, "suppliers": products, "consumers": consumers}
 
 verbose = False
 
-print("Without RS")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 90, None, verbose)
-print("With RS")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 90, rs, verbose)
-
-
+print("Without any RS")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, plro, None, verbose)
+print("With default RS PLRo=0")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, rs, verbose)
+print("With default RS PLRo=50")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+print("With default RS PLRo=100")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 100, rs, verbose)
 
 
 if rs is not None:
 	del rs
+
+
 

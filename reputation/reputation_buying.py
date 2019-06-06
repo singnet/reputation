@@ -145,6 +145,13 @@ def get_list_fraction(list,fraction,first):
 	res_list = list[:n] if first else list[n:]
 	return res_list
 
+
+def get_prob_100(prob):
+	# 100 => True !
+	# 0 => False ! 
+	# 50 => 50/50 !
+	return True if random.randint(1,100) > 100 - prob else False
+
 """
 Simulation of market simulation
 	Input:
@@ -157,7 +164,7 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40,rs=None,verbose=False,silent=False):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40,plro=100,rs=None,verbose=False,silent=False):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 	encounters = {} # init list of all encounters per agent
@@ -258,11 +265,11 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 						actual_good_to_bad_volume += cost
 						daily_good_to_bad += cost
 					if ratings:
-						if rs is not None:
+						if rs is not None and get_prob_100(plro):
 							rs.put_ratings([{'from':agent,'type':'rating','to':other,'value':rating,'weight':cost,'time':date}])
 						log_file(file,date,'rating',agent,other,rating,cost)
 					else: 
-						if rs is not None:
+						if rs is not None and get_prob_100(plro):
 							rs.put_ratings([{'from':agent,'type':'transfer','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
 					daily_selections[other] = 1 + daily_selections[other] if other in daily_selections else 1
@@ -309,4 +316,4 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 		return 'INF' if y == 0 else x/y if round_digits is None else round(x/y,round_digits)
 		
 	if silent is not True:
-		print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good2Bad:',actual_good_to_bad_volume,'Good/Bad:',ratio_str(actual_good_volume,actual_bad_volume,2),'Bad/Good_to_Bad:',ratio_str(actual_bad_volume,actual_good_to_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))
+		print('Organic:',str(actual_good_volume),'Sponsored:',str(actual_bad_volume),'Organic2Sponsored:',actual_good_to_bad_volume,'Organic/Sponsored:',ratio_str(actual_good_volume,actual_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))
