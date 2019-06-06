@@ -86,7 +86,7 @@ def intersection(lst1, lst2):
 	lst3 = [value for value in lst1 if value in lst2] 
 	return lst3
 
-def pick_agent(ranks,list,self,memories = None,bad_agents = None):
+def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = None):
 	picked = None
 	if memories is not None:
 		#good agents case
@@ -138,9 +138,10 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,campaign=None,silent=False):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,silent=False):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
+	encounters = {} # init list of all encounters per agent
 
 	if rs is not None:
 		rs.clear_ratings()
@@ -157,7 +158,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 	bad_suppliers = get_list_fraction(bad_agents,bad_agent['suppliers'],True)
 	good_consumers = get_list_fraction(good_agents,good_agent['consumers'],False)
 	bad_consumers = get_list_fraction(bad_agents,bad_agent['consumers'],False)
-	all_suppliers = good_suppliers + bad_suppliers
+	all_products = good_suppliers + bad_suppliers
 	all_consumers = good_consumers + bad_consumers
 	all_agents = good_agents + bad_agents
 
@@ -166,7 +167,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 		print('Bad:',bad_agent)
 		print('Good:',good_agents)
 		print('Bad:',bad_agents)
-		print('All suppliers:',all_suppliers)
+		print('All suppliers:',all_products)
 		print('All consumers:',all_consumers)
 		print('Good suppliers:',good_suppliers)
 		print('Good consumers:',good_consumers)
@@ -184,6 +185,14 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 	code = ('r' if ratings else 'p') + '_' + str(round(good_agents_values[0]/bad_agents_values[0])) + '_' + str(good_agents_transactions/bad_agents_transactions) \
 		+ (('rs' if rs.get_parameters()['weighting'] == True else 'nw') if rs is not None else '') 
 	transactions = 'transactions' + str(len(all_agents)) + '_' + code + '.tsv'
+
+
+	costs = {}
+	for product in all_products:
+		costs[product] = 10
+	
+	#TODO quality
+	#cost = random.randint(bad_agents_values[0],bad_agents_values[1])
 	
 	if verbose:
 		print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
@@ -206,35 +215,14 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 			else:
 				ranks = None
 
-			#resetting scam campaign
-			skip_scam = False
-			if campaign is not None:
-				campaign_day = day % campaign[0] # campaign.period
-				if campaign_day == 0:
-					if day > 0:
-						if verbose:
-							print('reset scam')
-						scam_generation = day // campaign[0] # campaign.period
-						id_base = len(bad_agents) * scam_generation
-						bad_agents = [i+id_base for i in range(bad_agent['range'][0],bad_agent['range'][1]+1)]
-						bad_suppliers = get_list_fraction(bad_agents,bad_agent['suppliers'],True)
-						bad_consumers = get_list_fraction(bad_agents,bad_agent['consumers'],False)
-						all_suppliers = good_suppliers + bad_suppliers
-					if verbose:
-						print('bad agents:',bad_agents)
-				if campaign_day < campaign[1]: # campaign.inactive
-					if verbose:
-						print('skip scam')
-					skip_scam = True
-				if verbose:
-					print('do scam')
-
 			daily_good_to_bad = 0
+			
+			#TODO good consumers - only organic buys
 			for agent in good_consumers:
 				daily_selections = {}
 				for t in range(0, good_agents_transactions):
-					other = pick_agent(ranks,all_suppliers,agent,memories,bad_agents)
-					cost = random.randint(good_agents_values[0],good_agents_values[1])
+					other = pick_product(ranks,all_products,agent,memories,bad_agents,encounters)
+					cost = costs[other]
 					actual_good_volume += cost
 					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 					rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
@@ -256,13 +244,10 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 			if verbose:
 				print(daily_good_to_bad)
 
-			if skip_scam:
-				continue
-		
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
-					other = pick_agent(None,bad_suppliers,agent)
-					cost = random.randint(bad_agents_values[0],bad_agents_values[1])
+					other = pick_product(None,bad_suppliers,agent)
+					cost = costs[other]
 					actual_bad_volume += cost
 					if ratings:
 						rating = 1.0
