@@ -54,7 +54,7 @@ good_transactions = 1
 bad_transactions = 1
 plro = 100 # probability of leaving a rating organically  
 
-days = 50
+days = 60
 
 # 100 buyers = 100 products
 consumers = 0.5
@@ -71,7 +71,7 @@ good_range = [1,8]
 bad_range = [9,12]
 
 good_range = [1,80]
-bad_range = [91,120]
+bad_range = [81,120]
 
 
 good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "transactions": good_transactions, "suppliers": products, "consumers": consumers}
@@ -88,6 +88,9 @@ reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True,
 print("With default RS PLRo=100")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 100, rs, verbose)
 
+print("With default RS PLRo=50, rating_bias")
+rs.set_parameters({'rating_bias':True})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
 
 if rs is not None:
 	del rs
