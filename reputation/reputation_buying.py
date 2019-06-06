@@ -259,9 +259,10 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 						log_file(file,date,'transfer',agent,other,cost,None)
 					daily_selections[other] = 1 + daily_selections[other] if other in daily_selections else 1
 				if verbose:
-					print('By ' + str(agent) + ':' + str(daily_selections))
+					print('Organic ' + str(agent) + ':' + str(daily_selections))
 
 			for agent in bad_consumers:
+				daily_selections = {}
 				for t in range(0, bad_agents_transactions):
 					other = pick_product(None,bad_suppliers,agent,None,None,encounters)
 					if other is None:
@@ -279,6 +280,9 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 						if rs is not None:
 							rs.put_ratings([{'from':agent,'type':'transfer','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
+					daily_selections[other] = 1 + daily_selections[other] if other in daily_selections else 1
+				if verbose:
+					print('Sponsored ' + str(agent) + ':' + str(daily_selections))
 
 			if verbose:
 				print(buys,daily_organic,daily_good_to_bad,daily_sponsored)
