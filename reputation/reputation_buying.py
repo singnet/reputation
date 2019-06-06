@@ -87,6 +87,15 @@ def intersection(lst1, lst2):
 	return lst3
 
 def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = None):
+	if encounters is not None:
+		if self in encounters:
+			encountered = encounters[self]
+		else:
+			encountered = []
+			encounters[self] = encountered
+	else:
+		encountered = []
+	
 	picked = None
 	if memories is not None:
 		#good agents case
@@ -96,19 +105,23 @@ def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = 
 			blacklist = []
 			memories[self] = blacklist
 		if blacklist is not None:
-			list = [white for white in list if white not in blacklist and white != self]
+			whitelist = [candidate for candidate in list if candidate not in blacklist and candidate not in encountered and candidate != self]
 		if ranks is not None:
-			list = list_best_ranked(ranks,list,threshold)
+			whitelist = list_best_ranked(ranks,whitelist,threshold)
 	else:
 		#bad agents case
 		blacklist = None
-		list = [black for black in list if black != self]
-	picked = list[0] if len(list) == 1 else list[random.randint(0,len(list)-1)]
+		whitelist = [candidate for candidate in list if candidate not in encountered and candidate != self]
+
+	if len(whitelist) == 0: #no product found
+		return None
+	picked = whitelist[0] if len(whitelist) == 1 else whitelist[random.randint(0,len(whitelist)-1)]
 
 	#debug
 	#if blacklist is not None:
 	#	print(picked)
 	
+	encountered.append(picked)
 	if blacklist is not None and bad_agents is not None and picked in bad_agents:
 		blacklist.append(picked) #blacklist picked bad ones once picked so do not pick them anymore
 	return picked
@@ -204,7 +217,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 			prev_date = since + datetime.timedelta(days=(day-1))
 			date = since + datetime.timedelta(days=day)
 			if verbose:
-				print(day,date,memories)
+				print(day,date,memories,encounters)
 
 			if rs is not None:
 				#update ranks for the previous day to have them handy
@@ -215,17 +228,24 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 			else:
 				ranks = None
 
-			daily_good_to_bad = 0
+			daily_sponsored = 0
+			daily_organic = 0
+			daily_good_to_bad = 0 # daily_mislead
+			buys = 0
 			
 			#TODO good consumers - only organic buys
 			for agent in good_consumers:
 				daily_selections = {}
 				for t in range(0, good_agents_transactions):
 					other = pick_product(ranks,all_products,agent,memories,bad_agents,encounters)
+					if other is None:
+						continue
 					cost = costs[other]
+					buys += 1
 					actual_good_volume += cost
 					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
 					rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+					daily_organic += cost
 					if other in bad_agents:
 						actual_good_to_bad_volume += cost
 						daily_good_to_bad += cost
@@ -241,13 +261,14 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 				if verbose:
 					print('By ' + str(agent) + ':' + str(daily_selections))
 
-			if verbose:
-				print(daily_good_to_bad)
-
 			for agent in bad_consumers:
 				for t in range(0, bad_agents_transactions):
-					other = pick_product(None,bad_suppliers,agent)
+					other = pick_product(None,bad_suppliers,agent,None,None,encounters)
+					if other is None:
+						continue
 					cost = costs[other]
+					buys += 1
+					daily_sponsored += cost
 					actual_bad_volume += cost
 					if ratings:
 						rating = 1.0
@@ -258,6 +279,11 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 						if rs is not None:
 							rs.put_ratings([{'from':agent,'type':'transfer','to':other,'value':cost,'time':date}])
 						log_file(file,date,'transfer',agent,other,cost,None)
+
+			if verbose:
+				print(buys,daily_organic,daily_good_to_bad,daily_sponsored)
+			if buys == 0:
+				break
 					
 	with open('users' + str(len(all_agents)) + '.tsv', 'w') as file:
 		for agent in all_agents:

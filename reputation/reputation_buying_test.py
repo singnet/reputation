@@ -57,7 +57,7 @@ days = 10
 consumers = 0.5
 suppliers = 0.5
 good_range = [1,8]
-bad_range = [9,10]
+bad_range = [9,16]
 good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
 bad_agent = {"range": bad_range, "values": [1,10], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
 
