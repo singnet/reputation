@@ -63,7 +63,9 @@ network = 'reptest'
 threshold = 40
 
 def list_best_ranked(ranks,list,threshold=None):
-	if threshold is None:
+	if len(ranks) == 0:
+		return list
+	if threshold is None: # find the top tie
 		threshold = 0
 		for key in ranks:
 			value = ranks[key]
@@ -79,14 +81,14 @@ def list_best_ranked(ranks,list,threshold=None):
 			if threshold <= value:
 				 best.append(item)
 	if len(best) == 0:
-		return list
+		return []
 	return best
 
 def intersection(lst1, lst2): 
 	lst3 = [value for value in lst1 if value in lst2] 
 	return lst3
 
-def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = None):
+def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = None,threshold = 40):
 	if encounters is not None:
 		if self in encounters:
 			encountered = encounters[self]
@@ -106,8 +108,12 @@ def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = 
 			memories[self] = blacklist
 		if blacklist is not None:
 			whitelist = [candidate for candidate in list if candidate not in blacklist and candidate not in encountered and candidate != self]
+		#if self == 8:
+		#	print('whitelist raw',whitelist)
 		if ranks is not None:
 			whitelist = list_best_ranked(ranks,whitelist,threshold)
+		#if self == 8:
+		#	print('whitelist selected',whitelist)
 	else:
 		#bad agents case
 		blacklist = None
@@ -151,7 +157,7 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=False,silent=False):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40,rs=None,verbose=False,silent=False):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 	encounters = {} # init list of all encounters per agent
@@ -189,13 +195,15 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 	
 	good_agents_transactions = good_agent['transactions']
 	bad_agents_transactions = bad_agent['transactions']
-	good_agents_values = good_agent['values']
-	bad_agents_values = bad_agent['values']
 	good_agents_count = len(good_agents)
 	bad_agents_count = len(bad_agents)
-	good_agents_volume = good_agents_count * good_agents_transactions * good_agents_values[0]
-	bad_agents_volume = bad_agents_count * bad_agents_transactions * bad_agents_values[0]
-	code = ('r' if ratings else 'p') + '_' + str(round(good_agents_values[0]/bad_agents_values[0])) + '_' + str(good_agents_transactions/bad_agents_transactions) \
+	#good_agents_values = good_agent['values']
+	#bad_agents_values = bad_agent['values']
+	#good_agents_volume = good_agents_count * good_agents_transactions * good_agents_values[0]
+	#bad_agents_volume = bad_agents_count * bad_agents_transactions * bad_agents_values[0]
+	#mvr = str(round(good_agents_values[0]/bad_agents_values[0]))
+	mvr = 'amazon' 
+	code = ('r' if ratings else 'p') + '_' + mvr + '_' + str(good_agents_transactions/bad_agents_transactions) \
 		+ (('rs' if rs.get_parameters()['weighting'] == True else 'nw') if rs is not None else '') 
 	transactions = 'transactions' + str(len(all_agents)) + '_' + code + '.tsv'
 
@@ -207,10 +215,10 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 	#TODO quality
 	#cost = random.randint(bad_agents_values[0],bad_agents_values[1])
 	
-	if verbose:
-		print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
-		print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
-		print('Code:',code,'Volume ratio:',str(good_agents_volume/bad_agents_volume))
+	#if verbose:
+	#	print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
+	#	print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
+	#	print('Code:',code,'Volume ratio:',str(good_agents_volume/bad_agents_volume))
 
 	with open(transactions, 'w') as file:
 		for day in range(sim_days):
@@ -237,7 +245,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 			for agent in good_consumers:
 				daily_selections = {}
 				for t in range(0, good_agents_transactions):
-					other = pick_product(ranks,all_products,agent,memories,bad_agents,encounters)
+					other = pick_product(ranks,all_products,agent,memories,bad_agents,encounters,threshold)
 					if other is None:
 						continue
 					cost = costs[other]
@@ -301,4 +309,4 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,rs,verbose=F
 		return 'INF' if y == 0 else x/y if round_digits is None else round(x/y,round_digits)
 		
 	if silent is not True:
-		print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good to Bad:',actual_good_to_bad_volume,'Good/Bad:',ratio_str(actual_good_volume,actual_bad_volume,2),'Bad/Good_to_Bad:',ratio_str(actual_bad_volume,actual_good_to_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))
+		print('Good:',str(actual_good_volume),'Bad:',str(actual_bad_volume),'Good2Bad:',actual_good_to_bad_volume,'Good/Bad:',ratio_str(actual_good_volume,actual_bad_volume,2),'Bad/Good_to_Bad:',ratio_str(actual_bad_volume,actual_good_to_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))

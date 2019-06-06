@@ -42,11 +42,12 @@ def dict_sorted(d):
 #TODO use any other Reputation Service here
 rs = None
 #rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
-#rs = PythonReputationService()
+rs = PythonReputationService()
 if rs is not None:
 	rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'logranks':True})
 
-verbose = True
+
+
 
 #TODO eliminate:
 good_transactions = 1
@@ -55,16 +56,32 @@ bad_transactions = 1
 
 days = 10
 
-# buyers/products=1/1 honest/dishonest=1/1
+# 100 buyers = 100 products
 consumers = 0.5
 suppliers = 0.5
+
+# good/bad 1:1
+#good_range = [1,8]
+#bad_range = [9,16]
+#good_range = [1,4]
+#bad_range = [5,8]
+
+# good/bad 2:1
 good_range = [1,8]
-bad_range = [9,16]
+bad_range = [9,12]
 
-good_agent = {"range": good_range, "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
-bad_agent = {"range": bad_range, "values": [1,10], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
+good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "values": [100,1000], "transactions": good_transactions, "suppliers": suppliers, "consumers": consumers}
+bad_agent = {"range": bad_range, "qualities":[0.0,0.25], "values": [1,10], "transactions": bad_transactions, "suppliers": suppliers, "consumers": consumers}
 
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, rs, verbose)
+verbose = False
+
+print("Without RS")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 90, None, verbose)
+print("With RS")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 90, rs, verbose)
+
+
+
 
 if rs is not None:
 	del rs
