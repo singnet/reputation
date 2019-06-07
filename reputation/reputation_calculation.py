@@ -356,7 +356,7 @@ def update_biases(previous_bias,new_arrays, conservatism):
         
     new_bias = dict()
     for k in unique_ids:
-        if k in averages.keys() and previous_bias.keys():
+        if k in averages.keys() and k in previous_bias.keys():
             new_bias[k] = averages[k] * (1-conservatism) + conservatism * previous_bias[k]
         else:
             if k in averages.keys():
