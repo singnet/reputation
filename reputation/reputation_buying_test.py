@@ -48,6 +48,10 @@ verbose = False
 good_transactions = 1
 bad_transactions = 1
 
+good_agent = {"buyers":[1,800], "products":[1001,1800], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[801,1000], "products":[1801,2000], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 1001
+
 good_agent = {"buyers":[1,80], "products":[101,180], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
 bad_agent = {"buyers":[81,100], "products":[181,200], "qualities":[0.0,0.25], "transactions": bad_transactions}
 days = 101
@@ -60,7 +64,7 @@ days = 101
 #bad_agent = {"buyers":[4,5], "products":[9,10], "qualities":[0.0,0.25], "transactions": bad_transactions}
 #days = 5
 
-
+"""
 print("RS=None", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, None, verbose)
 
@@ -68,26 +72,62 @@ print("RS=Regular", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, rs, verbose)
 
 print("RS=Regular", end =" ")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
 
 print("RS=Regular", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 100, rs, verbose)
 
 print("RS=Weighted", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
 
 print("RS=Biased", end =" ")
 rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
 
 print("RS=TOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':True ,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
 	
 print("RS=SOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+"""
+
+
+
+good_agent = {"buyers":[1,80], "products":[201,280], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[81,100], "products":[281,300], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 20
+
+print("RS=Biased", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+
+good_agent = {"buyers":[1,80], "products":[201,280], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[81,120], "products":[281,320], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 20
+
+print("RS=Biased", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+
+good_agent = {"buyers":[1,80], "products":[201,280], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[81,140], "products":[281,340], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 20
+
+print("RS=Biased", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+
+good_agent = {"buyers":[1,80], "products":[201,280], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[81,160], "products":[281,360], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 20
+
+print("RS=Biased", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+
 
 
 if rs is not None:
