@@ -146,6 +146,10 @@ def get_list_fraction(list,fraction,first):
 	return res_list
 
 
+def rand_list(list):
+	return list[random.randint(0,len(list)-1)]
+
+
 def get_prob_100(prob):
 	# 100 => True !
 	# 0 => False ! 
@@ -216,12 +220,11 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 
 
 	costs = {}
+	qualities = {}
 	for product in all_products:
 		costs[product] = 10
-	
-	#TODO quality
-	#cost = random.randint(bad_agents_values[0],bad_agents_values[1])
-	
+		qualities[product] = rand_list(bad_agent['qualities']) if product in bad_agents else rand_list(good_agent['qualities'])
+
 	#if verbose:
 	#	print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
 	#	print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
@@ -259,7 +262,8 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 					buys += 1
 					actual_good_volume += cost
 					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
-					rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+					#rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+					rating = qualities[other]
 					daily_organic += cost
 					if other in bad_agents:
 						actual_good_to_bad_volume += cost
