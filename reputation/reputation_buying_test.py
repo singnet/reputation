@@ -39,22 +39,15 @@ def dict_sorted(d):
 	return s
 
 
-#TODO use any other Reputation Service here
-rs = None
 #rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
 rs = PythonReputationService()
-if rs is not None:
-	rs.set_parameters({'fullnorm':True,'weighting':True,'logratings':False,'logranks':True})
-
-
+rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
 
 
 #TODO eliminate:
 good_transactions = 1
 bad_transactions = 1
 plro = 100 # probability of leaving a rating organically  
-
-days = 60
 
 # 100 buyers = 100 products
 consumers = 0.5
@@ -73,24 +66,48 @@ bad_range = [9,12]
 good_range = [1,80]
 bad_range = [81,120]
 
+days = 20 # makes sense as number of dishonest buyers as it limits period of gaming
+
+
 
 good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "transactions": good_transactions, "suppliers": products, "consumers": consumers}
 bad_agent = {"range": bad_range, "qualities":[0.0,0.25], "transactions": bad_transactions, "suppliers": products, "consumers": consumers}
 
 verbose = False
 
-print("Without any RS")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, plro, None, verbose)
-print("With default RS PLRo=0")
+print("RS=None PLRo=0", end =" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, None, verbose)
+
+print("RS=Regular PLRo=0", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, rs, verbose)
-print("With default RS PLRo=50")
+
+print("RS=Regular PLRo=50", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
-print("With default RS PLRo=100")
+
+print("RS=Regular PLRo=100", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 100, rs, verbose)
 
-print("With default RS PLRo=50, rating_bias")
-rs.set_parameters({'rating_bias':True})
+print("RS=Weighted PLRo=50", end =" ")
+rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+
+print("RS=Biased PLRo=50", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+
+print("RS=TOM-based PLRo=50", end =" ")
+rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':True ,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+	
+print("RS=SOM-based PLRo=50", end =" ")
+rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
+
+
+
+
+
+
 
 if rs is not None:
 	del rs
