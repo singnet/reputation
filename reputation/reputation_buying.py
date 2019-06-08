@@ -176,30 +176,30 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 	actual_bad_volume = 0
 	actual_good_volume = 0
 	actual_good_to_bad_volume = 0
-	
-	good_agents = [i for i in range(good_agent['range'][0],good_agent['range'][1]+1)]
-	bad_agents = [i for i in range(bad_agent['range'][0],bad_agent['range'][1]+1)]
 
-	good_suppliers = get_list_fraction(good_agents,good_agent['suppliers'],True)
-	bad_suppliers = get_list_fraction(bad_agents,bad_agent['suppliers'],True)
-	good_consumers = get_list_fraction(good_agents,good_agent['consumers'],False)
-	bad_consumers = get_list_fraction(bad_agents,bad_agent['consumers'],False)
-	all_products = good_suppliers + bad_suppliers
+	good_consumers = [i for i in range(good_agent['buyers'][0],good_agent['buyers'][1]+1)]
+	bad_consumers = [i for i in range(bad_agent['buyers'][0],bad_agent['buyers'][1]+1)]
+	good_products = [i for i in range(good_agent['products'][0],good_agent['products'][1]+1)]
+	bad_products = [i for i in range(bad_agent['products'][0],bad_agent['products'][1]+1)]
+	good_agents = good_consumers + good_products
+	bad_agents = bad_consumers + bad_products
+	all_products = good_products + bad_products
 	all_consumers = good_consumers + bad_consumers
 	all_agents = good_agents + bad_agents
 
 	if verbose:
-		print('Good:',good_agent)
-		print('Bad:',bad_agent)
-		print('Good:',good_agents)
-		print('Bad:',bad_agents)
+	#if verbose or True:
+		print('Honest:',good_agent)
+		print('Gaming:',bad_agent)
+		print('Honest:',good_agents)
+		print('Gaming:',bad_agents)
 		print('All suppliers:',all_products)
 		print('All consumers:',all_consumers)
-		print('Good suppliers:',good_suppliers)
-		print('Good consumers:',good_consumers)
-		print('Bad suppliers:',bad_suppliers)
-		print('Bad consumers:',bad_consumers)
-	
+		print('Honest suppliers:',good_products)
+		print('Honest consumers:',good_consumers)
+		print('Gaming suppliers:',bad_products)
+		print('Gaming consumers:',bad_consumers)
+
 	good_agents_transactions = good_agent['transactions']
 	bad_agents_transactions = bad_agent['transactions']
 	good_agents_count = len(good_agents)
@@ -279,7 +279,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 			for agent in bad_consumers:
 				daily_selections = {}
 				for t in range(0, bad_agents_transactions):
-					other = pick_product(None,bad_suppliers,agent,None,None,encounters)
+					other = pick_product(None,bad_products,agent,None,None,encounters)
 					if other is None:
 						continue
 					cost = costs[other]
@@ -314,6 +314,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 
 	def ratio_str(x,y,round_digits = None):
 		return 'INF' if y == 0 else x/y if round_digits is None else round(x/y,round_digits)
-		
+
 	if silent is not True:
+		print('PLRo='+str(plro),'agents='+str(len(good_consumers))+'/'+str(len(bad_consumers))+'/'+str(len(good_products))+'/'+str(len(bad_products)),'days='+str(sim_days),end =" ")
 		print('Organic:',str(actual_good_volume),'Sponsored:',str(actual_bad_volume),'Organic2Sponsored:',actual_good_to_bad_volume,'Organic/Sponsored:',ratio_str(actual_good_volume,actual_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))
