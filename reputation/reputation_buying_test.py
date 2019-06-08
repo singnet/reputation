@@ -43,41 +43,23 @@ def dict_sorted(d):
 rs = PythonReputationService()
 rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
 
+verbose = False
 
-#TODO eliminate:
 good_transactions = 1
 bad_transactions = 1
-plro = 100 # probability of leaving a rating organically  
 
-# 100 buyers = 100 products
-#consumers = 0.5
-#products = 0.5
+good_agent = {"buyers":[1,80], "products":[101,180], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+bad_agent = {"buyers":[81,100], "products":[181,200], "qualities":[0.0,0.25], "transactions": bad_transactions}
+days = 101
 
-# good/bad 1:1
-#good_range = [1,8]
-#bad_range = [9,16]
-#good_range = [1,4]
-#bad_range = [5,8]
+#good_agent = {"buyers":[1,8], "products":[11,18], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+#bad_agent = {"buyers":[9,10], "products":[19,20], "qualities":[0.0,0.25], "transactions": bad_transactions}
+#days = 11
 
-# good/bad 2:1
-#good_range = [1,8]
-#bad_range = [9,12]
+#good_agent = {"buyers":[1,3], "products":[6,8], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+#bad_agent = {"buyers":[4,5], "products":[9,10], "qualities":[0.0,0.25], "transactions": bad_transactions}
+#days = 5
 
-#good_range = [1,80]
-#bad_range = [81,120]
-
-
-#good_agent = {"range": good_range, "qualities":[0.5,0.75,1.0], "transactions": good_transactions, "suppliers": products, "consumers": consumers}
-#bad_agent = {"range": bad_range, "qualities":[0.0,0.25], "transactions": bad_transactions, "suppliers": products, "consumers": consumers}
-good_agent = {"buyers":[1,40], "products":[81,100], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
-bad_agent = {"buyers":[41,80], "products":[101,120], "qualities":[0.0,0.25], "transactions": bad_transactions}
-days = 20 # makes sense as number of dishonest ("bad") products as it limits period of gaming
-
-good_agent = {"buyers":[1,4], "products":[9,10], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
-bad_agent = {"buyers":[5,8], "products":[11,12], "qualities":[0.0,0.25], "transactions": bad_transactions}
-days = 3
-
-verbose = False
 
 print("RS=None", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, None, verbose)
@@ -106,11 +88,6 @@ reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True,
 print("RS=SOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 50, rs, verbose)
-
-
-
-
-
 
 
 if rs is not None:
