@@ -41,12 +41,15 @@ def dict_sorted(d):
 
 #rs = AigentsAPIReputationService('http://localtest.com:1288/', 'john@doe.org', 'q', 'a', False, 'test', True)
 rs = PythonReputationService()
-rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
 
 verbose = False
 
 good_transactions = 1
 bad_transactions = 1
+threshold = 40
+threshold = 60
+threshold = 80
 
 good_agent = {"buyers":[1,800], "products":[1001,1800], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
 bad_agent = {"buyers":[801,1000], "products":[1801,2000], "qualities":[0.0,0.25], "transactions": bad_transactions}
@@ -56,6 +59,10 @@ good_agent = {"buyers":[1,80], "products":[101,180], "qualities":[0.5,0.75,1.0],
 bad_agent = {"buyers":[81,100], "products":[181,200], "qualities":[0.0,0.25], "transactions": bad_transactions}
 days = 101
 
+#good_agent = {"buyers":[1,80], "products":[101,140], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
+#bad_agent = {"buyers":[81,100], "products":[141,150], "qualities":[0.0,0.25], "transactions": bad_transactions}
+#days = 51
+
 #good_agent = {"buyers":[1,8], "products":[11,18], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
 #bad_agent = {"buyers":[9,10], "products":[19,20], "qualities":[0.0,0.25], "transactions": bad_transactions}
 #days = 11
@@ -64,37 +71,53 @@ days = 101
 #bad_agent = {"buyers":[4,5], "products":[9,10], "qualities":[0.0,0.25], "transactions": bad_transactions}
 #days = 5
 
+
+# exploring threshold and PLRo 
+for threshold in [40,60,80]:
+	print('threshold='+str(threshold))
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 0, rs, verbose)	
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 25, rs, verbose)
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 50, rs, verbose)
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 75, rs, verbose)
+	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 100, rs, verbose)
+
+
 """
 print("RS=None", end =" ")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, None, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 0, None, verbose)
 
 print("RS=Regular", end =" ")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 0, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 0, rs, verbose)
 
 print("RS=Regular", end =" ")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
 print("RS=Regular", end =" ")
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 100, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 70, rs, verbose)
+
+print("RS=Regular", end =" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 100, rs, verbose)
 
 print("RS=Weighted", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
 print("RS=Biased", end =" ")
 rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
 print("RS=TOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':True ,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 	
 print("RS=SOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
-reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 """
 
 
+"""
+# Confirming effect of "gaming competition cutting gaming profits"
 
 good_agent = {"buyers":[1,80], "products":[201,280], "qualities":[0.5,0.75,1.0], "transactions": good_transactions}
 bad_agent = {"buyers":[81,100], "products":[281,300], "qualities":[0.0,0.25], "transactions": bad_transactions}
@@ -127,7 +150,7 @@ days = 20
 print("RS=Biased", end =" ")
 rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, 80, 30, rs, verbose)
-
+"""
 
 
 if rs is not None:

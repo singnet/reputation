@@ -62,7 +62,29 @@ network = 'reptest'
 #threshold = 50 # for "10 agents X 10 days", that is too high - one good agent gets associated with bad agents
 threshold = 40
 
-def list_best_ranked(ranks,list,threshold=None):
+# return top ties
+def list_top_ranked(ranks,list,debug=False):
+	if len(ranks) == 0:
+		return list
+	threshold = 0
+	for item in list:
+		key = str(item)
+		value = ranks[key]
+		if threshold < value:
+			 threshold = value
+	best = []
+	for item in list:
+		key = str(item)
+		if key in ranks:
+			value = ranks[key]
+			if threshold <= value:
+				 best.append(item)
+	return best
+
+# return best ranked above threshold 
+def list_best_ranked(ranks,list,threshold=None,debug=False):
+	if debug:
+		print('list input',threshold,list)
 	if len(ranks) == 0:
 		return list
 	if threshold is None: # find the top tie
@@ -71,6 +93,8 @@ def list_best_ranked(ranks,list,threshold=None):
 			value = ranks[key]
 			if threshold < value:
 				 threshold = value
+	if debug:
+		print('threshold found',threshold)
 	if threshold == 0:
 		return list
 	best = []
@@ -82,6 +106,11 @@ def list_best_ranked(ranks,list,threshold=None):
 				 best.append(item)
 	if len(best) == 0:
 		return []
+	if debug:
+		print('best found',best)
+	#best = list_top_ranked(ranks,best,debug) # get the very best bucket ties with top rank
+	if debug:
+		print('best left',best)
 	return best
 
 def intersection(lst1, lst2): 
@@ -108,11 +137,14 @@ def pick_product(ranks,list,self,memories = None,bad_agents = None,encounters = 
 			memories[self] = blacklist
 		if blacklist is not None:
 			whitelist = [candidate for candidate in list if candidate not in blacklist and candidate not in encountered and candidate != self]
-		#if self == 8:
-		#	print('whitelist raw',whitelist)
+		#if self == 5:
+		#	print('whitelist projected',whitelist)
 		if ranks is not None:
+			# 1) Select products from the rating list above threshold (e.g. 4-5 stars), if no found, don't make a purchase.
+			# 2) From the remaining list, select the tie at the top (e.g. 5 stars) and pick the random one from there
 			whitelist = list_best_ranked(ranks,whitelist,threshold)
-		#if self == 8:
+			#whitelist = list_best_ranked(ranks,whitelist,threshold,self == 5) # debug
+		#if self == 5:
 		#	print('whitelist selected',whitelist)
 	else:
 		#bad agents case
@@ -144,6 +176,10 @@ def get_list_fraction(list,fraction,first):
 	n = round (len(list) * (fraction if first else 1 - fraction))
 	res_list = list[:n] if first else list[n:]
 	return res_list
+
+
+def rand_list(list):
+	return list[random.randint(0,len(list)-1)]
 
 
 def get_prob_100(prob):
@@ -216,12 +252,11 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 
 
 	costs = {}
+	qualities = {}
 	for product in all_products:
 		costs[product] = 10
-	
-	#TODO quality
-	#cost = random.randint(bad_agents_values[0],bad_agents_values[1])
-	
+		qualities[product] = rand_list(bad_agent['qualities']) if product in bad_agents else rand_list(good_agent['qualities'])
+
 	#if verbose:
 	#	print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
 	#	print('Bad:',len(bad_agents),bad_agents_values[0],bad_agents_transactions,len(bad_agents)*bad_agents_values[0]*bad_agents_transactions)
@@ -259,7 +294,8 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 					buys += 1
 					actual_good_volume += cost
 					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
-					rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+					#rating = 0.0 if other in bad_agents else float(random.randint(1,4))/4
+					rating = qualities[other]
 					daily_organic += cost
 					if other in bad_agents:
 						actual_good_to_bad_volume += cost
