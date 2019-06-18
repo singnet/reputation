@@ -953,20 +953,6 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertDictEqual(ranks,{'4': 100.0, '5': 98.0, '6': 4.0})
-        
-        
-        
-
-		
-class TestReputationServiceDebug(object):
-	#TODO more tests?
-	#TODO more tests?
-	#pass
-	
-	def clear(self):
-		self.assertEqual( self.rs.clear_ratings(), 0 )
-		self.assertEqual( self.rs.clear_ranks(), 0 )
-		
 	def test_spendings_normalization(self):
         ###before implementing, please check reputation_calculation.py, line 399. This likely uses logranks twice and might be wrong.
 		print('Testing '+type(self).__name__+' spendings_normalization')
@@ -983,4 +969,18 @@ class TestReputationServiceDebug(object):
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		#print_dict_sorted(ranks)
-		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':100.0, '6':32.0, '7':91.0, '8':25.0, '9':0.0})
+		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':18.0, '6':35.0, '7':100.0, '8':28.0, '9':0.0})        
+        
+        
+
+		
+class TestReputationServiceDebug(object):
+	#TODO more tests?
+	#TODO more tests?
+	#pass
+	
+	def clear(self):
+		self.assertEqual( self.rs.clear_ratings(), 0 )
+		self.assertEqual( self.rs.clear_ranks(), 0 )
+		
+
