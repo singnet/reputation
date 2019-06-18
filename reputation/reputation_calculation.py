@@ -138,7 +138,7 @@ def weight_calc(value,lograting,precision,weighting):
 ### Note; Given that we take an approach where we don't need first_occurance, we decide to put as a default option
 ### need_occurance=False.
 def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=False,need_occurance=False,
-                       logratings=False,downrating=False,weighting=True,rater_bias = None):
+                       logratings=False,downrating=False,weighting=True,rater_bias = None,averages = None):
     ### need_occurance is set to false by default and might even be removed for good. It was made in order to
     ### facilitate some other approaches towards updating rankings, which we decided not to use in the end.
     #### We will need from, to, amount, the rest is not necessary to have - let's save memory.
@@ -147,8 +147,20 @@ def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=Fa
     ### We change the subeset that is incoming in order to put downratings transformation.
     new_subset = downratings(downrating,new_subset)
     if rater_bias != None:
-        rater_bias = update_biases(rater_bias,new_subset,conservatism)
-        new_subset = fix_rater_bias(new_subset,rater_bias)
+        rater_bias,average_rating = update_biases(rater_bias,new_subset,conservatism)
+        
+        our_averages = dict()
+        for k in averages:
+            for j in averages[k].keys():
+                if j in our_averages.keys():
+                    our_averages[j].append(averages[k][j])
+                else:
+                    our_averages[j] = [averages[k][j]]
+        our_average = dict()
+        for k in our_averages.keys():
+            our_average[k] = np.mean(our_averages[k])
+            
+        new_subset = fix_rater_bias(new_subset,rater_bias,our_average)    
             
     i=0
     
@@ -252,7 +264,10 @@ def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=Fa
             i+=1
         new_array = new_array2
         to_array = to_array2
-    return(new_array,dates_array,to_array,rater_bias)
+    if rater_bias != None:
+        return(new_array,dates_array,to_array,rater_bias,average_rating)
+    else:
+        return(new_array,dates_array,to_array,rater_bias)
 ### Get new reputations in case we do not yet have the old ones.
 def update_reputation(reputation,new_array,default_reputation,spendings):
     i = 0
@@ -365,15 +380,20 @@ def update_biases(previous_bias,new_arrays, conservatism):
             if k in previous_bias.keys():
                 new_bias[k] = previous_bias[k]
                 
-    return(new_bias)
+    return(new_bias,averages)
 
 
-def fix_rater_bias(new_array,biases):
+def fix_rater_bias(new_array,biases,average):
+    
+
     i = 0
     while i<len(new_array):
-        new_array[i]['value'] = new_array[i]['value']/max(biases[new_array[i]['from']],0.01)
+        if new_array[i]['from'] in average.keys():
+            new_array[i]['value'] = new_array[i]['value'] * (1-average[new_array[i]['from']])###/max(biases[new_array[i]['from']],0.01)
+        else:
+            new_array[i]['value'] = new_array[i]['value']
+        
         i+=1
-    
     return (new_array)
 
 ### Get updated reputations, new calculations of them...
@@ -584,4 +604,80 @@ def where(to_array,the_id):
         i+=1
     return(our_ids)
 
+### average_individual_rating_by_period
+def calculate_average_individual_rating_by_period(transactions,weighted):
+    #if weighted:
+    ratings_avg = dict()
+    i = 0
+    while i<len(transactions):
+        if transactions[i][0] in ratings_avg.keys():
+            if transactions[i][1] in ratings_avg[transactions[i][0]].keys():
+                ratings_avg[transactions[i][0]][transactions[i][1]].append(transactions[i][3])
+            else:
+                ratings_avg[transactions[i][0]][transactions[i][1]] = [transactions[i][3]]
+        else:
+            ratings_avg[transactions[i][0]] = dict()
+        i+=1
+    ### Now we make averages over everything.
+    for k in ratings_avg.keys():
+        for j in ratings_avg[k].keys():
+            ratings_avg[k][j] = np.mean(ratings_avg[k][j])
+    return(rating_avg)
+
+def max_date(mydict):
+    ### Get dictionary where keys are dates and we get the value of last date;
+    sorted_days = sorted(mydict.keys())
+    last_date = sorted_days[-1]
+    i = 0
+    return(mydict[last_date])
+
+### function of predictiveness
+def update_predictiveness_data(previous_pred,mydate,reputations,transactions,all_reputations,conservatism):
+    #previous_pred
+    ids_used = []
+    i=0
+    while i<len(transactions):
+        from_id = transactions[i][0]
+        to_id = transactions[i][1]
+        ids_used.append(from_id)
+        if from_id in previous_pred.keys():
+            if to_id in previous_pred[from_id].keys():
+                previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * max_date(previous_pred[from_id][to_id]) ### mydate should not exist yet in our run.
+            else:
+                previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
+                ### If there is no “previous_individual_rating” known for rater and ratee from the previous periods, the previous_individual_rating = 1.0 is substituted to the formula above.  
+
+        else:
+            previous_pred[from_id] = dict()
+            previous_pred[from_id][to_id] = dict()
+            previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
+        i+=1
+    ids_used = np.unique(ids_used)        
+    return(previous_pred,ids_used)
+
+def normalize_individual_data(mydate,new_ids):
+    all_from = new_ids.keys()
+    max_values = dict()
+    for k in all_from.keys():
+        max_values[k] = []
+        for j in all_from[k].keys():
+            if mydate in all_from[k][j].keys():
+                max_values.append(all_from[k][j][mydate])
+        
+        ### ok, now we've added values to max_values. We continue with another, similar loop;
+        max_value = max(max_values)
+        for j in all_from[k].keys():
+            if mydate in all_from[k][j].keys():
+                all_from[k][j][mydate] = all_from[k][j][mydate]/max_values
+
+                
+def calculate_distance(previous_individual_rating,curret_reputation_rank):
+    distance = 0
+    j = 0
+    while j<len(previous_individual_rating):
+        distance += (previous_individual_rating[j] - curret_reputation_rank[j])**2
+        j+=1
+    distance = distance/len(previous_individual_rating)
+    return(np.sqrt(distance))
+#SQRT(SQR(previous_individual_rating(i,j)-curret_reputation_rank(j))/COUNT(j))    
     
