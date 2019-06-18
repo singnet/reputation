@@ -586,12 +586,20 @@ def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,d
 def spending_based(transactions,som_dict,logratings,precision,weighting):
     i=0
     while i<len(transactions):
-        
         if transactions[i][0] in som_dict.keys():
-            som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[0]
+            
+            #som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+            if not weight_calc(transactions[i],logratings,precision,weighting)[1]==None:
+                som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+            else:
+                som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[0]
+                ### Not sure about above fix, but sometimes we have none value if weighting=False. This should fix it...
         else:
-            som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[0]### changed from
-            ### new_rating instead of new_weight.
+            if not weight_calc(transactions[i],logratings,precision,weighting)[1]==None:
+                som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[1]### changed from
+            #### new_rating instead of new_weight.
+            else:
+                som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[0]
         i+=1
     return(som_dict)
 
