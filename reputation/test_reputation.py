@@ -985,26 +985,7 @@ class TestReputationServiceDebug(object):
 		#print_dict_sorted(ranks)
 		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':100.0, '6':32.0, '7':91.0, '8':25.0, '9':0.0})
         
-	def test_weighting_false_spending(self):
-		print('Testing '+type(self).__name__+' spendings_normalization')
-		rs = self.rs
-		rs.clear_ratings()
-		rs.clear_ranks()
-		dt2 = datetime.date(2018, 1, 2)
-		rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':0.5,'spendings':0.5})
-		rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}])
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':6,'type':'rating','to':3,'value':1,'weight':220,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':7,'type':'rating','to':4,'value':1,'weight':583,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':8,'type':'rating','to':2,'value':1,'weight':196,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':129,'time':dt2}]),0)
-		rs.update_ranks(dt2)
-		#self.assertEqual(rs.update_ranks(dt2),0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		print("ranks",ranks)
-#		#self.assertDictEqual(ranks,{'2': 100.0, '5': 100.0, '3': 64.0, '6': 66.0, '4': 89.0, '7': 95.0, '8': 63.0, '9': 50.0, '10': 50.0})
 
-        
         
         
         
