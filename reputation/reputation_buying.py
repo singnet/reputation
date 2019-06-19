@@ -108,7 +108,7 @@ def list_best_ranked(ranks,list,threshold=None,debug=False):
 		return []
 	if debug:
 		print('best found',best)
-	#best = list_top_ranked(ranks,best,debug) # get the very best bucket ties with top rank
+	best = list_top_ranked(ranks,best,debug) # get the very best bucket ties with top rank
 	if debug:
 		print('best left',best)
 	return best
