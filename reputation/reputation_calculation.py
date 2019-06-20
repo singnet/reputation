@@ -298,7 +298,7 @@ def logratings_precision(rating,lograting,precision,weighting):
     new_weight = None # assume no weight computed by default
     ### if weighting = False, then we return values only.
     if not weighting:
-        return(rating[3],None)
+        return(rating[2],None)
     if lograting:
         ### We go through few posibilities about what can happen.
         ### If there are no weights then:
@@ -335,7 +335,6 @@ def logratings_precision(rating,lograting,precision,weighting):
             else:
                 new_weight = rating[2]/precision
                 new_rating = rating[3] * new_weight
-
     new_rating = my_round(new_rating,0) 
     return(new_rating,new_weight) #return weighted value Fij*Qij to sum and weight Qij to denominate later in dRit = Î£j (Fij * Qij * Rjt-1 ) / Î£j (Qij)
 
@@ -588,9 +587,19 @@ def spending_based(transactions,som_dict,logratings,precision,weighting):
     i=0
     while i<len(transactions):
         if transactions[i][0] in som_dict.keys():
-            som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+            
+            #som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+            if not weight_calc(transactions[i],logratings,precision,weighting)[1]==None:
+                som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
+            else:
+                som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[0]
+                ### Not sure about above fix, but sometimes we have none value if weighting=False. This should fix it...
         else:
-            som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[1]
+            if not weight_calc(transactions[i],logratings,precision,weighting)[1]==None:
+                som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[1]### changed from
+            #### new_rating instead of new_weight.
+            else:
+                som_dict[transactions[i][0]] = weight_calc(transactions[i],logratings,precision,weighting)[0]
         i+=1
     return(som_dict)
 
