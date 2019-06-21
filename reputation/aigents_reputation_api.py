@@ -125,6 +125,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
 			+ ' ratings ' + str(self.parameters['ratings']) \
 			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
@@ -236,6 +237,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' ratings ' + str(self.parameters['ratings']) \
 			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		

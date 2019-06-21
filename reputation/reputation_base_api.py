@@ -51,6 +51,8 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['unrated'] = False # whether to store default ranks of unrated agents and let them decay 
 		self.parameters['ratings'] = 1.0 # to which extent account contribution of explicit and implicit ratings to reputation
 		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
+		self.parameters['predictiveness'] = 0.0 # to which extent account rank is based on consensus between social consensus and ratings provided by the account
+		
 
 	"""
 	Utility wrapper around get_ranks, returns None in case of error, so ranks  = get_ranks_dict(...) should be checked for None, and if it is None, the get_ranks(...) may be used to decipher the error code.
