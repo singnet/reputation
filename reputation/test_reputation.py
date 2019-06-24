@@ -977,7 +977,7 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 	def test_predictiveness_java(self):
 		"""
 		DISCLAIMER: this is experimental version - can be referred to, but expected numbers may change!!!
-		        
+		"""        
 		print('Testing '+type(self).__name__+' predictiveness_aigents')
 		rs = self.rs
 		self.clear()
@@ -1010,13 +1010,8 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 				self.assertDictEqual(ranks,{'11': 100.0, '13': 100.0, '14': 100.0, '12': 55.0})
 			else:
 				self.assertDictEqual(ranks,{'11': 100.0, '13': 100.0, '12': 55.0, '14': 33.0})
-		"""
-		pass #TODO make above working
 		
 class TestReputationServiceDebug(object):
-	#TODO more tests?
-	#TODO more tests?
-	#pass
 	
 	def clear(self):
 		self.assertEqual( self.rs.clear_ratings(), 0 )
@@ -1039,10 +1034,3 @@ class TestReputationServiceDebug(object):
 		ranks = rs.get_ranks_dict({'date':dt2})
 		#print_dict_sorted(ranks)
 		self.assertDictEqual(ranks,{'10': 0.0, '2':0.0, '3':0.0, '4':0.0, '5':100.0, '6':32.0, '7':91.0, '8':25.0, '9':0.0})
-        
-        
-        
-        
-        
-        
-        

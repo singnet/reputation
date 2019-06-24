@@ -631,7 +631,7 @@ def calculate_average_individual_rating_by_period(transactions,weighted):
     for k in ratings_avg.keys():
         for j in ratings_avg[k].keys():
             ratings_avg[k][j] = np.mean(ratings_avg[k][j])
-    return(rating_avg)
+    return(ratings_avg)
 
 def max_date(mydict):
     ### Get dictionary where keys are dates and we get the value of last date;
