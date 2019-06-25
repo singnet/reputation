@@ -970,7 +970,52 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		#self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
 		self.assertDictEqual(ranks,{'2': 100.0, '5': 100.0, '3': 61.0, '6': 61.0, '4': 80.0, '7': 82.0, '8': 59.0, '9': 50.0, '10': 50.0})        
+	def test_predictiveness(self):
+		print('Testing '+type(self).__name__+' spendings_normalization')
+		rs = self.rs
+		rs.clear_ratings()
+		rs.clear_ranks()
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)
+		dt4 = datetime.date(2018, 1, 4)
+		rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,
+                   'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':True,'predictiveness':1,
+                  'aggregation':True})
+		self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]),0)
+		self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
+		self.assertEqual(rs.put_ratings([{'from':'3','type':'rating','to':'6','value':0,'weight':10,'time':dt1}]),0)
+		self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
+		self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':0.75,'weight':36,'time':dt1}]),0)
+		rs.update_ranks(dt1)
+		#self.assertEqual(rs.update_ranks(dt2),0)
+		ranks = rs.get_ranks_dict({'date':dt1})                         
+		self.assertDictEqual(ranks,{'4': 85.0, '5': 100.0, '6': 14.0})
         
+		self.assertEqual(rs.put_ratings([{'from':1,'type':'rating','to':'5','value':0.75,'weight':10,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':2,'type':'rating','to':'6','value':0.25,'weight':10,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':1,'weight':100,'time':dt2}]),0)
+        
+        
+		rs.update_ranks(dt2)
+		self.assertEqual(rs.put_ratings([{'from':1,'type':'rating','to':'5','value':0.75,'weight':10,'time':dt3}]),0)
+		self.assertEqual(rs.put_ratings([{'from':2,'type':'rating','to':'6','value':0.25,'weight':10,'time':dt3}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.25,'weight':10,'time':dt3}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':1,'weight':100,'time':dt3}]),0)
+
+		rs.update_ranks(dt3)
+		self.assertEqual(rs.put_ratings([{'from':1,'type':'rating','to':'5','value':0.75,'weight':10,'time':dt4}]),0)
+		self.assertEqual(rs.put_ratings([{'from':2,'type':'rating','to':'6','value':0.25,'weight':10,'time':dt4}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt4}]),0)
+		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':1,'weight':100,'time':dt4}]),0)
+
+		rs.update_ranks(dt4)
+
+		ranks = rs.get_ranks_dict({'date':dt4})        
+        
+                         
+		self.assertDictEqual(ranks,{'4': 100.0, '5': 80.0, '6': 71.0})         
         
 class TestReputationServiceAigents(TestReputationServiceParametersBase):
         
