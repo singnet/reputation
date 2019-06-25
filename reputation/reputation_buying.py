@@ -177,10 +177,13 @@ def get_list_fraction(list,fraction,first):
 	res_list = list[:n] if first else list[n:]
 	return res_list
 
-
 def rand_list(list):
 	return list[random.randint(0,len(list)-1)]
 
+def split_list(alist, wanted_parts=1):
+	length = len(alist)
+	return [ alist[i*length // wanted_parts: (i+1)*length // wanted_parts] 
+		for i in range(wanted_parts) ]
 
 def get_prob_100(prob):
 	# 100 => True !
@@ -222,6 +225,24 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 	all_products = good_products + bad_products
 	all_consumers = good_consumers + bad_consumers
 	all_agents = good_agents + bad_agents
+
+	# setup products
+	n_products_per_vendor = 10 # TODO FIX HACK
+	n_vendor = 100000 # TODO FIX HACK
+	if rs is not None:
+		n_good_products = len(good_products)
+		n_bad_products = len(bad_products) 
+		gp = split_list(good_products,int((9+n_good_products)/10))
+		bp = split_list(bad_products,int((9+n_bad_products)/10))
+		n = 1
+		for products in gp:
+			rs.set_parent(n_vendor + n,products)
+			#print(n_vendor + n,products)
+			n = n + 1
+		for products in bp:
+			rs.set_parent(n_vendor + n,products)
+			#print(n_vendor + n,products)
+			n = n + 1
 
 	if verbose:
 	#if verbose or True:
