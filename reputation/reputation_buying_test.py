@@ -86,7 +86,8 @@ for threshold in [40,60,80]:
 	reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 100, rs, verbose)
 """
 
-# Exploring PLRo-s and ddifferent RS-es except Predictive so far
+
+# Exploring PLRo-s and different RS-es except Predictive so far
 
 print("RS=None", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 0, None, verbose)
@@ -119,6 +120,7 @@ print("RS=Biased", end =" ")
 rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
+
 """
 # Testing Predictiveness
 rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
@@ -149,6 +151,18 @@ print("RS=Predictive_c0.1_dec0.9", end =" ")
 rs.set_parameters({'predictiveness':1.0,'conservatism':0.1,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.5,'decayed':0.9,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 """
+
+"""
+# Testing Parents
+rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+print("RS=Weighted", end =" ")
+rs.set_parameters({'parents':0.0,'predictiveness':0.0,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
+print("RS=Parents1.0", end =" ")
+rs.set_parameters({'parents':1.0,'predictiveness':0.0,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, True)
+"""
+
 
 """
 # Confirming effect of "gaming competition cutting gaming profits"
