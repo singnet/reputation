@@ -169,7 +169,7 @@ class PythonReputationService(ReputationServiceBase):
         if 'predictiveness' in changes.keys():
             self.predictiveness = changes['predictiveness']
         else:
-            self.predictiveness = False    
+            self.predictiveness = 0    
             
         return(0)
         
@@ -293,14 +293,18 @@ class PythonReputationService(ReputationServiceBase):
         else:
             array1 , dates_array, to_array, rater_biases1 = reputation_calc_p1(self.current_ratings,self.conservatism,self.precision,self.temporal_aggregation,False,self.logratings,self.downrating,self.weighting, None)  ### In this case, we don't need rater_biases
         ### Now we update the reputation. Here, old ranings are inseter and then new ones are calculated as output.
-        if self.predictiveness:
+        if self.predictiveness>0:
             self.predictive_data[mydate] = dict()
             avg_ind_rat_byperiod = calculate_average_individual_rating_by_period(array1,True)
+            #print("avg_ind_rat_byperiod",avg_ind_rat_byperiod)
             self.predictive_data, ids = update_predictiveness_data(self.predictive_data,mydate,self.reputation,avg_ind_rat_byperiod,self.all_reputations,self.conservatism)
-            self.calculate_indrating(ids)
-            self.predictive_data = normalize_individual_data(mydate,self.predictive_data)
+            self.calculate_indrating(ids,mydate)
             
-            print("predictivenesss:",self.pred_values)
+            #print("self.predictive_data:",self.predictive_data)
+            ##self.predictive_data = normalize_individual_data(mydate,self.predictive_data)
+            ## we do not need the above just yet.
+            #
+            #print("predictivenesss:",self.pred_values)
         self.reputation = update_reputation(self.reputation,array1,self.default,self.spendings)
 
         ### we take data from date-update_period.
@@ -311,7 +315,10 @@ class PythonReputationService(ReputationServiceBase):
             ### We normalize differential that is spendings-based.
             spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=self.logranks)       
         ### Then we calculate differential the normal way.
-        new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks) 
+        if self.predictiveness>0:
+            new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness,predictive_data = self.predictive_data)
+        else:
+            new_reputation = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness)
         ### And then we normalize the differential:
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)
         ### Again only starting this loop if we have spendings.
@@ -468,37 +475,42 @@ class PythonReputationService(ReputationServiceBase):
                 ranks.append(self.all_reputations[k][theid])
         return(ranks)
     
-    def calculate_indrating(self,ids):
+    def calculate_indrating(self,ids,mydate):
         
         correlats = dict()
         
-        i=0
-        while i<len(ids):
-            thevalues = []
-            the_reps = []
-            j = 0
-            for k in sorted(self.predictive_data[ids[i]].keys())[0:(len(self.predictive_data[ids[i]].keys())-1)]:
-                self.predictive_data[ids[i]]
-                thevalues.append(self.predictive_data[ids[i]][k])
-                the_reps.append(self.all_reputations[k][ids[i]])
-            #the_reps = self.get_historical_ranks(ids[i])
-            if len(the_reps)!=0:
-                cors = calculate_distance(the_reps,thevalues)
-                #cors = np.corrcoef(the_reps,thevalues)[1,1] 
-            else:
-                cors = 0
-            cors = 1 - cors ### predictiveness is 1-distance
-            print("thereps",the_reps,"thevalues",thevalues)
-            print("cors",cors)
-            print("pred_values[id]",self.pred_values)
-            #if not np.isnan(cors):
+        for k1 in self.predictive_data.keys():
+            k = self.predictive_data[k1]
+            for j in k.keys():
+                thevalues = []
+                relevant_ranks = []
+                days_sorted = sorted(k[j].keys())
+                mydays = []
+                for dates in days_sorted:
+                    if dates < mydate:
+                        mydays.append(dates)
+                        relevant_ranks.append(self.all_reputations[dates][j])
+                        thevalues.append(k[j][dates])
+                #print("mydays",mydays)   
+                #print("self.all_reputations",self.all_reputations)
+                #if len(mydays)>1:
+                #    print("j",j)#,"self.all_reputations[dates]",self.all_reputations[days_sorted],"k[j]",k[j])        
+                #print("j",j,"relevant_ranks",relevant_ranks,"thevalues",thevalues)
+                        
+                if len(relevant_ranks)!=0:        
+                    cors = calculate_distance(relevant_ranks,thevalues)
+                else:
+                    cors = 0
+                cors = 1 - cors ### predictiveness is 1-distance
             
-            if ids[i] in self.pred_values.keys():    
-                self.pred_values[ids[i]] = cors * (1 - self.conservatism) + self.pred_values[ids[i]] * self.conservatism
-            else:
-                self.pred_values[ids[i]] = 1
-            
-            i+=1
+                if k1 in self.pred_values.keys():
+                    if j in self.pred_values[k1].keys():
+                        self.pred_values[k1][j] = cors * (1 - self.conservatism) + self.pred_values[k1][j] * self.conservatism
+                    else:
+                        self.pred_values[k1][j] = cors * (1 - self.conservatism) + 1 * self.conservatism
+                else:
+                    self.pred_values[k1] = dict()
+                    self.pred_values[k1][j] = cors * (1 - self.conservatism) + 1 * self.conservatism 
             
         return(0)
     
