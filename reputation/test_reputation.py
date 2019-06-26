@@ -1023,8 +1023,36 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 	def clear(self):
 		self.assertEqual( self.rs.clear_ratings(), 0 )
 		self.assertEqual( self.rs.clear_ranks(), 0 )
+
+	def test_rating_bias_java(self):
+		print('Testing '+type(self).__name__+' rating_bias_aigents')
+		dt1 = datetime.date(2018, 1, 1)
+		dt2 = datetime.date(2018, 1, 2)
+		dt3 = datetime.date(2018, 1, 3)
+		for rating_bias in [False,True]:
+			self.clear()
+			rs = self.rs
+			rs.clear_ratings()
+			rs.clear_ranks()
+			rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':rating_bias})
+			self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'6','value':0.25,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'3','type':'rating','to':'6','value':0,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.update_ranks(dt1),0)
+			ranks = rs.get_ranks_dict({'date':dt1})
+			self.assertEqual(rs.put_ratings([{'from':1,'type':'rating','to':'5','value':0.75,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.put_ratings([{'from':2,'type':'rating','to':'6','value':0.25,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.update_ranks(dt2),0)
+			ranks = rs.get_ranks_dict({'date':dt2})
+			#print(ranks)
+			if rating_bias == False:
+				self.assertDictEqual(ranks,{'4': 99.0, '5': 100.0, '6': 89.0})
+			else:
+				self.assertDictEqual(ranks,{'5': 100.0, '4': 99.0, '6': 22.0})
 		
-	def test_parents(self):
+	def test_parents_java(self):
 		"""
 		DISCLAIMER: this is experimental version - can be referred to, but expected numbers may change!!!
 		"""        
@@ -1063,7 +1091,6 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 				self.assertDictEqual(ranks,{'11': 100.0, '14': 100.0, '12': 55.0})
 			else:
 				self.assertDictEqual(ranks,{'1113': 100.0, '11': 78.0, '13': 67.0, '14': 56.0, '1214': 55.0, '12': 33.0})
-
 		
 	def test_predictiveness_java(self):
 		"""

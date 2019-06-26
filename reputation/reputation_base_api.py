@@ -53,6 +53,7 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
 		self.parameters['parents'] = 0.0 # to which extent reputation of the "child" (product) is affected by the reputation of the "parent" (vendor)
 		self.parameters['predictiveness'] = 0.0 # to which extent account rank is based on consensus between social consensus and ratings provided by the account
+		self.parameters['rating_bias'] = False # whether to weigth ratings based on pessimism of the prior ratings
 		
 
 	"""
