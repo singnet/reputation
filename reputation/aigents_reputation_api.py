@@ -127,6 +127,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' spendings ' + str(self.parameters['spendings']) \
 			+ ' parents ' + str(self.parameters['parents']) \
 			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
+			+ ' rating_bias ' + ('true' if self.parameters['rating_bias'] else 'false') \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
@@ -240,6 +241,7 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' spendings ' + str(self.parameters['spendings']) \
 			+ ' parents ' + str(self.parameters['parents']) \
 			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
+			+ ' pessimism ' + ('true' if self.parameters['rating_bias'] else 'false') \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
 		return 0 if res.strip() == 'Ok.' else 1
 		
