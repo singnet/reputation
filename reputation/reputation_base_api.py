@@ -51,7 +51,9 @@ class ReputationServiceBase(RatingService,RankingService):
 		self.parameters['unrated'] = False # whether to store default ranks of unrated agents and let them decay 
 		self.parameters['ratings'] = 1.0 # to which extent account contribution of explicit and implicit ratings to reputation
 		self.parameters['spendings'] = 0.0 # to which extent account contribution of spendings ("prrof-of-burn") to reputation
+		self.parameters['parents'] = 0.0 # to which extent reputation of the "child" (product) is affected by the reputation of the "parent" (vendor)
 		self.parameters['predictiveness'] = 0.0 # to which extent account rank is based on consensus between social consensus and ratings provided by the account
+		self.parameters['rating_bias'] = False # whether to weigth ratings based on pessimism of the prior ratings
 		
 
 	"""
@@ -70,4 +72,10 @@ class ReputationServiceBase(RatingService,RankingService):
 		for rank in ranks:
 			ranks_dict[rank['id']] = rank['rank']
 		return ranks_dict
+	
+	"""
+	TODO: implement in derived imlementations
+	"""
+	def set_parent(self,parent_id,list_of_children_ids):
+		return 0
 	

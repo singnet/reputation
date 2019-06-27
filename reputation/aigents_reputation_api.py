@@ -125,7 +125,9 @@ class AigentsAPIReputationService(ReputationServiceBase):
 			+ ' logratings ' + ('true' if self.parameters['logratings'] else 'false') \
 			+ ' ratings ' + str(self.parameters['ratings']) \
 			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' parents ' + str(self.parameters['parents']) \
 			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
+			+ ' rating_bias ' + ('true' if self.parameters['rating_bias'] else 'false') \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false')
 		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
@@ -237,7 +239,20 @@ class AigentsAPIReputationService(ReputationServiceBase):
 		res = self.reputation_request('update ranks date ' + str(date) + ' fullnorm ' + ('true' if self.parameters['fullnorm'] else 'false') \
 			+ ' ratings ' + str(self.parameters['ratings']) \
 			+ ' spendings ' + str(self.parameters['spendings']) \
+			+ ' parents ' + str(self.parameters['parents']) \
 			+ ' predictiveness ' + str(self.parameters['predictiveness']) \
+			+ ' pessimism ' + ('true' if self.parameters['rating_bias'] else 'false') \
 			+ ' unrated ' + ('true' if self.parameters['unrated'] else 'false'))
+		return 0 if res.strip() == 'Ok.' else 1
+		
+	def set_parent(self,parent_id,list_of_children_ids):
+		if self.verbose:
+			logger.info( 'set_parent' + ' ' + str(parent_id) + ' ' + str(list_of_children_ids))
+		cmd = 'set parent ' + str(parent_id) 
+		for id in list_of_children_ids:
+			cmd += ' child ' + str(id)
+		if self.verbose:
+			logger.info( 'cmd='+cmd )
+		res = self.reputation_request(cmd)
 		return 0 if res.strip() == 'Ok.' else 1
 		
