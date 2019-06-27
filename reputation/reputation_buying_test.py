@@ -103,6 +103,18 @@ reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True,
 
 print("RS=Regular", end =" ")
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 100, rs, verbose)
+"""
+
+
+# For grand presentation
+rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
+rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
+
+print("RS=None", end =" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 0, None, verbose)
+
+print("RS=Regular", end =" ")
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
 print("RS=Weighted", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
@@ -115,31 +127,30 @@ reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True,
 print("RS=SOM-based", end =" ")
 rs.set_parameters({'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.5,'spendings':0.5})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
-"""
 
-print("RS=Biased_P", end =" ")
-rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+print("RS=Anti-biased_def5_dec5_c5", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
-rs = AigentsAPIReputationService('http://localtest.com:1180/', 'john@doe.org', 'q', 'a', False, 'test', True)
-rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
-print("RS=Biased_J", end =" ")
-rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+print("RS=Anti-biased_def5_dec5_c9", end =" ")
+rs.set_parameters({'rating_bias':True,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.9,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
-print("RS=Predictive1.0_c0.1_def0.9", end =" ")
-rs.set_parameters({'rating_bias':False,'predictiveness':1.0,'conservatism':0.1,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.9,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+print("RS=Predictive_def5_dec5_c5", end =" ")
+rs.set_parameters({'rating_bias':False,'predictiveness':1.0,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
-print("RS=BiasedPredictive1.0_c0.1_def0.9", end =" ")
-rs.set_parameters({'rating_bias':True,'predictiveness':1.0,'conservatism':0.1,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.9,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+print("RS=Predictive_def9_dec1_c1", end =" ")
+rs.set_parameters({'rating_bias':False,'predictiveness':1.0,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.9,'decayed':0.1,'conservatism':0.1,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
-print("RS=BiasedPredictive0.5_c0.1_def0.9", end =" ")
-rs.set_parameters({'rating_bias':True,'predictiveness':0.5,'conservatism':0.1,'rating_bias':False,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.9,'decayed':0.5,'ratings':1.0,'spendings':0.0})
+print("RS=Anti-biased&Predictive_def5_dec5_c5", end =" ")
+rs.set_parameters({'rating_bias':True,'predictiveness':1.0,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
 reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
-
+print("RS=Anti-biased&Predictive_def9_dec1_c5", end =" ")
+rs.set_parameters({'rating_bias':True,'predictiveness':1.0,'fullnorm':True,'weighting':True ,'logratings':False,'denomination':True ,'unrated':False ,'default':0.9,'decayed':0.1,'conservatism':0.5,'ratings':1.0,'spendings':0.0})
+reputation_simulate(good_agent,bad_agent, datetime.date(2018, 1, 1), days, True, threshold, 30, rs, verbose)
 
 
 """
