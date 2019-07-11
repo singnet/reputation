@@ -511,10 +511,11 @@ def rater_reputation(previous_reputations,rater_id,default,liquid=False,to_id = 
             if predictiveness>0:
                 if rater_id in predictive_data.keys():
                     
-                    if to_id in predictive_data[rater_id].keys():
-                        rater_rep = previous_reputations[rater_id] * 100 * predictive_data[rater_id][to_id] * predictiveness
-                    else:
-                        rater_rep = previous_reputations[rater_id] * 100
+                    #if to_id in predictive_data[rater_id].keys():
+                        #rater_rep = previous_reputations[rater_id] * 100 * predictive_data[rater_id][to_id] * predictiveness
+                    rater_rep = previous_reputations[rater_id] * 100 * predictive_data[rater_id] * predictiveness
+                    #else:
+                        #rater_rep = previous_reputations[rater_id] * 100
                 else:
                     rater_rep = previous_reputations[rater_id] * 100
                     
@@ -528,16 +529,16 @@ def rater_reputation(previous_reputations,rater_id,default,liquid=False,to_id = 
 
             if predictiveness>0:
                 if rater_id in predictive_data.keys():
-                    if to_id in predictive_data[rater_id].keys():
-                        rater_rep = default * 100 * max_date(predictive_data[rater_id][to_id]) * predictiveness
-                    else:
-                        rater_rep = default * 100
+                    #if to_id in predictive_data[rater_id].keys():
+                        #rater_rep = default * 100 * predictive_data[rater_id][to_id] * predictiveness#max_date(predictive_data[rater_id][to_id]) * predictiveness
+                    rater_rep = default * 100 * predictive_data[rater_id] * predictiveness
+                    #else:
+                        #rater_rep = default * 100
                 else:
                     rater_rep = default * 100
                 
             else:
                 rater_rep = default * 100   
-
     return(rater_rep)
 
 ### Another normalization. This one is intended for reputation normalization.
@@ -639,6 +640,7 @@ def where(to_array,the_id):
 
 ### average_individual_rating_by_period
 def calculate_average_individual_rating_by_period(transactions,weighted):
+    count_trans = dict()
     #if weighted:
     ratings_avg = dict()
     i = 0
@@ -646,16 +648,21 @@ def calculate_average_individual_rating_by_period(transactions,weighted):
         if transactions[i][0] in ratings_avg.keys(): ### ratings_avg[from][to]
             if transactions[i][1] in ratings_avg[transactions[i][0]].keys():
                 ratings_avg[transactions[i][0]][transactions[i][1]].append(transactions[i][3]) ### should be value append.
+                count_trans[transactions[i][0]][transactions[i][1]] += 1
             else:
                 ratings_avg[transactions[i][0]][transactions[i][1]] = [transactions[i][3]]
+                count_trans[transactions[i][0]][transactions[i][1]] = 1
         else:
             ratings_avg[transactions[i][0]] = dict()
+            count_trans[transactions[i][0]] = dict()
+            ratings_avg[transactions[i][0]][transactions[i][1]] = [transactions[i][3]]
+            count_trans[transactions[i][0]][transactions[i][1]] = 1
         i+=1
     ### Now we make averages over everything.
     for k in ratings_avg.keys():
         for j in ratings_avg[k].keys():
             ratings_avg[k][j] = np.mean(ratings_avg[k][j])
-    return(ratings_avg)
+    return(ratings_avg,count_trans)
 
 def max_date(mydict):
     ### Get dictionary where keys are dates and we get the value of last date;
@@ -668,23 +675,20 @@ def max_date(mydict):
 def update_predictiveness_data(previous_pred,mydate,reputations,transactions,all_reputations,conservatism):
     #previous_pred
     ids_used = []
-    
     for k in transactions:
         from_id = k
         ids_used.append(k)
         if from_id not in previous_pred.keys():
             previous_pred[from_id] = dict()
         for to_id in transactions[from_id]:
-            
             if to_id in previous_pred[from_id].keys():
                 previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * max_date(previous_pred[from_id][to_id]) ### mydate should not exist yet in our run.
             else:
                 previous_pred[from_id][to_id] = dict()
                 previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
     
+    #ids_used = np.unique(ids_used)   
     
-    
-    ids_used = np.unique(ids_used)        
     return(previous_pred,ids_used)
 
 def normalize_individual_data(mydate,new_ids):
@@ -710,6 +714,7 @@ def calculate_distance(previous_individual_rating,curret_reputation_rank):
         distance += (previous_individual_rating[j] - curret_reputation_rank[j])**2
         j+=1
     distance = distance/len(previous_individual_rating)
+    
     return(np.sqrt(distance))
 #SQRT(SQR(previous_individual_rating(i,j)-curret_reputation_rank(j))/COUNT(j))    
     
