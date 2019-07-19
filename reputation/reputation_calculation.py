@@ -388,7 +388,7 @@ def fix_rater_bias(new_array,biases,average):
     i = 0
     while i<len(new_array):
         if new_array[i]['from'] in average.keys():
-            new_array[i]['value'] = new_array[i]['value'] * (1-average[new_array[i]['from']])###/max(biases[new_array[i]['from']],0.01)
+            new_array[i]['value'] = new_array[i]['value'] * (1-average[new_array[i]['from']])
         else:
             new_array[i]['value'] = new_array[i]['value']
         
@@ -397,7 +397,7 @@ def fix_rater_bias(new_array,biases,average):
 
 ### Get updated reputations, new calculations of them...
 ### We calculate differential here.
-def calculate_new_reputation(new_array,to_array,reputation,rating,precision,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True,predictiveness = 0,predictive_data = dict()):
+def calculate_new_reputation(new_array,to_array,reputation,rating,precision,previous_rep,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True,predictiveness = 0,predictive_data = dict()):
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id. mys is a differential.
     mys = {}
@@ -428,16 +428,16 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                 new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
                 ### Then we multiply this with rater's current reputation. Few options are taken into account, such as
                 ### if it is liquid reputation, then we set it to 1...
-                
-                amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid,new_array[k][1],predictiveness,predictive_data))
+                my_rater_rep, previous_rep = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                amounts.append(new_rating * my_rater_rep)
                 ### if we have weights and denomination, then we append some denominators.
                 if denomination and new_weight is not None:
                 	denominators.append(new_weight) # denomination by sum of weights in such case
             else:
                 new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
                 new_rating = my_round(new_rating,0)
-
-                amounts.append(new_rating * rater_reputation(reputation,new_array[k][0],default,liquid,new_array[k][1],predictiveness,predictive_data))
+                my_rater_rep, previous_rep = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                amounts.append(new_rating * my_rater_rep)
                 #no need for denomination by sum of weights in such case 
         ### After we are done collecting sums for certain ids, we sum up everything we have.
         mys[unique_ids[i]] = sum(amounts)
@@ -462,7 +462,8 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,defa
                 mys[k] = -np.log10(1 - mys[k])
             else:
                 mys[k] = np.log10(1 + mys[k])
-    return(mys)
+                
+    return(mys,previous_rep)
 
 ### normalizing differential.
 def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
@@ -501,7 +502,7 @@ def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
 
-def rater_reputation(previous_reputations,rater_id,default,liquid=False,to_id = [],predictiveness = 0,predictive_data = dict()):
+def rater_reputation(previous_reputations,rater_id,default,prev_rep,liquid=False,to_id = [],predictiveness = 0,predictive_data = dict()):
     ### Assigning rater reputation. It is not trivial; if liquid=True, then we can expect that 
     if rater_id in previous_reputations.keys():
         ### Checks whether it's liquid or not. If liquid, return 1, otherwise previous reputation.
@@ -511,34 +512,43 @@ def rater_reputation(previous_reputations,rater_id,default,liquid=False,to_id = 
             if predictiveness>0:
                 if rater_id in predictive_data.keys():
                     
-                    if to_id in predictive_data[rater_id].keys():
-                        rater_rep = previous_reputations[rater_id] * 100 * predictive_data[rater_id][to_id] * predictiveness
+                    if rater_id in prev_rep:
+                        rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
+                        rater_rep = rater_rep * 100
+                    else:
+                        rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
+                        rater_rep = rater_rep * 100
+                else:
+                    if rater_id in prev_rep:
+                        rater_rep = previous_reputations[rater_id] * 100
                     else:
                         rater_rep = previous_reputations[rater_id] * 100
-                else:
-                    rater_rep = previous_reputations[rater_id] * 100
                     
             else:
-                rater_rep = previous_reputations[rater_id] * 100
+                if rater_id in prev_rep:
+                    rater_rep = previous_reputations[rater_id] * 100
+                else:
+                    rater_rep = previous_reputations[rater_id] * 100
     else:
-        ### If it is not in reputations up to the current one, we set a default value.
         if (not liquid):
             rater_rep = 1
         else:
-
-            if predictiveness>0:
-                if rater_id in predictive_data.keys():
-                    if to_id in predictive_data[rater_id].keys():
-                        rater_rep = default * 100 * max_date(predictive_data[rater_id][to_id]) * predictiveness
-                    else:
-                        rater_rep = default * 100
-                else:
-                    rater_rep = default * 100
-                
-            else:
-                rater_rep = default * 100   
-
-    return(rater_rep)
+            rater_rep = default * 100
+    ### If it is not in reputations up to the current one, we set a default value.
+    #if (not liquid):
+    #    rater_rep = 1
+    #else:
+#
+    #    if predictiveness>0:
+    #        if rater_id in predictive_data.keys():
+    #            rater_rep = default * (1-predictiveness) + predictive_data[rater_id] * predictiveness
+    #            rater_rep = rater_rep * 100
+    #        else:
+    #            rater_rep = default * 100
+    #    else:
+    #        rater_rep = default * 100   
+    prev_rep[rater_id] = rater_rep
+    return(rater_rep,prev_rep)
 
 ### Another normalization. This one is intended for reputation normalization.
 def normalize_reputation(reputation,new_array,unrated,default1,decay,conservatism,normalizedRanks=False):
@@ -611,8 +621,6 @@ def spending_based(transactions,som_dict,logratings,precision,weighting):
     i=0
     while i<len(transactions):
         if transactions[i][0] in som_dict.keys():
-            
-            #som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
             if not weight_calc(transactions[i],logratings,precision,weighting)[1]==None:
                 som_dict[transactions[i][0]] += weight_calc(transactions[i],logratings,precision,weighting)[1]
             else:
@@ -639,23 +647,29 @@ def where(to_array,the_id):
 
 ### average_individual_rating_by_period
 def calculate_average_individual_rating_by_period(transactions,weighted):
+    count_trans = dict()
     #if weighted:
     ratings_avg = dict()
     i = 0
     while i<len(transactions):
-        if transactions[i][0] in ratings_avg.keys(): ### ratings_avg[from][to]
+        if transactions[i][0] in ratings_avg.keys():
             if transactions[i][1] in ratings_avg[transactions[i][0]].keys():
                 ratings_avg[transactions[i][0]][transactions[i][1]].append(transactions[i][3]) ### should be value append.
+                count_trans[transactions[i][0]][transactions[i][1]] += 1
             else:
                 ratings_avg[transactions[i][0]][transactions[i][1]] = [transactions[i][3]]
+                count_trans[transactions[i][0]][transactions[i][1]] = 1
         else:
             ratings_avg[transactions[i][0]] = dict()
+            count_trans[transactions[i][0]] = dict()
+            ratings_avg[transactions[i][0]][transactions[i][1]] = [transactions[i][3]]
+            count_trans[transactions[i][0]][transactions[i][1]] = 1
         i+=1
     ### Now we make averages over everything.
     for k in ratings_avg.keys():
         for j in ratings_avg[k].keys():
             ratings_avg[k][j] = np.mean(ratings_avg[k][j])
-    return(ratings_avg)
+    return(ratings_avg,count_trans)
 
 def max_date(mydict):
     ### Get dictionary where keys are dates and we get the value of last date;
@@ -665,26 +679,19 @@ def max_date(mydict):
     return(mydict[last_date])
 
 ### function of predictiveness
-def update_predictiveness_data(previous_pred,mydate,reputations,transactions,all_reputations,conservatism):
-    #previous_pred
+def update_predictiveness_data(previous_pred,mydate,reputations,transactions,conservatism):
     ids_used = []
-    
     for k in transactions:
         from_id = k
         ids_used.append(k)
         if from_id not in previous_pred.keys():
             previous_pred[from_id] = dict()
         for to_id in transactions[from_id]:
-            
             if to_id in previous_pred[from_id].keys():
-                previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * max_date(previous_pred[from_id][to_id]) ### mydate should not exist yet in our run.
+                previous_pred[from_id][to_id] = transactions[from_id][to_id] * (1-conservatism) + conservatism * previous_pred[from_id][to_id] ### mydate should not exist yet in our run.
             else:
                 previous_pred[from_id][to_id] = dict()
-                previous_pred[from_id][to_id][mydate] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
-    
-    
-    
-    ids_used = np.unique(ids_used)        
+                previous_pred[from_id][to_id] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
     return(previous_pred,ids_used)
 
 def normalize_individual_data(mydate,new_ids):
@@ -707,9 +714,17 @@ def calculate_distance(previous_individual_rating,curret_reputation_rank):
     distance = 0
     j = 0
     while j<len(previous_individual_rating):
-        distance += (previous_individual_rating[j] - curret_reputation_rank[j])**2
+        distance += (curret_reputation_rank[j]/1 - previous_individual_rating[j]/1)**2
         j+=1
     distance = distance/len(previous_individual_rating)
     return(np.sqrt(distance))
-#SQRT(SQR(previous_individual_rating(i,j)-curret_reputation_rank(j))/COUNT(j))    
+
+def normalize_correlations(mydict):
+    mymax = max(mydict.values())
+    for k in mydict.keys():
+        mydict[k] = mydict[k]/mymax
+    return(mydict)
+
+
+
     
