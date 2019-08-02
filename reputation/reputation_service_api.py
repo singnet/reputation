@@ -25,15 +25,19 @@
 import abc
 #from reputation_service_api import *
 from reputation_calculation import *
+from datetime import datetime, timedelta,date
 #from reputation.reputation_base_api import *
 from reputation_base_api import *
 import warnings
+import logging
 
 """
 Reputation Service native implementation in Python
-"""        
+"""  
+
 
 class PythonReputationService(ReputationServiceBase):
+    
     ### This function allows us to set up the parameters.
     ### Setting up the way we do in Anton's recommendation.
     ### update_period is how many days we jump in one period... We can adjust it...
@@ -132,7 +136,7 @@ class PythonReputationService(ReputationServiceBase):
             if 'date' in dir(self):
                 pass
             else:
-                self.date = datetime.date(2018, 1, 1)       
+                self.date = date(2018, 1, 1)       
         if 'first_occurance' in changes.keys():
             self.first_occurance = changes['first_occurance']
         else:
@@ -170,17 +174,36 @@ class PythonReputationService(ReputationServiceBase):
         if 'predictiveness' in changes.keys():
             self.predictiveness = changes['predictiveness']
         else:
-            self.predictiveness = 0    
-            
+            self.predictiveness = 0   
+        if 'logging' in changes.keys():
+            self.logging = changes['logging']
+        else:
+            self.logging = True              
+        print("logging", self.logging)    
+        if self.logging: ### If logging is enabled, we log everything
+            log_name = "python-log" + datetime.now().strftime('%Y-%m-%d') + "-log.log"
+            logging.basicConfig(filename=log_name, filemode='w', format='%(name)s - %(levelname)s - %(asctime)s - %(message)s', level=10)
+            logging.info('We start our system.')
+            print("logging",logging)
+        else:### If logging is disabled, we log only critical messages or higher priority messages.
+            log_name = "python-log_critical" + datetime.now().strftime('%Y-%m-%d') + "-log.log"
+            logging.basicConfig(filename=log_name, filemode='w', format='%(name)s - %(levelname)s - %(asctime)s - %(message)s',level=logging.CRITICAL)
+            logging.disable(logging.CRITICAL)
+            logging.info('We start our system.') 
+        text = "set parameters default " + str(self.default) + ", decayed " + str(self.decayed) + ", conservatism "+str(self.conservatism) + ", precision " + str(self.precision) + ", liquid "+str(self.liquid) + ", update_period " + str(self.update_period) + ", aggregation " + str(self.temporal_aggregation) + ", downrating " + str(self.downrating) + ", fullnorm " + str(self.fullnorm) + ", weighting " + str(self.weighting) + ", denomination " + str(self.denomination) + ", logratings " + str(self.logratings) + ", ratings " + str(self.ratings_param) + ", spendings " + str(self.spendings) + ", predictiveness " + str(self.predictiveness) + ", unrated " + str(self.unrated) + ", rating_bias " + str(self.rating_bias) + ", logranks " + str(self.logranks)
+        logging.debug(text)    
         return(0)
         
     ### This functions merely displays the parameters.
     def get_parameters(self):              
-        return({'default': self.default, 'conservatism':self.conservatism, 'precision':self.precision,
-               'weighting':self.weighting,'fullnorm':self.fullnorm, 'liquid':self.liquid,'logranks':self.logranks,
-               'aggregation':self.temporal_aggregation, 'logratings':self.logratings, 'update_period':self.update_period,
-               'decayed':self.decayed,'downrating':self.downrating,'denomination':self.denomination,'unrated':self.unrated,
-               'spendings':self.spendings,'ratings':self.ratings_param})
+        return({'default': self.default,'decayed':self.decayed, 'conservatism':self.conservatism, 'precision':self.precision,
+                'liquid':self.liquid,'update_period':self.update_period,'aggregation':self.temporal_aggregation,
+                'downrating':self.downrating,'fullnorm':self.fullnorm, 'weighting':self.weighting,'denomination':self.denomination,
+                'logratings':self.logratings, 'ratings':self.ratings_param, 'spendings':self.spendings,'predictiveness':self.predictiveness,'unrated':self.unrated,'rating_bias':self.rating_bias,'logranks':self.logranks})
+#27:body:2019-07-30T23:53:21.511:I:8c5b4f5fb913462e99c248daccfc36c0:reputation network test set parameters default 0.5 decayed 0.5 conservatism 0.25 precision 0.01 liquid true period 1 aggregation true downrating false fullnorm false weighting true denomination false logratings false ratings 1.0 spendings 0.0 parents 0.0 predictiveness 1 rating_bias true unrated false
+    
+    
+    
     ## Update date
     def set_date(self,newdate):
         self.our_date = newdate
@@ -188,10 +211,12 @@ class PythonReputationService(ReputationServiceBase):
     def clear_ranks(self):
         self.reputation = {}   
         self.all_reputations = {}
+        logging.debug('Ranks cleared.')
         return(0)
     ### Clear stored ratings (transactions).
     def clear_ratings(self):
         self.ratings = {}
+        logging.debug('Ratings cleared.')
         return(0)
     ### Initialization of reputation.    
     def initialize_ranks(self,reputation=None,first_occurance = None):
@@ -213,7 +238,7 @@ class PythonReputationService(ReputationServiceBase):
         self.dates = all_dates
     ### select ratings from selected update period (whichever it is set).
     def select_data(self,mydate):
-        min_date = mydate - datetime.timedelta(days=self.update_period) # We look today minus update_period number of days.
+        min_date = mydate - timedelta(days=self.update_period) # We look today minus update_period number of days.
         max_date = mydate
         i=0
         while i<len(self.ratings):
@@ -242,7 +267,8 @@ class PythonReputationService(ReputationServiceBase):
     def update_ranks(self,mydate):
         if not "rater_ranks_special" in dir(self):
             self.rater_ranks_special = dict()
-        
+        text = "period " +  str(self.update_period)
+        logging.debug(text)
         ### And then we iterate through functions. First we prepare arrays and basic computations.
         since = mydate - timedelta(days=self.update_period)
         if self.rating_bias:
@@ -272,7 +298,7 @@ class PythonReputationService(ReputationServiceBase):
             i+=1
         if problem:
             ### Well, if we have a problem, we just set ratings to false. Code will still work.
-            print("Ratings is set to True, but no ratings were given. Changing the setting to False")
+            logging.warning("Ratings is set to True, but no ratings were given. Changing the setting to False")
             self.use_ratings=False
         problem = False 
         ### if we have some ratings, we can check;
@@ -310,11 +336,13 @@ class PythonReputationService(ReputationServiceBase):
           
         ### Then we calculate differential the normal way.
         if self.predictiveness>0:
-            new_reputation,self.rater_ranks_special = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,previous_rep = self.rater_ranks_special,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness,predictive_data = self.pred_values)
+            new_reputation,self.rater_ranks_special = calculate_new_reputation(logging = logging,new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,previous_rep = self.rater_ranks_special,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness,predictive_data = self.pred_values)
         else:
-            new_reputation,self.rater_ranks_special = calculate_new_reputation(new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,previous_rep = self.rater_ranks_special,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness)
+            new_reputation,self.rater_ranks_special = calculate_new_reputation(logging = logging,new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,previous_rep = self.rater_ranks_special,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness)
         ### And then we normalize the differential:
         new_reputation = normalized_differential(new_reputation,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=False)
+        text = "Normalized differential: " + str(new_reputation)
+        logging.debug(text)  
         ### Again only starting this loop if we have spendings.
         if (self.spendings>0 and self.predictiveness==0):
             updated_differential = dict()
@@ -341,20 +369,25 @@ class PythonReputationService(ReputationServiceBase):
         ### See line 360 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/peer/Reputationer.java
         ### and line 94 in https://github.com/aigents/aigents-java/blob/master/src/main/java/net/webstructor/data/Summator.java 
         ### Downratings seem to pass, so I assume this comment is resolved.
+        text = "Blended differential with reputation: " + str(self.reputation)
+        logging.debug(text) 
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
         ### round reputations:
         for k in self.reputation.keys():
             self.reputation[k] = my_round(self.reputation[k],2) # Make sure we use my_round. 
             ### This might be changed in the future, but now rounding is done in order to be the same as in Java rs.
         ## We have all_reputations dictionary where we have all history of reputations with dates as keys.
+        text = "Normalized reputation: " + str(self.reputation)
+        logging.debug(text)
         self.all_reputations[mydate] = dict(self.reputation)
-        
         if self.predictiveness>0:
             avg_ind_rat_byperiod,self.count_values[mydate] = calculate_average_individual_rating_by_period(array1,True)
+            text = "Average individual rating by period: " + str(avg_ind_rat_byperiod)
+            logging.debug(text)
             self.predictive_data, ids = update_predictiveness_data(self.predictive_data,mydate,self.reputation,avg_ind_rat_byperiod,self.conservatism)
             self.calculate_indrating(ids,mydate)
-
-                 
+            text = "Individual rating: " + str(self.predictive_data) + ", and rating used for rater reputation: " + str(self.pred_values)
+            logging.debug(text)                 
         
         return(0)
 
@@ -367,13 +400,15 @@ class PythonReputationService(ReputationServiceBase):
             # 
             ratings[i]['from'] = str(ratings[i]['from'])
             ratings[i]['to'] = str(ratings[i]['to'])
+             
             i+=1
         ### if we have no ratings yet in our system, we add all ratings from ground up.
         if self.ratings == {}:
             self.ratings = ratings
         else:
             self.ratings.append(ratings)
-        
+        text = "Adding ratings: " + str(ratings)
+        logging.debug(text)  
         return(0)  
     ### This is how we get current ranks. times are basically expecting dates
     ### when those ranks were calculated.
@@ -406,6 +441,7 @@ class PythonReputationService(ReputationServiceBase):
         for k in result.keys():
             result[k] = my_round(result[k]*100,0)    
             ### Everything is similar to get_ranks, but we only return result, not really 0 beside result.
+        logging.debug("network get ranks date: " + str(times))
         return(result)    
 
     ### Getting ratings from Python rs.
@@ -433,6 +469,7 @@ class PythonReputationService(ReputationServiceBase):
                     if (self.ratings[i]['time'] >= since and self.ratings[i]['time'] <= until):
                         results.append(self.ratings[i])                
                 i+=1
+            logging.debug("network get ranks date: " + str(times))
             return(0,results)
     ### put_ranks defined in similar way as in Java.
     def put_ranks(self,dt1,mydict):
