@@ -179,12 +179,10 @@ class PythonReputationService(ReputationServiceBase):
             self.logging = changes['logging']
         else:
             self.logging = True              
-        print("logging", self.logging)    
         if self.logging: ### If logging is enabled, we log everything
             log_name = "python-log" + datetime.now().strftime('%Y-%m-%d') + "-log.log"
             logging.basicConfig(filename=log_name, filemode='w', format='%(name)s - %(levelname)s - %(asctime)s - %(message)s', level=10)
             logging.info('We start our system.')
-            print("logging",logging)
         else:### If logging is disabled, we log only critical messages or higher priority messages.
             log_name = "python-log_critical" + datetime.now().strftime('%Y-%m-%d') + "-log.log"
             logging.basicConfig(filename=log_name, filemode='w', format='%(name)s - %(levelname)s - %(asctime)s - %(message)s',level=logging.CRITICAL)

@@ -23,7 +23,8 @@
 # Reputation Service API Integration Testing
 
 import unittest
-import datetime
+from datetime import datetime, date
+#import datetime
 import time
 import logging
 import pandas as pd
@@ -73,8 +74,8 @@ class TestReputationServiceBase(object):
 		self.assertEqual( rs.clear_ratings(), 0 )
 		self.assertEqual( rs.clear_ranks(), 0 )
 
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
 
 		#make sure that we have neither ranks not ratings
 		result, ranks = rs.get_ranks({'date':dt1})
@@ -163,9 +164,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_decayed(self):
 		print('Testing '+type(self).__name__+' decayed')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)		
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)		
 		#test with default decay to 0
 		self.assertEqual( rs.set_parameters({'decayed':0.0}), 0 )
 		self.clear()
@@ -206,8 +207,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_default(self):
 		print('Testing '+type(self).__name__+' default')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0}), 0 )
 		self.assertEqual( rs.put_ranks(dt1,[{'id':1,'rank':50},{'id':2,'rank':100}]), 0 )
@@ -231,9 +232,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
  	#self.parameters['conservatism'] = 0.5 # blending factor between previous (default) rank and differential one 
 		print('Testing '+type(self).__name__+' conservatism')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)	
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)	
 		# old experience matters only
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.0,'conservatism':1.0}), 0 )
@@ -257,8 +258,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_liquid(self):
 		print('Testing '+type(self).__name__+' liquid')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':True}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]), 0 )
@@ -287,9 +288,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_period(self):
 		print('Testing '+type(self).__name__+' period')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'update_period':1,'precision':0.1,'weighting':True,'default':1.0,'decayed':0.0,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value': 100,'weight':None,'time':dt1}]), 0 )
@@ -316,7 +317,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_weighting(self):
 		print('Testing '+type(self).__name__+' weighting')
 		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True,'liquid':False}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]), 0 )
@@ -343,8 +344,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_downrating(self):
 		print('Testing '+type(self).__name__+' downrating')
 		rs = self.rs
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		#TODO update test to [0.0,1.0] rage of ratings to be consistent with dowratings!
 		self.assertEqual( rs.set_parameters({'downrating':False,'update_period':1,'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.5,'fullnorm':False,'logratings':False,'liquid':True,'denomination':True,'unrated':False}), 0 )
@@ -412,10 +413,10 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.clear_ratings()
 		self.clear()
 		rs.clear_ranks()
-		dt1 = datetime.date(2017, 12, 31)
+		dt1 = date(2017, 12, 31)
 		rs.set_parameters({'fullnorm':True,'weighting':True ,'logranks':True,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
 		self.assertEqual( rs.put_ranks(dt1,[{'id':2,'rank':0},{'id':3,'rank':0},{'id':4,'rank':0},{'id':5,'rank':25},{'id':6,'rank':25},{'id':7,'rank':25},{'id':8,'rank':25},{'id':9,'rank':0},{'id':10,'rank':25}]), 0 )
-		dt2 = datetime.date(2018, 1, 1)
+		dt2 = date(2018, 1, 1)
 		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':4,'value':0.25,'weight':543,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':4,'value':0.5,'weight':372,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':9,'value':0.0,'weight':204,'time':dt2}]), 0 )
@@ -431,10 +432,10 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.clear_ratings()
 		self.clear()
 		rs.clear_ranks()
-		dt1 = datetime.date(2017, 12, 31)
+		dt1 = date(2017, 12, 31)
 		rs.set_parameters({'fullnorm':True,'weighting':True ,'logranks':True,'logratings':False,'downrating':True,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
 		self.assertEqual( rs.put_ranks(dt1,[{'id':2,'rank':0},{'id':3,'rank':0},{'id':4,'rank':0},{'id':5,'rank':25},{'id':6,'rank':25},{'id':7,'rank':25},{'id':8,'rank':25},{'id':9,'rank':0},{'id':10,'rank':25}]), 0 )
-		dt2 = datetime.date(2018, 1, 1)
+		dt2 = date(2018, 1, 1)
 		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':4,'value':0.25,'weight':543,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':4,'value':0.5,'weight':372,'time':dt2}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':9,'value':0.0,'weight':204,'time':dt2}]), 0 )
@@ -448,7 +449,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_fullnorm(self):
 		print('Testing '+type(self).__name__+' fullnorm')
 		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.5,'fullnorm':True,'denomination':True}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':100,'weight':1,'time':dt2}]), 0 )
@@ -474,7 +475,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_logratings(self):
 		print('Testing '+type(self).__name__+' logratings')
 		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'default':1.0,'decayed':0.5,'conservatism':0.0,'fullnorm':True,'logratings':True}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':1,'type':'rating','to':2,'value':10,'weight':None,'time':dt2}]), 0 )
@@ -500,7 +501,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_precision(self):
 		print('Testing '+type(self).__name__+' precision')
 		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		self.clear()
 		self.assertEqual( rs.set_parameters({'precision':0.1,'weighting':True,'default':0.5,'decayed':0.5,'conservatism':0.0,'fullnorm':False,'logratings':True,'liquid':False}), 0 )
 		self.assertEqual( rs.put_ratings([{'from':'4','type':'rating','to':'1','value': 1,'weight':None,'time':dt2}]), 0 )
@@ -536,7 +537,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 	def test_denomination(self):
 		print('Testing '+type(self).__name__+' denomination')
 		rs = self.rs
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		pr = 10 # product ratio
 		ar = 10 # market ratio
 		debug = False #True
@@ -613,9 +614,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		print('Testing '+type(self).__name__+' 157')
 		rs = self.rs
 		rs.set_parameters({'default':0.0,'decayed':0.5,'precision':1,'logratings':False})
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)
 		for unrated in [False]:
 			#print('Unrated:',unrated)
 			rs.set_parameters({'unrated':unrated})
@@ -643,9 +644,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		print('Testing '+type(self).__name__+' unrated')
 		rs = self.rs
 		rs.set_parameters({'unrated':True,'default':0.0,'decayed':0.5,'precision':1,'logratings':False,'fullnorm':False})
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)
 		#print(rs.get_parameters())
 		self.assertEqual( self.rs.clear_ratings(), 0 )
 		self.assertEqual( self.rs.clear_ranks(), 0 )
@@ -700,7 +701,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 			## Convert dates;
 			i = 0
 			while i<len(my_time):
-			    dates.append(datetime.datetime.strptime(datetime.datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
+			    dates.append(datetime.strptime(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
 			    i+=1
 
 			our_ratings = []
@@ -773,14 +774,14 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		## Convert dates;
 		i = 0
 		while i<len(my_time):
-			dates.append(datetime.datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'))
+			dates.append(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'))
 			i+=1
 		dates1 = np.unique(dates)
 		our_ratings = []
 		i = 0
 		while i<len(transactions):
 			our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-		                       'value':value1[i],'weight':weight[i],'time':datetime.datetime.strptime(dates[i], '%Y-%m-%d').date()})
+		                       'value':value1[i],'weight':weight[i],'time':datetime.strptime(dates[i], '%Y-%m-%d').date()})
 			i+=1
 		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
 
@@ -788,20 +789,20 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		for k in our_ratings:
 			rs.put_ratings([k])
 		i = 0
-		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
 		i+=1
-		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
 		i+=1
-		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
 		self.assertDictEqual(ranks,{'2': 87.0, '3': 29.0, '4': 24.0, '9': 100.0, '5': 72.0, '6': 72.0, '7': 72.0, '8': 72.0, '10': 72.0})        
 		### Note, the reason why Python and Java differ is because Java looks at above numbers and makes calculations on them.
 		### Python however, has more exact numbers in the background and considers those only as roundings.
 		### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
 		### 
 		i+=1
-		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
 		### Differential is 0 for 2 and 1 for 9. So, 2 and all others except maybe 9 decay toward 0 for 50% weight.
 		### differential (non-normalized): {'2': 1.7285559067530614, '9': 1.9003277382090908}
 		### differential (normalized): {'2': 0.0, '9': 1.0}
@@ -809,8 +810,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		### We divide by 2 because it decays towards 0 each time with conservatism=0.5
 		self.assertDictEqual(ranks,{'2': 44.0, '3': 40.0, '4': 37.0, '9': 100.0, '5': 61.0, '6': 61.0, '7': 61.0, '8': 61.0, '10': 61.0})
 		i+=1
-		rs.update_ranks(datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
 		### Another layer of tests. It is just to be sure about everything.
 		self.assertDictEqual(ranks,{'2': 96.0, '3': 87.0, '4': 58.0, '9': 100.0, '5': 74.0, '6': 74.0, '7': 74.0, '8': 74.0, '10': 74.0, '11': 0.0, '12': 25.0})  
 
@@ -821,7 +822,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		self.clear()
 		rs.clear_ranks()  
 		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.9})
-		dt1 = datetime.date(2017, 12, 31)
+		dt1 = date(2017, 12, 31)
 		self.assertEqual( rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt1}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':6,'type':'rating','to':3,'value':1,'weight':220,'time':dt1}]), 0 )
 		self.assertEqual( rs.put_ratings([{'from':7,'type':'rating','to':4,'value':1,'weight':583,'time':dt1}]), 0 )
@@ -842,9 +843,9 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)
 		def rate():
 			self.assertEqual( rs.clear_ratings(), 0 )
 			self.assertEqual( rs.clear_ranks(), 0 )
@@ -895,7 +896,7 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs = self.rs
 		rs.clear_ratings()
 		self.clear()
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
 		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
@@ -920,9 +921,9 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
 		rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':False})
 		self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]),0)
 		self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
@@ -958,7 +959,7 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':0.5,'spendings':0.5})
 		rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}])
 		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}]),0)
@@ -975,10 +976,10 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)
 		rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,
                    'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':True,'predictiveness':1,
                   'aggregation':True})
@@ -1015,10 +1016,10 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
-		dt4 = datetime.date(2018, 1, 4)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)
 		rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,
                    'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':False,'predictiveness':1,
                   'aggregation':True})        
@@ -1049,9 +1050,9 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 
 	def test_rating_bias_java(self):
 		print('Testing '+type(self).__name__+' rating_bias_aigents')
-		dt1 = datetime.date(2018, 1, 1)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
 		for rating_bias in [False,True]:
 			self.clear()
 			rs = self.rs
@@ -1084,8 +1085,8 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 		self.clear()
 		self.assertEqual(rs.set_parent(1113,[11,13]),0)
 		self.assertEqual(rs.set_parent(1214,[12,14]),0)
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
 		for parents in [0,1.0]:
 			self.clear()
 			#1,2 - good buyers, 3 - bad buyer
@@ -1122,8 +1123,8 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 		print('Testing '+type(self).__name__+' predictiveness_aigents')
 		rs = self.rs
 		self.clear()
-		dt2 = datetime.date(2018, 1, 2)
-		dt3 = datetime.date(2018, 1, 3)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
 		for predictiveness in [0,1.0]:
 			self.clear()
 			#1,2 - good buyers, 3 - bad buyer
@@ -1164,7 +1165,7 @@ class TestReputationServiceDebug(object):
 		rs = self.rs
 		rs.clear_ratings()
 		rs.clear_ranks()
-		dt2 = datetime.date(2018, 1, 2)
+		dt2 = date(2018, 1, 2)
 		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':False,'downrating':False,'denomination':True ,'unrated':False,'default':0.0,'decayed':0.5,'ratings':0.9,'spendings':0.1,'conservatism':0.5})
 		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}]),0)
 		self.assertEqual(rs.put_ratings([{'from':6,'type':'rating','to':3,'value':1,'weight':220,'time':dt2}]),0)

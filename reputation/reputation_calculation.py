@@ -446,7 +446,7 @@ def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precis
                 for k in prev_rep1.keys():
                     prev_rep1a[k] = prev_rep1[k]
                 amounts.append(new_rating * my_rater_rep)
-                text = "from: " + new_array[i][0] + ", to: " + str(new_array[i][1]) + ", value: " + str(new_array[i][2]) + ", weight: " + str(new_array[i][3]," calculated rating: ",new_rating)
+                text = "from: " + new_array[i][0] + ", to: " + str(new_array[i][1]) + ", value: " + str(new_array[i][2]) + ", weight: " + str(new_array[i][3])," calculated rating: ",str(new_rating)
                 logging.debug(text)
                 #no need for denomination by sum of weights in such case 
         ### After we are done collecting sums for certain ids, we sum up everything we have.
