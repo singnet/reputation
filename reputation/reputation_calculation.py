@@ -22,24 +22,11 @@
 
 
 ### Import packages
-import csv
 import pandas as pd
 import numpy as np
-import zipfile
-import os
 from datetime import datetime, timedelta
-import pickle
-import gzip
-import time
-import unittest
-#import datetime
-import time
-import logging
-import math
-
-import random
-import datetime
-import time
+from logging import debug
+from math import ceil, floor
 
 ### Get strings between two strings; will be useful when extracting the date.
 def find_between( s, first, last ):
@@ -61,7 +48,6 @@ def find_between_r( s, first, last ):
 
 ### Below two functions will make sure we get difference between times.
 def parse_prefix(line, fmt):
-    from datetime import datetime, timedelta
     cover = len(datetime.now().strftime(fmt))
     return datetime.strptime(line[:cover], fmt)
 ### Calculate days between d2 and d1.
@@ -103,9 +89,9 @@ def my_round(n, ndigits):
     delta = part - int(part)
     # always round "away from 0"
     if delta >= 0.5 or -0.5 < delta <= 0:
-        part = math.ceil(part)
+        part = ceil(part)
     else:
-        part = math.floor(part)
+        part = floor(part)
     return part / (10 ** ndigits)
 
 ### Transforming ratings to logarithm, if needed. logratings might or might not be set to true.
@@ -402,7 +388,6 @@ def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precis
     ### This is needed; first create records for each id. mys is a differential.
     mys = {}
     myd = {} # denominators 
-    start1 = time.time()
     i = 0
     while i<len(new_array):
         if new_array[i][1] in mys:

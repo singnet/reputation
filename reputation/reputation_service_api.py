@@ -22,14 +22,11 @@
 
 # Reputation Service API, including Rating Service and Ranking Service
 
-import abc
-#from reputation_service_api import *
-from reputation_calculation import *
+#import abc
+from reputation_calculation import find_between, find_between_r, parse_prefix, transform_ratings, reputation_calc_p1, update_reputation, update_biases, calculate_new_reputation, normalized_differential, normalize_reputation, update_reputation_approach_d, spending_based, calculate_average_individual_rating_by_period, update_predictiveness_data, normalize_individual_data, calculate_distance, normalize_correlations, my_round
 from datetime import datetime, timedelta,date
-#from reputation.reputation_base_api import *
-from reputation_base_api import *
-import warnings
-import logging
+from reputation_base_api import ReputationServiceBase
+import logging as logging
 
 """
 Reputation Service native implementation in Python
