@@ -25,8 +25,7 @@
 import unittest
 from datetime import datetime, date
 import logging
-import pandas as pd
-import numpy as np
+
 # Uncomment this for logging to console
 #logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -679,39 +678,47 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.clear_ranks()
 		rs.clear_ratings()
 		
-		def get_data_in():
-			#transactions = pd.read_csv('./testdata/issue1.tsv',header = None,sep="\t") 
-			
-			# The data in issue1_25.tsv have issue #171
-			#transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
-			
-			transactions = pd.read_csv('./testdata/issue1_16cleaned.tsv',header = None,sep="\t") 
-
-			transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
-			                        'input','tags','format','block','parent']
-			from1 = transactions['from']
-			type1 = transactions['type']
-			to1 = transactions['to']
-			value1 = transactions['value']
-			time1 = transactions['Time']
-			my_time = transactions['Time']
-			dates = []
-			## Convert dates;
-			i = 0
-			while i<len(my_time):
-			    dates.append(datetime.strptime(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
-			    i+=1
-
-			our_ratings = []
-			i = 0
-			while i<len(transactions):
-			    #our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-			    #                   'value':value1[i],'weight':'NaN','time':dates[i]})
-			    our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-			                       'value':value1[i],'time':dates[i].date()})
-			    i+=1
-
-			return(our_ratings,dates)        
+		#def get_data_in():
+		#	#transactions = pd.read_csv('./testdata/issue1.tsv',header = None,sep="\t") 
+		#	
+		#	# The data in issue1_25.tsv have issue #171
+		#	#transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
+		#	rs.clear_ranks()
+		#	rs.clear_ratings()
+		#	transactions = pd.read_csv('./testdata/issue1_16cleaned.tsv',header = None,sep="\t") 
+#
+		#	transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
+		#	                        'input','tags','format','block','parent']
+		#	from1 = transactions['from']
+		#	type1 = transactions['type']
+		#	to1 = transactions['to']
+		#	value1 = transactions['value']
+		#	time1 = transactions['Time']
+		#	my_time = transactions['Time']
+#
+		#	dates = []
+		#	## Convert dates;
+		#	i = 0
+		#	while i<len(my_time):
+		#	    dates.append(datetime.strptime(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
+		#	    i+=1
+#
+		#	our_ratings = []
+		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
+		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
+		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
+		#	self.assertEqual( rs.put_ratings([{'from':555,'type':'rating','to':2,'value':0,'time':dt4}]), 0 )
+		#	self.assertEqual( rs.put_ratings([{'from':304,'type':'rating','to':50,'value':1,'time':dt4}]), 0 )
+		#	self.assertEqual( rs.put_ratings([{'from':304,'type':'rating','to':50,'value':1,'time':dt4}]), 0 )            
+		#	i = 0
+		#	while i<len(transactions):
+		#	    #our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
+		#	    #                   'value':value1[i],'weight':'NaN','time':dates[i]})
+		#	    our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
+		#	                       'value':value1[i],'time':dates[i].date()})  
+		#	    i+=1
+#
+		#	return(our_ratings,dates)        
 		rs.set_parameters({
 		  "precision": 0.01,
 		  "default": 0.5,
@@ -727,14 +734,36 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		  "aggregation": False,
 		  "denomination": False,
 		  "unrated": False })
-		our_ratings, dates = get_data_in()
-		dates1 = np.unique(dates)
-		num_days = len(np.unique(dates))
+		#our_ratings, dates = get_data_in()
+		#dates1 = np.unique(dates)
+		#num_days = len(np.unique(dates))
 		
-		for k in our_ratings:
-		    rs.put_ratings([k])
-		
-		date1 = dates1[0].date()
+		#for k in our_ratings:
+		#    rs.put_ratings([k])
+		dt1 = date(2018, 1, 1)
+		self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt1}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '44', 'type': 'rating', 'to': '2', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '555', 'type': 'rating', 'to': '2', 'value': 0, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '304', 'type': 'rating', 'to': '50', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '304', 'type': 'rating', 'to': '50', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '304', 'type': 'rating', 'to': '50', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '304', 'type': 'rating', 'to': '50', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '49', 'type': 'rating', 'to': '1', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '37', 'type': 'rating', 'to': '1', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '37', 'type': 'rating', 'to': '1', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '37', 'type': 'rating', 'to': '1', 'value': 1, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '37', 'type': 'rating', 'to': '1', 'value': 1, 'time': dt1}]), 0 )##
+		self.assertEqual( rs.put_ratings([{'from': '23', 'type': 'rating', 'to': '2', 'value': 1, 'time': dt1}]), 0 )##
+		self.assertEqual( rs.put_ratings([{'from': '23', 'type': 'rating', 'to': '2', 'value': 1, 'time': dt1}]), 0 )##
+		self.assertEqual( rs.put_ratings([{'from': '23', 'type': 'rating', 'to': '2', 'value': 1, 'time': dt1}]), 0 )
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		dt4 = date(2018, 1, 4)   
+		dates1 = [dt1, dt2, dt3, dt4]
+        
+		date1 = dates1[0]
 		rs.update_ranks(date1)
 		ranks = rs.get_ranks_dict({'date':date1})        
 		ratings_cnt = 0
@@ -760,47 +789,59 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.clear_ratings()
 		self.clear()
 		rs.clear_ranks()
-		transactions = pd.read_csv('./testdata/problematic_transactions2.csv') 
-		from1 = transactions['from']
-		type1 = transactions['type']
-		to1 = transactions['to']
-		value1 = transactions['value']
-		time1 = transactions['time']
-		my_time = transactions['time']
-		weight = transactions['weight']        
-		dates = []
-		## Convert dates;
-		i = 0
-		while i<len(my_time):
-			dates.append(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'))
-			i+=1
-		dates1 = np.unique(dates)
-		our_ratings = []
-		i = 0
-		while i<len(transactions):
-			our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-		                       'value':value1[i],'weight':weight[i],'time':datetime.strptime(dates[i], '%Y-%m-%d').date()})
-			i+=1
-		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
 
-		num_days = len(np.unique(dates))
-		for k in our_ratings:
-			rs.put_ratings([k])
+		rs.set_parameters({'fullnorm':True,'weighting':True ,'logratings':True,'downrating':False,'denomination':True ,'unrated':True,'default':0.0,'decayed':0.5,'ratings':1.0,'spendings':0.0,'conservatism':0.5})
+		dt1 = date(2017, 12, 31)
+		dt2 = date(2018, 1, 1)
+		dt3 = date(2018, 1, 2)
+		dt4 = date(2018, 1, 3)
+		dt5 = date(2018, 1, 4)   
+		dates1 = [dt1, dt2, dt3, dt4, dt5]
+
+		self.assertEqual( rs.put_ratings([{'from': '5', 'type': 'rating', 'to': '2', 'value': 0.25, 'weight': 682, 'time': dt1}]), 0 )        
+		self.assertEqual( rs.put_ratings( [{'from': '6', 'type': 'rating', 'to': '3', 'value': 1.0, 'weight': 220, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '7', 'type': 'rating', 'to': '4', 'value': 1.0, 'weight': 583, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '8', 'type': 'rating', 'to': '2', 'value': 1.0, 'weight': 196, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '10', 'type': 'rating', 'to': '9', 'value': 1.0, 'weight': 129, 'time': dt1}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '5', 'type': 'rating', 'to': '4', 'value': 0.25, 'weight': 543, 'time': dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '6', 'type': 'rating', 'to': '4', 'value': 0.5, 'weight': 372, 'time': dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '7', 'type': 'rating', 'to': '9', 'value': 0.0, 'weight': 204, 'time': dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '8', 'type': 'rating', 'to': '3', 'value': 0.25, 'weight': 131, 'time': dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '10', 'type': 'rating', 'to': '9', 'value': 1.0, 'weight': 126, 'time': dt2}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '5', 'type': 'rating', 'to': '9', 'value': 0.0, 'weight': 654, 'time': dt3}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '6', 'type': 'rating', 'to': '2', 'value': 0.5, 'weight': 490, 'time': dt3}]), 0)
+		self.assertEqual( rs.put_ratings([{'from': '7', 'type': 'rating', 'to': '4', 'value': 0.25, 'weight': 843, 'time': dt3}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '8', 'type': 'rating', 'to': '9', 'value': 0.0, 'weight': 327, 'time': dt3}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '10', 'type': 'rating', 'to': '9', 'value': 1.0, 'weight': 882, 'time': dt3}]), 0 )
+		self.assertEqual( rs.put_ratings([{'from': '5', 'type': 'rating', 'to': '2', 'value': 1.0, 'weight': 548, 'time': dt4}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '6', 'type': 'rating', 'to': '2', 'value': 0.5, 'weight': 453, 'time': dt4}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '7', 'type': 'rating', 'to': '2', 'value': 0.5, 'weight': 793, 'time': dt4}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '8', 'type': 'rating', 'to': '2', 'value': 1.0, 'weight': 879, 'time': dt4}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '10', 'type': 'rating', 'to': '9', 'value': 1.0, 'weight': 396, 'time': dt4}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '5', 'type': 'rating', 'to': '2', 'value': 0.25, 'weight': 526, 'time': dt5}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '6', 'type': 'rating', 'to': '2', 'value': 0.75, 'weight': 744, 'time': dt5}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '7', 'type': 'rating', 'to': '2', 'value': 0.75, 'weight': 860, 'time': dt5}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '8', 'type': 'rating', 'to': '3', 'value': 0.5, 'weight': 489, 'time': dt5}]), 0 )        
+		self.assertEqual( rs.put_ratings([{'from': '12', 'type': 'rating', 'to': '11', 'value': 1.0, 'weight': 410, 'time': dt5}]), 0)                
+        
+        
+		#for k in our_ratings:
+		#	rs.put_ratings([k])
 		i = 0
-		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		rs.update_ranks(dates1[i])
 		i+=1
-		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
+		rs.update_ranks(dates1[i])
 		i+=1
-		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(dates1[i])
+		ranks = rs.get_ranks_dict({'date':dates1[i]})
 		self.assertDictEqual(ranks,{'2': 87.0, '3': 29.0, '4': 24.0, '9': 100.0, '5': 72.0, '6': 72.0, '7': 72.0, '8': 72.0, '10': 72.0})        
 		### Note, the reason why Python and Java differ is because Java looks at above numbers and makes calculations on them.
 		### Python however, has more exact numbers in the background and considers those only as roundings.
 		### Here are the Python numbers in the background: {'2': 0.8661282770451763, '3': 0.2887094256817254, '4': 0.23825520281251886, '9': 1.0, '5': 0.7217735642043135, '6': 0.7217735642043135, '7': 0.7217735642043135, '8': 0.7217735642043135, '10': 0.7217735642043135}
 		### 
 		i+=1
-		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(dates1[i])
+		ranks = rs.get_ranks_dict({'date':dates1[i]})
 		### Differential is 0 for 2 and 1 for 9. So, 2 and all others except maybe 9 decay toward 0 for 50% weight.
 		### differential (non-normalized): {'2': 1.7285559067530614, '9': 1.9003277382090908}
 		### differential (normalized): {'2': 0.0, '9': 1.0}
@@ -808,8 +849,8 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		### We divide by 2 because it decays towards 0 each time with conservatism=0.5
 		self.assertDictEqual(ranks,{'2': 44.0, '3': 40.0, '4': 37.0, '9': 100.0, '5': 61.0, '6': 61.0, '7': 61.0, '8': 61.0, '10': 61.0})
 		i+=1
-		rs.update_ranks(datetime.strptime(dates1[i], '%Y-%m-%d').date())
-		ranks = rs.get_ranks_dict({'date':datetime.strptime(dates1[i], '%Y-%m-%d').date()})
+		rs.update_ranks(dates1[i])
+		ranks = rs.get_ranks_dict({'date':dates1[i]})
 		### Another layer of tests. It is just to be sure about everything.
 		self.assertDictEqual(ranks,{'2': 96.0, '3': 87.0, '4': 58.0, '9': 100.0, '5': 74.0, '6': 74.0, '7': 74.0, '8': 74.0, '10': 74.0, '11': 0.0, '12': 25.0})  
 
