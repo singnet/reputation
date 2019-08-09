@@ -22,24 +22,11 @@
 
 
 ### Import packages
-import csv
 import pandas as pd
 import numpy as np
-import zipfile
-import os
 from datetime import datetime, timedelta
-import pickle
-import gzip
-import time
-import unittest
-import datetime
-import time
-import logging
-import math
-
-import random
-import datetime
-import time
+from logging import debug
+from math import ceil, floor
 
 ### Get strings between two strings; will be useful when extracting the date.
 def find_between( s, first, last ):
@@ -61,7 +48,6 @@ def find_between_r( s, first, last ):
 
 ### Below two functions will make sure we get difference between times.
 def parse_prefix(line, fmt):
-    from datetime import datetime, timedelta
     cover = len(datetime.now().strftime(fmt))
     return datetime.strptime(line[:cover], fmt)
 ### Calculate days between d2 and d1.
@@ -103,9 +89,9 @@ def my_round(n, ndigits):
     delta = part - int(part)
     # always round "away from 0"
     if delta >= 0.5 or -0.5 < delta <= 0:
-        part = math.ceil(part)
+        part = ceil(part)
     else:
-        part = math.floor(part)
+        part = floor(part)
     return part / (10 ** ndigits)
 
 ### Transforming ratings to logarithm, if needed. logratings might or might not be set to true.
@@ -397,12 +383,11 @@ def fix_rater_bias(new_array,biases,average):
 
 ### Get updated reputations, new calculations of them...
 ### We calculate differential here.
-def calculate_new_reputation(new_array,to_array,reputation,rating,precision,previous_rep,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True,predictiveness = 0,predictive_data = dict()):
+def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precision,previous_rep,default,unrated,normalizedRanks=True,weighting=True,denomination=True,liquid = False,logratings=False,logranks=True,predictiveness = 0,predictive_data = dict()):
     ### The output will be mys; this is the rating for that specific day (or time period).
     ### This is needed; first create records for each id. mys is a differential.
     mys = {}
     myd = {} # denominators 
-    start1 = time.time()
     i = 0
     while i<len(new_array):
         if new_array[i][1] in mys:
@@ -417,6 +402,8 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,prev
     i = 0
     to_array = np.array(to_array)
     ### Formula differs based on conditions. If ratings are included, formula includes ratings, then there are weights, etc.
+    prev_rep1 = dict()
+    prev_rep1a = dict()
     while i<len(unique_ids):
         amounts = []
         denominators = []
@@ -428,16 +415,24 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,prev
                 new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
                 ### Then we multiply this with rater's current reputation. Few options are taken into account, such as
                 ### if it is liquid reputation, then we set it to 1...
-                my_rater_rep, previous_rep = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                my_rater_rep, prev_rep1 = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                for k in prev_rep1.keys():
+                    prev_rep1a[k] = prev_rep1[k]
                 amounts.append(new_rating * my_rater_rep)
+                text = "from: " + str(new_array[i][0]) + ", to: " + str(new_array[i][1]) + ", value: " + str(new_array[i][2]) + ", weight: " + str(new_array[i][3])," calculated rating: ",new_rating
+                logging.debug(text)
                 ### if we have weights and denomination, then we append some denominators.
                 if denomination and new_weight is not None:
                 	denominators.append(new_weight) # denomination by sum of weights in such case
             else:
                 new_rating, new_weight = weight_calc(new_array[k],logratings,precision,weighting)
                 new_rating = my_round(new_rating,0)
-                my_rater_rep, previous_rep = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                my_rater_rep, prev_rep1 = rater_reputation(reputation,new_array[k][0],default,previous_rep,liquid,new_array[k][1],predictiveness,predictive_data)
+                for k in prev_rep1.keys():
+                    prev_rep1a[k] = prev_rep1[k]
                 amounts.append(new_rating * my_rater_rep)
+                text = "from: " + new_array[i][0] + ", to: " + str(new_array[i][1]) + ", value: " + str(new_array[i][2]) + ", weight: " + str(new_array[i][3])," calculated rating: ",str(new_rating)
+                logging.debug(text)
                 #no need for denomination by sum of weights in such case 
         ### After we are done collecting sums for certain ids, we sum up everything we have.
         mys[unique_ids[i]] = sum(amounts)
@@ -447,6 +442,10 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,prev
                 myd[unique_ids[i]] = sum(denominators)
 #
         i+=1
+    
+    ### Let's update the records from previous reputations and how we update them (for raters)
+    for k in prev_rep1a.keys():
+        previous_rep[k] = prev_rep1a[k]
     ### If we have weighting and denomination, then we 
     if weighting:
         if denomination and len(mys) == len(myd):
@@ -456,13 +455,16 @@ def calculate_new_reputation(new_array,to_array,reputation,rating,precision,prev
 
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5 in documentation doc.
+    text = "Differential before log transformation: " + str(mys)
+    logging.debug(text)
     if logranks:
         for k in mys.keys():
             if mys[k]<0:
                 mys[k] = -np.log10(1 - mys[k])
             else:
                 mys[k] = np.log10(1 + mys[k])
-                
+    text = "Differential after log transformation: " + str(mys)
+    logging.debug(text)
     return(mys,previous_rep)
 
 ### normalizing differential.
@@ -502,7 +504,7 @@ def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
 ### Get updated reputations, new calculations of them...
 ### This one is with log...
 
-def rater_reputation(previous_reputations,rater_id,default,prev_rep,liquid=False,to_id = [],predictiveness = 0,predictive_data = dict()):
+def rater_reputation(previous_reputations,rater_id,default,prev_reputation,liquid=False,to_id = [],predictiveness = 0,predictive_data = dict()):
     ### Assigning rater reputation. It is not trivial; if liquid=True, then we can expect that 
     if rater_id in previous_reputations.keys():
         ### Checks whether it's liquid or not. If liquid, return 1, otherwise previous reputation.
@@ -511,30 +513,42 @@ def rater_reputation(previous_reputations,rater_id,default,prev_rep,liquid=False
         else:
             if predictiveness>0:
                 if rater_id in predictive_data.keys():
-                    
-                    if rater_id in prev_rep:
+                    if rater_id in prev_reputation:
                         rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
                         rater_rep = rater_rep * 100
                     else:
                         rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
                         rater_rep = rater_rep * 100
+                    rater_rep = 1
                 else:
-                    if rater_id in prev_rep:
+                    if rater_id in prev_reputation:
                         rater_rep = previous_reputations[rater_id] * 100
                     else:
                         rater_rep = previous_reputations[rater_id] * 100
                     
             else:
-                if rater_id in prev_rep:
+                if rater_id in prev_reputation:
                     rater_rep = previous_reputations[rater_id] * 100
                 else:
                     rater_rep = previous_reputations[rater_id] * 100
     else:
-        if (not liquid):
-            rater_rep = 1
+        if predictiveness>0:
+            if rater_id in prev_reputation:
+                if (not liquid):
+                    rater_rep = 1
+                else:
+                    rater_rep = prev_reputation[rater_id]#default * 100
+            else:
+                if (not liquid):
+                    rater_rep = 1
+                else:
+                    rater_rep = default * 100 
         else:
-            rater_rep = default * 100
-    ### If it is not in reputations up to the current one, we set a default value.
+            if (not liquid):
+                rater_rep = 1
+            else:
+                rater_rep = default * 100
+        ### If it is not in reputations up to the current one, we set a default value.
     #if (not liquid):
     #    rater_rep = 1
     #else:
@@ -546,9 +560,13 @@ def rater_reputation(previous_reputations,rater_id,default,prev_rep,liquid=False
     #        else:
     #            rater_rep = default * 100
     #    else:
-    #        rater_rep = default * 100   
-    prev_rep[rater_id] = rater_rep
-    return(rater_rep,prev_rep)
+    #        rater_rep = default * 100     
+    previous_rep1 = dict()
+    for k in prev_reputation.keys():
+        previous_rep1[k] = prev_reputation[k]
+    previous_rep1[rater_id] = rater_rep
+    #print("rater_id",rater_id,"rater_rep",rater_rep,"prev_reputation1",previous_rep1,"prev_reputation",prev_reputation)
+    return(rater_rep,previous_rep1)
 
 ### Another normalization. This one is intended for reputation normalization.
 def normalize_reputation(reputation,new_array,unrated,default1,decay,conservatism,normalizedRanks=False):
