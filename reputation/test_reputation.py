@@ -992,7 +992,9 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0)
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertDictEqual(ranks,{'4': 100.0, '5': 98.0, '6': 4.0})
+		self.assertDictEqual(ranks,{'4': 100.0, '5': 26.0, '6': 4.0})        
+        
+        
 	def test_weighting_false_spending(self):
 		print('Testing '+type(self).__name__+' spendings_normalization')
 		rs = self.rs
@@ -1047,7 +1049,7 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':1,'weight':100,'time':dt4}]),0)
 		rs.update_ranks(dt4)
 		ranks = rs.get_ranks_dict({'date':dt4})        
-		self.assertDictEqual(ranks,{'4': 100.0, '5': 76.0, '6': 68.0})  
+		self.assertDictEqual(ranks,{'4': 33.0, '5': 2.0, '6': 100.0})  
         
         
 	def test_predictiveness_v2(self):

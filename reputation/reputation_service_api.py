@@ -328,7 +328,7 @@ class PythonReputationService(ReputationServiceBase):
             spendings_dict = spending_based(array1,dict(),self.logratings,self.precision,self.weighting)
             ### We normalize differential that is spendings-based.
             spendings_dict = normalized_differential(spendings_dict,normalizedRanks=self.fullnorm,our_default=self.default,spendings=self.spendings,log=self.logranks)     
-          
+        
         ### Then we calculate differential the normal way.
         if self.predictiveness>0:
             new_reputation,self.rater_ranks_special = calculate_new_reputation(logging = logging,new_array = array1,to_array = to_array,reputation = self.reputation,rating = self.use_ratings,precision = self.precision,previous_rep = self.rater_ranks_special,default=self.default,unrated=self.unrated,normalizedRanks=self.fullnorm,weighting = self.weighting,denomination = self.denomination, liquid = self.liquid, logratings = self.logratings,logranks = self.logranks, predictiveness = self.predictiveness,predictive_data = self.pred_values)
@@ -423,6 +423,8 @@ class PythonReputationService(ReputationServiceBase):
         ### In the end we only round up the ranks when we return them.
         for k in result.keys():
             all_results.append({'id':k,'rank':my_round(result[k]*100,0)})  
+        #logging.debug("network get ranks: ",str(all_results))
+        logging.info("network get ranks: {0}".format(all_results))
         return(0,all_results)
     ### get_ranks_dict is similar as get_ranks
     def get_ranks_dict(self,times):
@@ -436,7 +438,8 @@ class PythonReputationService(ReputationServiceBase):
         for k in result.keys():
             result[k] = my_round(result[k]*100,0)    
             ### Everything is similar to get_ranks, but we only return result, not really 0 beside result.
-        logging.debug("network get ranks date: " + str(times))
+        #logging.debug("network get ranks: " , str(result))
+        logging.info("network get ranks: {0}".format(result))
         return(result)    
 
     ### Getting ratings from Python rs.
@@ -464,7 +467,7 @@ class PythonReputationService(ReputationServiceBase):
                     if (self.ratings[i]['time'] >= since and self.ratings[i]['time'] <= until):
                         results.append(self.ratings[i])                
                 i+=1
-            logging.debug("network get ranks date: " + str(times))
+            logging.debug("network get ratings on date: " + str(times))
             return(0,results)
     ### put_ranks defined in similar way as in Java.
     def put_ranks(self,dt1,mydict):

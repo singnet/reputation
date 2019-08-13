@@ -145,7 +145,6 @@ def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=Fa
         our_average = dict()
         for k in our_averages.keys():
             our_average[k] = np.mean(our_averages[k])
-            
         new_subset = fix_rater_bias(new_subset,rater_bias,our_average)    
             
     i=0
@@ -369,12 +368,10 @@ def update_biases(previous_bias,new_arrays, conservatism):
 
 
 def fix_rater_bias(new_array,biases,average):
-    
-
     i = 0
     while i<len(new_array):
         if new_array[i]['from'] in average.keys():
-            new_array[i]['value'] = new_array[i]['value'] * (1-average[new_array[i]['from']])
+            new_array[i]['value'] = new_array[i]['value'] * (1-my_round(average[new_array[i]['from']],0))
         else:
             new_array[i]['value'] = new_array[i]['value']
         
@@ -565,7 +562,6 @@ def rater_reputation(previous_reputations,rater_id,default,prev_reputation,liqui
     for k in prev_reputation.keys():
         previous_rep1[k] = prev_reputation[k]
     previous_rep1[rater_id] = rater_rep
-    #print("rater_id",rater_id,"rater_rep",rater_rep,"prev_reputation1",previous_rep1,"prev_reputation",prev_reputation)
     return(rater_rep,previous_rep1)
 
 ### Another normalization. This one is intended for reputation normalization.
