@@ -31,7 +31,7 @@ class TestPythonReputationService(unittest.TestCase,TestReputationServiceDebug,T
 #class TestPythonReputationService(unittest.TestCase,TestReputationServiceDebug):
     def setUp(self):
         self.rs = PythonReputationService()
-        params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1, 'use_ratings': True, 'start_date': datetime.date(2018, 1, 1)}
+        params = {'default':0.5, 'conservaticism': 0.5, 'precision': 0.01, 'weighting': True, 'fullnorm': True,'liquid': True, 'logranks': True, 'temporal_aggregation': False, 'logratings': False, 'days_jump': 1, 'use_ratings': True, 'start_date': date(2018, 1, 1)}
         self.rs.set_parameters(params)
 
 if __name__ == '__main__':
