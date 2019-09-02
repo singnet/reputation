@@ -203,7 +203,7 @@ Simulation of market simulation
 			True - ratings with ratings values in range from 0.0 to 1.0 as values and respective financial transaction costs as weights
 		rs - reputation service as either AigentsAPIReputationService or AigentsCLIReputationService or any other 
 """
-def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40,plro=100,rs=None,verbose=False,silent=False):
+def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40,plro=100,rs=None,verbose=False,silent=False,commission=2.0):
 	random.seed(1) # Make it deterministic
 	memories = {} # init blacklists of compromised ones
 	encounters = {} # init list of all encounters per agent
@@ -215,6 +215,8 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 	actual_bad_volume = 0
 	actual_good_volume = 0
 	actual_good_to_bad_volume = 0
+	expected_good_volume = 0
+	entire_volume = 0
 
 	good_consumers = [i for i in range(good_agent['buyers'][0],good_agent['buyers'][1]+1)]
 	bad_consumers = [i for i in range(bad_agent['buyers'][0],bad_agent['buyers'][1]+1)]
@@ -261,6 +263,7 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 	bad_agents_transactions = bad_agent['transactions']
 	good_agents_count = len(good_agents)
 	bad_agents_count = len(bad_agents)
+	good_consumers_count = len(good_consumers)
 	#good_agents_values = good_agent['values']
 	#bad_agents_values = bad_agent['values']
 	#good_agents_volume = good_agents_count * good_agents_transactions * good_agents_values[0]
@@ -271,12 +274,33 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 		+ (('rs' if rs.get_parameters()['weighting'] == True else 'nw') if rs is not None else '') 
 	transactions = 'transactions' + str(len(all_agents)) + '_' + code + '.tsv'
 
-
+	#assign qualities
+	all_qualities = [0.0, 0.25, 0.5, 0.75, 1.0]
+	good_seller_qualities = []
+	bad_seller_qualities = []
+	for quality in all_qualities:
+		if quality*100 >= threshold:
+			good_seller_qualities.append(quality)
+		else:
+			bad_seller_qualities.append(quality)
+			
+	test_good_products = 0
 	costs = {}
 	qualities = {}
+	budgets = {}
 	for product in all_products:
-		costs[product] = 10
-		qualities[product] = rand_list(bad_agent['qualities']) if product in bad_agents else rand_list(good_agent['qualities'])
+		cost = 10 #TODO price categories
+		costs[product] = cost
+		quality = rand_list(bad_seller_qualities) if product in bad_products else rand_list(good_seller_qualities)
+		qualities[product] = quality
+		entire_volume += cost * good_consumers_count
+		if product in good_products:
+			expected_good_volume += cost * good_consumers_count
+			for consumer in good_consumers:
+				budgets[consumer] = budgets[consumer] + cost if consumer in budgets else cost
+	#print(qualities)
+	#print(budgets)
+	#print(test_good_products,expected_good_volume,bad_seller_qualities,good_seller_qualities)
 
 	#if verbose:
 	#	print('Good:',len(good_agents),good_agents_values[0],good_agents_transactions,len(good_agents)*good_agents_values[0]*good_agents_transactions)
@@ -308,10 +332,14 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 			for agent in good_consumers:
 				daily_selections = {}
 				for t in range(0, good_agents_transactions):
+					budget = budgets[agent]
+					if budget <= 0: # out of cash already
+						continue
 					other = pick_product(ranks,all_products,agent,memories,bad_agents,encounters,threshold)
 					if other is None:
 						continue
 					cost = costs[other]
+					budgets[agent] = budget - cost # subtract from budget
 					buys += 1
 					actual_good_volume += cost
 					# while ratings range is [0.0, 0.25, 0.5, 0.75, 1.0], we rank good agents as [0.25, 0.5, 0.75, 1.0]
@@ -374,4 +402,4 @@ def reputation_simulate(good_agent,bad_agent,since,sim_days,ratings,threshold=40
 
 	if silent is not True:
 		print('PLRo='+str(plro),'agents='+str(len(good_consumers))+'/'+str(len(bad_consumers))+'/'+str(len(good_products))+'/'+str(len(bad_products)),'days='+str(sim_days),end =" ")
-		print('Organic:',str(actual_good_volume),'Sponsored:',str(actual_bad_volume),'Organic2Sponsored:',actual_good_to_bad_volume,'Organic/Sponsored:',ratio_str(actual_good_volume,actual_bad_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume,2))
+		print('Expect:',str(expected_good_volume),'Organ:',str(actual_good_volume),'Spons:',str(actual_bad_volume),'Organ2Spons:',actual_good_to_bad_volume,'Organ/Spons:',ratio_str(actual_good_volume,actual_bad_volume,2),'OMU:',ratio_str(actual_good_volume,expected_good_volume,2),'LTS:',ratio_str(actual_good_to_bad_volume,actual_good_volume,2),'PFS:',ratio_str(actual_good_to_bad_volume,actual_bad_volume*commission,2))
