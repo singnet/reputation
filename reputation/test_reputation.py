@@ -678,45 +678,7 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		rs.clear_ranks()
 		rs.clear_ratings()
 		
-		#def get_data_in():
-		#	#transactions = pd.read_csv('./testdata/issue1.tsv',header = None,sep="\t") 
-		#	
-		#	# The data in issue1_25.tsv have issue #171
-		#	#transactions = pd.read_csv('./testdata/issue1_25.tsv',header = None,sep="\t") 
-		#	rs.clear_ranks()
-		#	rs.clear_ratings()
-		#	transactions = pd.read_csv('./testdata/issue1_16cleaned.tsv',header = None,sep="\t") 
-#
-		#	transactions.columns = ['what','Time','type','from','to','value','unit','child','parent','title',
-		#	                        'input','tags','format','block','parent']
-		#	from1 = transactions['from']
-		#	type1 = transactions['type']
-		#	to1 = transactions['to']
-		#	value1 = transactions['value']
-		#	time1 = transactions['Time']
-		#	my_time = transactions['Time']
-#
-		#	dates = []
-		#	## Convert dates;
-		#	i = 0
-		#	while i<len(my_time):
-		#	    dates.append(datetime.strptime(datetime.utcfromtimestamp(my_time[i]).strftime('%Y-%m-%d'), "%Y-%m-%d"))
-		#	    i+=1
-#
-		#	our_ratings = []
-		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
-		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
-		#	self.assertEqual( rs.put_ratings([{'from':44,'type':'rating','to':2,'value':1,'time':dt4}]), 0 )
-		#	self.assertEqual( rs.put_ratings([{'from':555,'type':'rating','to':2,'value':0,'time':dt4}]), 0 )
-		#	self.assertEqual( rs.put_ratings([{'from':304,'type':'rating','to':50,'value':1,'time':dt4}]), 0 )
-		#	self.assertEqual( rs.put_ratings([{'from':304,'type':'rating','to':50,'value':1,'time':dt4}]), 0 )            
-		#	i = 0
-		#	while i<len(transactions):
-		#	    #our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-		#	    #                   'value':value1[i],'weight':'NaN','time':dates[i]})
-		#	    our_ratings.append({'from':from1[i],'type':type1[i],'to':to1[i],
-		#	                       'value':value1[i],'time':dates[i].date()})  
-		#	    i+=1
+
 #
 		#	return(our_ratings,dates)        
 		rs.set_parameters({
@@ -926,33 +888,6 @@ class TestReputationServiceParametersBase(TestReputationServiceBase):
 		#print("ranks3",ranks3)
 		self.assertDictEqual(ranks3,{'2': 100.0, '1': 67.0, '4': 67.0, '6': 67.0, '3': 33.0, '5': 33.0})
         
-
-class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
-    
-    #TODO move to base tests once supported in other RS API-s
-	def test_aggregation(self):
-		print('Testing '+type(self).__name__+' aggregation')
-		rs = self.rs
-		rs.clear_ratings()
-		self.clear()
-		dt2 = date(2018, 1, 2)
-		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
-		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
-		self.assertEqual(rs.update_ranks(dt2),0)
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'],60)
-		self.clear()
-		rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':True,'fullnorm':False})
-		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
-		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
-		self.assertEqual(rs.update_ranks(dt2),0)
-
-		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertEqual(ranks['1'],68)
-        
 	def test_rater_bias(self):
 		print('Testing '+type(self).__name__+' rater_bias')
         #### First we test with rating_bias=False
@@ -980,6 +915,39 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		rs.clear_ratings()
 		rs = self.rs
         ####And now rating_bias=True
+        
+
+        
+        
+        
+class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
+    
+    #TODO move to base tests once supported in other RS API-s
+	def test_aggregation(self):
+		print('Testing '+type(self).__name__+' aggregation')
+		rs = self.rs
+		rs.clear_ratings()
+		self.clear()
+		dt1 = date(2018, 1, 1)        
+		dt2 = date(2018, 1, 2)
+		self.assertEqual(rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':False,'fullnorm':False}),0)
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],60)
+		self.clear()
+		rs.set_parameters({'default':1,'conservatism':0.0,'fullnorm':True,'logratings':False,'temporal_aggregation':True,'fullnorm':False})
+		self.assertEqual(rs.put_ratings([{'from':4,'type':'rating','to':1,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':100,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':1,'weight':1000000,'time':dt2}]),0)
+		self.assertEqual(rs.update_ranks(dt2),0)
+
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertEqual(ranks['1'],68)
+        
+
 		rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':True})
 		self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]),0)
 		self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
@@ -992,7 +960,8 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0)
 		self.assertEqual(rs.update_ranks(dt2),0)
 		ranks = rs.get_ranks_dict({'date':dt2})
-		self.assertDictEqual(ranks,{'4': 100.0, '5': 26.0, '6': 4.0})        
+		print("ranks:",ranks)
+		self.assertDictEqual(ranks, {'1': 72.0, '2': 100.0, '4': 69.0, '5': 27.0, '6': 4.0})        
         
         
 	def test_weighting_false_spending(self):
@@ -1077,24 +1046,14 @@ class TestReputationServiceAdvanced(TestReputationServiceParametersBase):
 		self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0) 
 		rs.update_ranks(dt2)        
 		ranks = rs.get_ranks_dict({'date':dt2})  
-		self.assertDictEqual(ranks,{'4': 98.0, '5': 100.0, '6': 71.0})    ## It is {'5': 100.0, '4': 98.0, '6': 66.0} in Java.          
+		self.assertDictEqual(ranks,{'4': 100.0, '5': 100.0, '6': 74.0})    ## It is {'5': 100.0, '4': 98.0, '6': 66.0} in Java.          
         
-        
-        
-        
-class TestReputationServiceAigents(TestReputationServiceParametersBase):
-#class TestReputationServiceAigents(object):
-        
-	def clear(self):
-		self.assertEqual( self.rs.clear_ratings(), 0 )
-		self.assertEqual( self.rs.clear_ranks(), 0 )
-
 	def test_rating_bias_java(self):
 		print('Testing '+type(self).__name__+' rating_bias_aigents')
 		dt1 = date(2018, 1, 1)
 		dt2 = date(2018, 1, 2)
 		dt3 = date(2018, 1, 3)
-		for rating_bias in [False,True]:
+		for rating_bias in [True]:
 			self.clear()
 			rs = self.rs
 			rs.clear_ratings()
@@ -1115,7 +1074,60 @@ class TestReputationServiceAigents(TestReputationServiceParametersBase):
 			if rating_bias == False:
 				self.assertDictEqual(ranks,{'4': 99.0, '5': 100.0, '6': 89.0})
 			else:
-				self.assertDictEqual(ranks,{'5': 100.0, '4': 99.0, '6': 22.0})
+				self.assertDictEqual(ranks,{'5': 100.0, '4': 99.0, '6': 22.0})               
+	def test_weighting_false_spending(self):
+		print('Testing '+type(self).__name__+' spendings_normalization')
+		rs = self.rs
+		rs.clear_ratings()
+		rs.clear_ranks()
+		dt2 = date(2018, 1, 2)
+		rs.set_parameters({'fullnorm':True,'weighting':False,'logratings':False,'denomination':False,'unrated':False,'default':0.5,'decayed':0.5,'conservatism':0.5,'ratings':0.5,'spendings':0.5})
+		rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}])
+		self.assertEqual(rs.put_ratings([{'from':5,'type':'rating','to':2,'value':0.25,'weight':682,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':6,'type':'rating','to':3,'value':1,'weight':220,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':7,'type':'rating','to':4,'value':1,'weight':583,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':8,'type':'rating','to':2,'value':1,'weight':196,'time':dt2}]),0)
+		self.assertEqual(rs.put_ratings([{'from':10,'type':'rating','to':9,'value':1,'weight':129,'time':dt2}]),0)
+		rs.update_ranks(dt2)
+		#self.assertEqual(rs.update_ranks(dt2),0)
+		ranks = rs.get_ranks_dict({'date':dt2})
+		self.assertDictEqual(ranks,{'2': 100.0, '5': 100.0, '3': 61.0, '6': 61.0, '4': 80.0, '7': 82.0, '8': 59.0, '9': 50.0, '10': 50.0})  
+                
+        
+class TestReputationServiceAigents(TestReputationServiceParametersBase):
+#class TestReputationServiceAigents(object):
+        
+	def clear(self):
+		self.assertEqual( self.rs.clear_ratings(), 0 )
+		self.assertEqual( self.rs.clear_ranks(), 0 )
+
+	def test_rating_bias_java(self):
+		print('Testing '+type(self).__name__+' rating_bias_aigents')
+		dt1 = date(2018, 1, 1)
+		dt2 = date(2018, 1, 2)
+		dt3 = date(2018, 1, 3)
+		for rating_bias in [True]:
+			self.clear()
+			rs = self.rs
+			rs.clear_ratings()
+			rs.clear_ranks()
+			rs.set_parameters({'default':0.5,'decayed':0.5,'conservatism':0.25,'fullnorm':False,'logratings':False,'liquid':True,'rating_bias':rating_bias})
+			self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'4','value':0.5,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'2','type':'rating','to':'5','value':1.0,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'1','type':'rating','to':'6','value':0.25,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.put_ratings([{'from':'3','type':'rating','to':'6','value':0,'weight':10,'time':dt1}]),0)
+			self.assertEqual(rs.update_ranks(dt1),0)
+			ranks = rs.get_ranks_dict({'date':dt1})
+			self.assertEqual(rs.put_ratings([{'from':1,'type':'rating','to':'5','value':0.75,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.put_ratings([{'from':2,'type':'rating','to':'6','value':0.25,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.put_ratings([{'from':3,'type':'rating','to':'4','value':0.75,'weight':10,'time':dt2}]),0)
+			self.assertEqual(rs.update_ranks(dt2),0)
+			ranks = rs.get_ranks_dict({'date':dt2})
+			#print(ranks)
+			if rating_bias == False:
+				self.assertDictEqual(ranks,{'4': 99.0, '5': 100.0, '6': 89.0})
+			else:
+				self.assertDictEqual(ranks,{'5': 100.0, '4': 99.0, '6': 22.0})       
 		
 	def test_parents_java(self):
 		"""

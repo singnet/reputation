@@ -449,7 +449,6 @@ def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precis
             for k, v in mys.items():
                 ### divide mys values with denomination values.
                 mys[k] = v / myd[k]
-
     ### nr 5.
     ### Here we make trasformation in the same way as described in point 5 in documentation doc.
     text = "Differential before log transformation: " + str(mys)
@@ -460,7 +459,6 @@ def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precis
                 mys[k] = -np.log10(1 - mys[k])
             else:
                 mys[k] = np.log10(1 + mys[k])
-    text = "Differential after log transformation: " + str(mys)
     logging.debug(text)
     return(mys,previous_rep)
 
@@ -484,6 +482,7 @@ def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
         min_value = max_value - our_default ### as the solution to issue #157
         if min_value==max_value and spendings>0:
             min_value = max_value - 1
+        
     ### Now, way of solving this problem in a bit more common way:        
     for k in mys.keys():
         if max_value==min_value:
@@ -504,60 +503,29 @@ def normalized_differential(mys,normalizedRanks,our_default,spendings,log=True):
 def rater_reputation(previous_reputations,rater_id,default,prev_reputation,liquid=False,to_id = [],predictiveness = 0,predictive_data = dict()):
     ### Assigning rater reputation. It is not trivial; if liquid=True, then we can expect that 
     if rater_id in previous_reputations.keys():
+        
         ### Checks whether it's liquid or not. If liquid, return 1, otherwise previous reputation.
         if (not liquid):
             rater_rep = 1
         else:
-            if predictiveness>0:
-                if rater_id in predictive_data.keys():
-                    if rater_id in prev_reputation:
-                        rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
-                        rater_rep = rater_rep * 100
-                    else:
-                        rater_rep = previous_reputations[rater_id] * (1-predictiveness) + predictiveness * predictive_data[rater_id]
-                        rater_rep = rater_rep * 100
-                    rater_rep = 1
-                else:
-                    if rater_id in prev_reputation:
-                        rater_rep = previous_reputations[rater_id] * 100
-                    else:
-                        rater_rep = previous_reputations[rater_id] * 100
-                    
-            else:
-                if rater_id in prev_reputation:
-                    rater_rep = previous_reputations[rater_id] * 100
-                else:
-                    rater_rep = previous_reputations[rater_id] * 100
-    else:
-        if predictiveness>0:
             if rater_id in prev_reputation:
-                if (not liquid):
-                    rater_rep = 1
-                else:
-                    rater_rep = prev_reputation[rater_id]#default * 100
+                rater_rep = previous_reputations[rater_id] * 100
             else:
-                if (not liquid):
-                    rater_rep = 1
-                else:
-                    rater_rep = default * 100 
+                rater_rep = previous_reputations[rater_id] * 100
+    else:
+
+        if (not liquid):
+            rater_rep = 1
         else:
-            if (not liquid):
-                rater_rep = 1
-            else:
-                rater_rep = default * 100
+            rater_rep = default * 100
         ### If it is not in reputations up to the current one, we set a default value.
-    #if (not liquid):
-    #    rater_rep = 1
-    #else:
-#
-    #    if predictiveness>0:
-    #        if rater_id in predictive_data.keys():
-    #            rater_rep = default * (1-predictiveness) + predictive_data[rater_id] * predictiveness
-    #            rater_rep = rater_rep * 100
-    #        else:
-    #            rater_rep = default * 100
-    #    else:
-    #        rater_rep = default * 100     
+
+    if predictiveness>0:
+        if rater_id not in predictive_data.keys():
+            pass # Do nothing
+            #raise ValueError('Calling for predictiveness without previous predictive data.')
+        else:
+            rater_rep = rater_rep * (1-predictiveness) + predictiveness * predictive_data[rater_id] * rater_rep
     previous_rep1 = dict()
     for k in prev_reputation.keys():
         previous_rep1[k] = prev_reputation[k]
@@ -705,7 +673,7 @@ def update_predictiveness_data(previous_pred,mydate,reputations,transactions,con
                 previous_pred[from_id][to_id] = transactions[from_id][to_id] * (1-conservatism) + conservatism * previous_pred[from_id][to_id] ### mydate should not exist yet in our run.
             else:
                 previous_pred[from_id][to_id] = dict()
-                previous_pred[from_id][to_id] = transactions[from_id][to_id] * (1-conservatism) + conservatism * 1
+                previous_pred[from_id][to_id] = transactions[from_id][to_id] #
     return(previous_pred,ids_used)
 
 def normalize_individual_data(mydate,new_ids):

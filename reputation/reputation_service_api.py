@@ -262,6 +262,7 @@ class PythonReputationService(ReputationServiceBase):
     def update_ranks(self,mydate):
         if not "rater_ranks_special" in dir(self):
             self.rater_ranks_special = dict()
+        self.non_rounded_rep = dict()
         text = "period " +  str(self.update_period)
         logging.debug(text)
         ### And then we iterate through functions. First we prepare arrays and basic computations.
@@ -367,6 +368,7 @@ class PythonReputationService(ReputationServiceBase):
         text = "Blended differential with reputation: " + str(self.reputation)
         logging.debug(text) 
         self.reputation = normalize_reputation(self.reputation,array1,self.unrated,self.default,self.decayed,self.conservatism,self.downrating)
+        self.non_rounded_rep = dict(self.reputation)
         ### round reputations:
         for k in self.reputation.keys():
             self.reputation[k] = my_round(self.reputation[k],2) # Make sure we use my_round. 
@@ -379,11 +381,11 @@ class PythonReputationService(ReputationServiceBase):
             avg_ind_rat_byperiod,self.count_values[mydate] = calculate_average_individual_rating_by_period(array1,True)
             text = "Average individual rating by period: " + str(avg_ind_rat_byperiod)
             logging.debug(text)
+            #self.predictive_data, ids = update_predictiveness_data(self.predictive_data,mydate,self.reputation,avg_ind_rat_byperiod,self.conservatism)
             self.predictive_data, ids = update_predictiveness_data(self.predictive_data,mydate,self.reputation,avg_ind_rat_byperiod,self.conservatism)
             self.calculate_indrating(ids,mydate)
             text = "Individual rating: " + str(self.predictive_data) + ", and rating used for rater reputation: " + str(self.pred_values)
             logging.debug(text)                 
-        
         return(0)
 
     ### When we want to save ratings to our system. So, we can add them, the same way as in Java.        
@@ -516,9 +518,8 @@ class PythonReputationService(ReputationServiceBase):
             thevalues = []
             relevant_ranks = []
             for j in k.keys():
-
                 nr_appearances = 1
-                relevant_ranks.append(self.reputation[j])
+                relevant_ranks.append(self.non_rounded_rep[j])
                 thevalues.append(k[j])
 
                     
@@ -529,21 +530,25 @@ class PythonReputationService(ReputationServiceBase):
                 
             correlats[k1] = cors 
             ### I think all cors values should be first normalized.
-        
         for k1 in self.predictive_data.keys():    
             correlats[k1] = 1 - correlats[k1]
         max_correlats = max(correlats.values())
-        for k1 in correlats.keys():
-            correlats[k1] = correlats[k1]/max_correlats  
+        #for k1 in correlats.keys():
+        #    correlats[k1] = correlats[k1]/max_correlats 
         for k1 in self.predictive_data.keys():     
 
             
             if k1 in self.pred_values.keys():
-                self.pred_values[k1] = correlats[k1] 
+                self.pred_values[k1] = correlats[k1]
             else:
                 self.pred_values[k1] = dict()
-                self.pred_values[k1] = correlats[k1] 
-   
+                self.pred_values[k1] = correlats[k1]
+        ### Normalize pred_values
+        mymax = max(self.pred_values.values())
+        mymin = min(self.pred_values.values())
+        #for k in self.pred_values.keys():
+        #    self.pred_values[k] = (self.pred_values[k]-mymin)/(mymax-mymin)   
+        ### removed 
         return(0)
     
     
