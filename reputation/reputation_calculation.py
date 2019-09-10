@@ -148,7 +148,6 @@ def reputation_calc_p1(new_subset,conservatism,precision,temporal_aggregation=Fa
         new_subset = fix_rater_bias(new_subset,rater_bias,our_average)    
             
     i=0
-    
     new_array = []
     israting = True
     while i<len(new_subset):
@@ -283,7 +282,7 @@ def logratings_precision(rating,lograting,precision,weighting):
     new_weight = None # assume no weight computed by default
     ### if weighting = False, then we return values only.
     if not weighting:
-        return(rating[2],None)
+        return(rating[3],None)
     if lograting:
         ### We go through few posibilities about what can happen.
         ### If there are no weights then:
@@ -439,7 +438,6 @@ def calculate_new_reputation(logging,new_array,to_array,reputation,rating,precis
                 myd[unique_ids[i]] = sum(denominators)
 #
         i+=1
-    
     ### Let's update the records from previous reputations and how we update them (for raters)
     for k in prev_rep1a.keys():
         previous_rep[k] = prev_rep1a[k]
