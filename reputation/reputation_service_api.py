@@ -206,6 +206,9 @@ class PythonReputationService(ReputationServiceBase):
     def clear_ranks(self):
         self.reputation = {}   
         self.all_reputations = {}
+        self.predictive_data = dict()
+        self.pred_values = dict()
+        self.count_values = dict()
         logging.debug('Ranks cleared.')
         return(0)
     ### Clear stored ratings (transactions).
@@ -273,7 +276,7 @@ class PythonReputationService(ReputationServiceBase):
             else:
                 self.rater_biases = dict()
                 self.rater_biases[since] = dict()
-        if self.predictiveness:
+        if self.predictiveness>0:
             if 'predictive_data' in dir(self):
                 pass
             else:
@@ -544,6 +547,7 @@ class PythonReputationService(ReputationServiceBase):
             relevant_ranks = []
             for j in k.keys():
                 nr_appearances = 1
+                
                 relevant_ranks.append(self.non_rounded_rep[j])
                 thevalues.append(k[j])
 
@@ -557,7 +561,10 @@ class PythonReputationService(ReputationServiceBase):
             ### I think all cors values should be first normalized.
         for k1 in self.predictive_data.keys():    
             correlats[k1] = 1 - correlats[k1]
-        max_correlats = max(correlats.values())
+        if len(correlats)==0:
+            max_correlats = 1
+        else:
+            max_correlats = max(correlats.values())
         #for k1 in correlats.keys():
         #    correlats[k1] = correlats[k1]/max_correlats 
         for k1 in self.predictive_data.keys():     
@@ -568,12 +575,7 @@ class PythonReputationService(ReputationServiceBase):
             else:
                 self.pred_values[k1] = dict()
                 self.pred_values[k1] = correlats[k1]
-        ### Normalize pred_values
-        mymax = max(self.pred_values.values())
-        mymin = min(self.pred_values.values())
-        #for k in self.pred_values.keys():
-        #    self.pred_values[k] = (self.pred_values[k]-mymin)/(mymax-mymin)   
-        ### removed 
+        
         return(0)
     
     
