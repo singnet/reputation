@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Reputation Service wrapper around Aigents Java-based Command Line Interface
+Reputation Service wrapper around Aigents Java-based Web Service
 """        
 
 import sys
