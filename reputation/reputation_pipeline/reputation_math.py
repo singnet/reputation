@@ -614,18 +614,21 @@ def initialize_dict(from_array,to_array):
 ### Updating reputation - blending differential and reputation.
 ### In original paper, there were a few proposed ways of updating and approach d has been found to be the most
 ### useful and the only ne we are using at the moment.
-def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,default_rep,conservativity):
+def update_reputation_approach_d(first_occurance,reputation,mys,since,our_date,default_rep,conservativity,
+    old_reputation_unrated=None):
     ### Our current approach of updating reputation each time period. 
-    j = 0
-    all_keys = set(mys.keys())
-    for k  in reputation.keys():
-        if k in all_keys:
+    #print("old_reputation_unrated:",old_reputation_unrated)
+    #print("and reputation:",reputation)
+    if old_reputation_unrated is None:
+        old_reputation_unrated = reputation
+    all_keys = set(reputation.keys()) | set(old_reputation_unrated.keys()) | set(mys.keys())
+    for k  in all_keys:
+        if k in mys:
             ### for everything inside reputation and differential, this is the equation we a reusing-
             reputation[k] = (1-conservativity) * mys[k] + conservativity * reputation[k]
         else:
-            ### when in reputation, but not in differential, this is what we do:
-            reputation[k] = (1-conservativity) * default_rep + conservativity * reputation[k]
-        j+=1  
+            old_u = float(old_reputation_unrated.get(k, default_rep))
+            reputation[k] = (1-conservativity) * default_rep + conservativity * old_u
     return(reputation)
 
 #def update_reputation_approach_2026(first_occurance,reputation,mys,since,our_date,default_rep,conservativity):

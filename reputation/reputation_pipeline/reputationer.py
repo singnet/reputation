@@ -1,11 +1,12 @@
 # reputation_runner.py
 
 from datetime import datetime
-from reputation_calculation import *
+from reputation_math import *
 import pandas as pd
 import pickle
 from typing import Dict, Optional
 from pathlib import Path
+import math
 
 REQUIRED_COLUMNS = ["from", "to", "value", "timestamp", "transactionID"]
 
@@ -61,9 +62,9 @@ def preprocess_transactions(df: pd.DataFrame, scale: float) -> pd.DataFrame:
 
 class ReputationEngine:
     def __init__(self, df, logger, *,start_date,cutoff_date, daily_reputations = None,conservativity=0.9,liquid = True,default_rep=0.5,precision=1.0,
-                 scale=10**8,anchor_enabled = True,anchor_address="0x000000000000000000000000000000000000dead",weighting=True,logratings=False,
+                 scale=10**8,anchor_enabled = False,anchor_address="0x000000000000000000000000000000000000dead",weighting=True,logratings=False,
                  logranks=False,denomination=True,unrated=False,temporal_aggregation=False,predictiveness=0,
-                 normalized_ranks=True,need_occurance=True, update_method="exponential" , spendings=0, compute_cap_enabled = True,
+                 normalized_ranks=False,need_occurance=True, update_method="exponential" , spendings=0, compute_cap_enabled = False,
                  window=7,fallback_cap=1.0,save_path="reputation_progress.pkl",reputation_weights: Optional[Dict[str, float]] = None,
                 multiple_reputations = True):
         """
@@ -195,18 +196,19 @@ class ReputationEngine:
     
     
     def _step_one_day(self, date, group):
-
-        ### Normalize transaction values
-        eps = 1e-9
+        assert self.reputation01 is not self.reputation
         vals = group["value"].astype(float)
         vmin, vmax = vals.min(), vals.max()
         
+        solo_signal = (1.0 + self.default_rep) / 2.0
+        delta = 0.0005  # "small tx still positive"
+        min_signal = min(1.0, self.default_rep + delta)
+        
         if vmax == vmin:
-            norm_vals = pd.Series(eps, index=group.index)
+            norm_vals = pd.Series(solo_signal, index=group.index)
         else:
-            scaled01 = (vals - vmin) / (vmax - vmin)
-            norm_vals = eps + (1.0 - eps) * scaled01
-
+            scaled01 = (vals - vmin) / (vmax - vmin)  # 0..1
+            norm_vals = min_signal + (1.0 - min_signal) * scaled01  # [min_signal, 1]
 
         
         # 1. Compute cap if enabled
@@ -251,16 +253,9 @@ class ReputationEngine:
         # 6. Update reputations if new addresses appeared
         if self.multiple_reputations:
             self.reputation01 = update_reputation(
-            self.reputation,
-            array1,
-            default_reputation=self.default_rep,
-            spendings=0)
+            self.reputation01, array1,default_reputation=self.default_rep,spendings=0)
             
-        self.reputation = update_reputation(
-            self.reputation,
-            array1,
-            default_reputation=self.default_rep,
-            spendings=0)
+        self.reputation = update_reputation(self.reputation,array1,default_reputation=self.default_rep,spendings=0)
 
         # 7. Compute differential
         ### Note this differential is just F(τ,i,j,k) * R_g(t-1,j) * W(τ,i,j,k) , for now. We still need to multiply by H_k and divide by:
@@ -302,14 +297,17 @@ class ReputationEngine:
                     t_now=datetime.combine(date, datetime.min.time()),
                     default_rep=self.default_rep)
             else:
+                #print("reputation01 before:",self.reputation01)
                 self.reputation01 = update_reputation_approach_d(
                     self.first_occurance,self.reputation,new_reputation,
                     since=datetime.combine(date, datetime.min.time()) - timedelta(days=1),
                     our_date=datetime.combine(date, datetime.min.time()),
                     default_rep=self.default_rep,
-                    conservativity=self.conservativity)
+                    conservativity=self.conservativity,
+                    old_reputation_unrated=self.reputation01)
             ### Now we have to sum up reputation01 with external reputations:
             # Compose final reputation (main + externals)
+            #print("reputation01 afeter:",self.reputation01)
             self.reputation = self.compose_reputation()
         
 
@@ -433,18 +431,31 @@ class ReputationEngine:
     
         return out
 
+
     def ingest_external_updates(self, source: str, updates: Dict[str, float]) -> None:
-        """
-        Sparse update: only addresses present in 'updates' are changed.
-        Missing addresses keep their previous values (hold-last-value).
-        """
         if source not in self.external_rep:
             self.external_rep[source] = {}
     
         for addr, val in updates.items():
-            if addr not in self.external_rep[source]:
-                self.external_rep[source][addr] = self.default_rep  # initialize baseline
-            self.external_rep[source][addr] = float(val)
+            # try coerce
+            try:
+                v = float(val)
+            except Exception:
+                # no usable value: keep old if exists, else default
+                if addr not in self.external_rep[source]:
+                    self.external_rep[source][addr] = self.default_rep
+                continue
+    
+            # reject non-finite
+            if not math.isfinite(v):
+                if addr not in self.external_rep[source]:
+                    self.external_rep[source][addr] = self.default_rep
+                continue
+    
+            # optional clamp if externals are [0,1]
+            v = 0.0 if v < 0.0 else 1.0 if v > 1.0 else v
+    
+            self.external_rep[source][addr] = v
     
     def run_reputation(self):
         start_date = self.determine_start_date()
